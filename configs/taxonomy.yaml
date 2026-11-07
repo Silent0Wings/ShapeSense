@@ -1,0 +1,31 @@
+# 10-class taxonomy — matches phase1_report.tex, Table 1 (labels and
+# definitions). The index is the training label.
+
+classes:
+  0: circle      # closed curve, equal axes
+  1: ellipse     # closed curve, clearly unequal axes
+  2: triangle    # 3 vertices
+  3: square      # 4 equal sides, right angles, any rotation
+  4: rectangle   # 4 sides, right angles, clearly unequal sides
+  5: pentagon    # 5 vertices (single source: El Korchi)
+  6: hexagon     # 6 vertices
+  7: octagon     # 8 vertices
+  8: star        # star polygon, alternating outer/inner vertices
+  9: diamond     # rhombus WITHOUT right angles, any rotation
+
+# Ambiguity margins the Stage 3 generator must respect so a synthetic
+# image can never land on the wrong side of an ambiguous pair
+# (square/diamond, square/rectangle, circle/ellipse).
+ambiguity_margins:
+  ellipse_min_axis_ratio: 1.2
+  rectangle_min_side_ratio: 1.2
+  diamond_min_angle_offset_deg: 10   # stay clearly off 90 deg
+
+# Transforms that would change the geometric class are disabled for
+# these labels (implementation.md, Stage 2).
+no_shear_no_nonuniform_scale:
+  - circle
+  - ellipse
+  - square
+  - rectangle
+  - diamond
