@@ -1,0 +1,32 @@
+# Pipeline contract — frozen by Stage 1. Changes after the freeze
+# require team agreement (a PR the other owners review).
+
+seed_set: [0, 1, 2]        # 3-5 seeds; the SAME set is used for every arm
+image_size: 64             # square, single channel
+synthetic_fraction: 0.3    # share of each Stage 4 training batch from Stage 3
+
+split:
+  ratios: [0.70, 0.15, 0.15]
+  group_by: phash          # near-duplicate groups never straddle splits
+
+paths:
+  catalog: data_set/unified/catalog.sqlite
+  splits_dir: configs/splits
+  artifacts_dir: artifacts
+
+# Registered module names Stage 4 looks up in src/common/registry.
+modules:
+  augment: augment
+  synthetic: synthetic
+
+# The three arms; identical training, only the data stream differs.
+arms:
+  A0: { augment: false, synthetic: false }   # report's "Model A" (control)
+  A1: { augment: true,  synthetic: false }   # isolates augmentation effect
+  B:  { augment: true,  synthetic: true }    # report's "Model B"
+
+# Locked in advance (implementation.md, decision 3). B beats A1 if met.
+success_criterion:
+  macro_f1_min_gain_points: 1.0   # B vs A1
+  ci_level: 0.95                  # bootstrap CI must exclude 0
+  max_class_f1_drop_points: 2.0   # no class may drop more than this

@@ -1,0 +1,34 @@
+# TeX intermediate and build output files
+*.aux
+*.fls
+*.idx
+*.ind
+*.lof
+*.lot
+*.out
+*.toc
+*.blg
+*.bbl
+*.fdb_latexmk
+*.synctex.gz
+*.log
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+# Datasets
+data_set/
+
+# Pipeline stage outputs (small metadata can be force-added when the
+# report needs it)
+artifacts/*
+!artifacts/*/
+artifacts/*/*
+!artifacts/*/.gitkeep
+
+# Python
+__pycache__/
+
+
