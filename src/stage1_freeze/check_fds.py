@@ -6,13 +6,11 @@ each candidate FD by grouping on the left-hand side and verifying the
 right-hand side is constant within every group. Also runs an
 injected-violation test to confirm the check catches conflicts.
 
-    python scripts/check_fds.py
+    python -m src.stage1_freeze.check_fds
 """
 import csv
-import os
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-META = os.path.join(ROOT, "data_set", "unified", "metadata.csv")
+from src.common.config import load_default_config, resolve
 
 CHECKS = [
     ("source_id -> domain", ["source_id"], ["domain"]),
@@ -32,12 +30,19 @@ def check_fd(rows, lhs, rhs):
     return len(groups), violations
 
 
+def check_rows(rows, checks=CHECKS):
+    """Run every FD check on the given rows (Stage 1 passes the FILTERED rows)."""
+    return {name: check_fd(rows, lhs, rhs) for name, lhs, rhs in checks}
+
+
 def main():
-    with open(META, encoding="utf-8") as f:
+    meta = resolve(load_default_config()["paths"]["metadata"])   # paths.metadata, read at call time
+    with open(meta, encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
     print(f"Rows: {len(rows)}\n")
+    results = check_rows(rows)
     for name, lhs, rhs in CHECKS:
-        n, v = check_fd(rows, lhs, rhs)
+        n, v = results[name]
         status = "HOLDS" if not v else f"VIOLATED in {len(v)} group(s), e.g. {next(iter(v.items()))}"
         print(f"{name}: {n} groups, {status}")
 

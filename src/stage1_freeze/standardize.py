@@ -7,7 +7,7 @@ Every image, whatever its origin, leaves this module in ONE format:
     white (255) background, shape cropped to its bounding box and
     centered with aspect ratio preserved.
 
-Normalization to float [0, 1] happens at load time (see shape_dataset.py),
+Normalization to float [0, 1] happens at load time (Stage 4 loader),
 not on disk, so the stored files stay lossless and inspectable.
 
 Steps, in order (each one fixes a real incompatibility between sources):
@@ -32,11 +32,9 @@ Steps, in order (each one fixes a real incompatibility between sources):
                         of the shape. Fills become outlines, not the other
                         way round, because an open sketch cannot be filled.
 """
-import hashlib
-
 import numpy as np
 from PIL import Image
-from scipy import fft, ndimage
+from scipy import ndimage
 
 TARGET = 64
 BG_DISTANCE_T = 60.0      # max RGB distance threshold for ink
@@ -147,17 +145,3 @@ def standardize(im):
                 shape_px=int(shape_px))
     return out, info
 
-
-def md5(arr):
-    return hashlib.md5(arr.tobytes()).hexdigest()
-
-
-def phash(arr):
-    """64-bit perceptual hash (DCT method, as in the imagehash library):
-    resize to 32x32, 2-D DCT, keep the 8x8 low-frequency block, threshold
-    at its median. Returned as an int so Hamming distance is a popcount."""
-    small = np.asarray(Image.fromarray(arr).resize((32, 32), Image.Resampling.LANCZOS),
-                       dtype=np.float64)
-    low = fft.dctn(small, norm="ortho")[:8, :8]
-    bits = (low > np.median(low)).flatten()
-    return int("".join("1" if b else "0" for b in bits), 2)
