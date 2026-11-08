@@ -408,7 +408,7 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
             optimizer.step()
             scheduler.step()
             optimizer_steps += 1
-            loss_sum += float(loss) * int(y.shape[0])
+            loss_sum += float(loss.detach()) * int(y.shape[0])
             correct += int((logits.argmax(dim=1) == y).sum())
             seen += int(y.shape[0])
             syn_total += int(batch.is_synthetic.sum())

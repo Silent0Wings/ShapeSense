@@ -36,6 +36,22 @@ def test_missing_key_named_in_error(cfg):
         validate_pipeline(cfg)
 
 
+def test_loso_name_collision_rejected(cfg):
+    seed0 = cfg["seed_set"][0]
+    cfg["runs"] = [{"arm": "A1", "seed": seed0, "holdout_source": "github_handdrawn"}]
+    with pytest.raises(ConfigError, match="collides"):
+        validate_pipeline(cfg)
+
+
+def test_holdout_run_with_a_free_name_allowed(cfg):
+    seed0, seed1 = cfg["seed_set"][:2]
+    cfg["runs"] = [{"arm": "A1", "seed": seed1, "holdout_source": "github_handdrawn"},
+                   {"arm": "A0", "seed": seed0, "holdout_source": "github_handdrawn"},
+                   {"arm": "A1", "seed": seed0, "name": "A1_other",
+                    "holdout_source": "github_handdrawn"}]
+    validate_pipeline(cfg)
+
+
 def test_ratios_must_sum_to_one(cfg):
     cfg["split"]["ratios"] = [0.7, 0.2, 0.2]
     with pytest.raises(ConfigError, match="sum to 1"):
