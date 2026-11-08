@@ -1,0 +1,92 @@
+# Import boundaries (implementation.md § Separation of concerns 1).
+# Run with `lint-imports`; also run by `python run_pipeline.py --check`
+# and by the pre-commit hook.
+
+[importlinter]
+root_packages =
+    src
+    dashboard
+    demo
+    export
+include_external_packages = False
+
+[importlinter:contract:stages-independent]
+name = Stages do not import each other (except Stage 4 -> transform/generate)
+type = independence
+modules =
+    src.stage0_infra
+    src.stage1_freeze
+    src.stage2_augment
+    src.stage3_synth
+    src.stage4_train
+    src.stage5_eval
+    src.stage6_report
+ignore_imports =
+    src.stage4_train.** -> src.stage2_augment
+    src.stage4_train.** -> src.stage3_synth
+unmatched_ignore_imports_alerting = warn
+
+[importlinter:contract:common-imports-no-stage]
+name = src.common imports no stage
+type = forbidden
+source_modules =
+    src.common
+forbidden_modules =
+    src.stage0_infra
+    src.stage1_freeze
+    src.stage2_augment
+    src.stage3_synth
+    src.stage4_train
+    src.stage5_eval
+    src.stage6_report
+    dashboard
+    demo
+    export
+
+[importlinter:contract:dashboard-reads-status-only]
+name = dashboard may import src.common.status only
+type = forbidden
+# Direct imports only: status itself uses config/hashing internally.
+allow_indirect_imports = True
+source_modules =
+    dashboard
+forbidden_modules =
+    src.stage0_infra
+    src.stage1_freeze
+    src.stage2_augment
+    src.stage3_synth
+    src.stage4_train
+    src.stage5_eval
+    src.stage6_report
+    src.common.batch
+    src.common.catalog
+    src.common.config
+    src.common.features
+    src.common.hashing
+    src.common.imaging
+    src.common.interfaces
+    src.common.neardup
+    src.common.quickdraw
+    src.common.registry
+    src.common.splits
+    demo
+    export
+
+[importlinter:contract:demo-uses-export-only]
+name = demo imports only export/ (bundle is self-contained)
+type = forbidden
+source_modules =
+    demo
+forbidden_modules =
+    src
+    dashboard
+
+[importlinter:contract:export-self-contained]
+name = export imports nothing from the project
+type = forbidden
+source_modules =
+    export
+forbidden_modules =
+    src
+    dashboard
+    demo

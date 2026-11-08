@@ -1,0 +1,23 @@
+# Exact pins (stages/stage_0.md R11). Python 3.12 (see .python-version).
+# CPU-only PyTorch: install with
+#   pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+# GPU is optional and only shortens Stage 4; nothing depends on it.
+numpy==2.5.4
+scipy==1.18.0
+pillow==12.3.0
+matplotlib==3.11.1
+pandas==3.0.5
+pyyaml==6.0.3
+torch==2.14.1
+scikit-learn==1.9.1
+scikit-image==0.26.0
+statsmodels==0.15.0
+joblib==1.6.0
+threadpoolctl==3.7.0
+onnx==1.23.2
+onnxruntime==1.20.1
+streamlit==1.61.1
+gradio==6.31.0
+import-linter==2.16
+pytest==9.1.1
+pre-commit==4.7.0

@@ -1,0 +1,22 @@
+# Stage ownership (implementation.md § Separation of concerns 4).
+# Placeholders: replace each <owner> with a GitHub handle once owners are
+# assigned from team.json (Yahya Belgharbi, Fiacre Byiringiro, Damiano
+# Confuorti, Jananaa Mahathevan, Yash Dilipkumar Nathani, Ray Ntukanyagwe).
+
+/src/stage0_infra/      <stage0-owner>
+/src/stage1_freeze/     <stage1-owner>
+/src/stage2_augment/    <stage2-owner>
+/src/stage3_synth/      <stage3-owner>
+/src/stage4_train/      <stage4-owner>
+/src/stage5_eval/       <stage5-owner>
+/src/stage6_report/     <stage6-owner>
+/dashboard/             <stage6-owner>
+/demo/                  <stage6-owner>
+/export/                <stage6-owner>
+
+# Shared contracts need the Stage 0 owner plus one other reviewer.
+/src/common/            <stage0-owner> <second-reviewer>
+/configs/pipeline.yaml  <stage0-owner> <second-reviewer>
+/configs/taxonomy.yaml  <stage0-owner> <second-reviewer>
+/configs/splits/        <stage0-owner> <stage1-owner>
+/run_pipeline.py        <stage0-owner>
