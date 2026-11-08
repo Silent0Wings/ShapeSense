@@ -32,3 +32,22 @@ artifacts/*/*
 __pycache__/
 
 
+.venv/
+.pytest_cache/
+.import_linter_cache/
+
+# Model checkpoints and generated export files (re-created by the pipeline)
+*.pt
+*.joblib
+export/model.onnx
+export/standardize.py
+export/labels.json
+export/model_card.json
+
+# Generated report outputs
+phase2_report.pdf
+ignore/
+
+# Local commit tooling (never committed)
+.commit_guard/
+.pre-commit-config.yaml
