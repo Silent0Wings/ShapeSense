@@ -1,7 +1,10 @@
 # Exact pins (stages/stage_0.md R11). Python 3.12 (see .python-version).
 # CPU-only PyTorch: install with
 #   pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
-# GPU is optional and only shortens Stage 4; nothing depends on it.
+# CUDA PyTorch (the Stage 4 results were trained this way): install the same pin with
+#   pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu130
+#   pip install "torch==2.14.1+cu130" --index-url https://download.pytorch.org/whl/cu130
+# CPU and GPU runs are not numerically identical; train every arm on one setup.
 numpy==2.5.4
 scipy==1.18.0
 pillow==12.3.0

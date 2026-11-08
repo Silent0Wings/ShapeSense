@@ -103,6 +103,7 @@ train:
   steps_per_epoch: 49        # Decision 13: frozen from arm A0 = ceil(12405 train / 256);
                              # re-frozen after CRISP-DM iteration 1 (was 50)
   tuned: false               # true once the Decision 7 winner is frozen
+  device: cuda               # auto | cpu | cuda; cuda fails loudly when no GPU is visible
   num_threads: 2             # torch CPU threads per run (scales sublinearly)
   parallel_runs: 6           # independent runs trained at once (14-core CPU);
                              # each run stays deterministic from (arm, seed)
