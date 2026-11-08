@@ -12,13 +12,13 @@ it a second time underneath.
 
 The catalog readers come from ``src.common.catalog``::
 
-    load_split_images(config, split, per_class=None, seed=0)
+    load_split_images(config, split, per_class=None, seed=0, rows=None)
         -> (uint8 (N, 64, 64), int64 (N,))
     load_split_rows(config, split) -> list[dict]   # manifest rows
 
 Both are injectable (``loader=`` / ``rows_loader=``) so tests run on
-synthetic arrays without ``data_set/``. Both must return rows in the
-same (manifest) order; the store checks only that the lengths agree.
+synthetic arrays without ``data_set/``. The manifest is read once and its
+rows are handed to the image loader, so images and source ids line up.
 """
 
 from __future__ import annotations
@@ -39,9 +39,10 @@ ImagesLoader = Callable[..., tuple[np.ndarray, np.ndarray]]
 RowsLoader = Callable[[dict, str], list[dict]]
 
 
-def _default_images_loader(config: dict, split: str) -> tuple[np.ndarray, np.ndarray]:
+def _default_images_loader(config: dict, split: str,
+                           rows: list[dict]) -> tuple[np.ndarray, np.ndarray]:
     from src.common.catalog import load_split_images  # data-access layer, lazy
-    return load_split_images(config, split)
+    return load_split_images(config, split, rows=rows)
 
 
 def _default_rows_loader(config: dict, split: str) -> list[dict]:
@@ -97,8 +98,8 @@ class ImageStore:
                              "(the test split belongs to Stage 5; stage_4.md R8)")
         load_images = loader or _default_images_loader
         load_rows = rows_loader or _default_rows_loader
-        images, labels = load_images(config, split)
-        rows = load_rows(config, split)
+        rows = load_rows(config, split)  # read once: images and ids share these rows
+        images, labels = load_images(config, split, rows=rows)
         if len(rows) != len(labels):
             raise ValueError(f"{split}: {len(rows)} manifest rows but {len(labels)} images")
         source_ids = np.array([row[SOURCE_COLUMN] for row in rows], dtype=str)

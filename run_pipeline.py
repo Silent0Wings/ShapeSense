@@ -104,6 +104,11 @@ def run_stages(config: dict, numbers: list[int], *, force: bool,
     return outcome
 
 
+def exit_code(outcome: dict[int, str]) -> int:
+    """0 only when every requested stage actually ran or was served from the cache."""
+    return 1 if {"failed", "not_run"} & set(outcome.values()) else 0
+
+
 def _launch(cmd: list[str]) -> int:
     return subprocess.call(cmd, cwd=REPO_ROOT)
 
@@ -141,7 +146,7 @@ def main(argv: list[str] | None = None) -> int:
                for n, m in STAGES.items()}
     numbers = dependency_closure(args.stages or list(STAGES), depends)
     outcome = run_stages(config, numbers, force=args.force)
-    return 1 if "failed" in outcome.values() else 0
+    return exit_code(outcome)
 
 
 if __name__ == "__main__":

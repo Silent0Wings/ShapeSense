@@ -29,7 +29,7 @@ import numpy as np
 from src.common.config import class_names, load_config, resolve
 from src.common.hashing import config_subtree_hash, sha256_path
 from src.common.splits import count_test_reads
-from src.common.status import current_run_id
+from src.common.status import StageNotReady, current_run_id
 from src.stage5_eval import criterion, evaluate, figures, tables
 from src.stage5_eval.metrics import (accuracy, confusion, group_accuracy, macro_f1,
                                      per_class_f1)
@@ -389,7 +389,7 @@ def run(config: dict) -> dict:
     """Evaluate every model once on the test split and deliver the verdict.
 
     Does not write status.json; the runner does. Raises
-    ``NotImplementedError`` (recorded as ``not_run``) while upstream
+    ``StageNotReady`` (recorded as ``not_run``) while upstream
     artifacts are missing, after writing the placeholder tables so the
     report still compiles.
     """
@@ -404,7 +404,7 @@ def run(config: dict) -> dict:
         write_placeholders(d["tables"])
         rel = ", ".join(p.relative_to(d["artifacts"]).as_posix() for p in missing)
         which = "Stage 1" if any(p.parent == d["stage1"] for p in missing) else "Stage 4"
-        raise NotImplementedError(f"{which} artifacts missing: {rel}")
+        raise StageNotReady(f"{which} artifacts missing: {rel}")
 
     names = class_names(config)
     k = len(names)

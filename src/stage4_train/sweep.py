@@ -30,7 +30,7 @@ import numpy as np
 from threadpoolctl import threadpool_limits
 
 from src.common.catalog import load_split_rows
-from src.common.config import DEFAULT_CONFIG, load_config, resolve
+from src.common.config import DEFAULT_CONFIG, LOSO_ARMS, load_config, resolve
 from src.stage2_augment import build_transform
 from src.stage3_synth import build_generator
 from src.stage4_train.data import ImageStore
@@ -44,7 +44,6 @@ IMAGE_ID_COLUMN = "image_id"           # manifest column (common.splits.MANIFEST
 # Decision 12: the Hand-Drawn source held out in the leave-one-source-out runs
 # (catalog source_id of the frobertpixto Hand-Drawn Shapes Dataset).
 LOSO_HOLDOUT_SOURCE = "github_handdrawn"
-LOSO_ARMS = ("A1", "B")                # Decision 12: "retrain A1 and B without Hand-Drawn"
 LOSO_RUN_TAG = "loso_handdrawn"
 SEED_DISAGREEMENT_JSON = "seed_disagreement.json"
 SEED_DISAGREEMENT_NOTE = ("Robustness number only (stage_4.md R11): mean pairwise fraction of "

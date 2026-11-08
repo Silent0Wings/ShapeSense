@@ -154,7 +154,7 @@ def _augment(img: np.ndarray, shear_allowed: bool, r: _Ranges,
            and not within_frame(pts, scale * linear, center, shift, r.size, FRAME_MARGIN_PX)):
         scale *= FIT_SHRINK_FACTOR
         steps += 1
-    for _ in range(MAX_FIT_STEPS - steps):
+    for _ in range(max(1, MAX_FIT_STEPS - steps)):  # always render at least once
         matrix = scale * linear
         binary = _render(ink, matrix, center, shift, r.size, sigma if do_blur else None)
         if not binary[ring].any():

@@ -5,6 +5,7 @@ Reference images are drawn procedurally with Pillow (no data_set/ needed).
 """
 
 import copy
+import importlib
 import math
 import random
 
@@ -231,3 +232,17 @@ def test_no_global_rng(monkeypatch):
         out = fn(render_reference(name, size), labels[name], np.random.default_rng(0))
         assert out.shape == (size, size)
         assert out.dtype == np.uint8
+
+
+def test_fit_loop_exhaustion_still_returns_image(monkeypatch):
+    """Every analytic fit step used up: the render loop must still run once."""
+    # The package re-exports a `transform` function, which shadows the module attribute.
+    module = importlib.import_module("src.stage2_augment.transform")
+    monkeypatch.setattr(module, "within_frame", lambda *args, **kwargs: False)
+    config = load_config()
+    size = int(config["image_size"])
+    labels = _label_of(config)
+    fn = build_transform(config)
+    out = fn(render_reference("circle", size), labels["circle"], np.random.default_rng(0))
+    assert out.shape == (size, size)
+    assert out.dtype == np.uint8

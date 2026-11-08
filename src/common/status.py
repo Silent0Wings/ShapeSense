@@ -8,8 +8,9 @@ Every stage writes its status through `run_stage`, never by hand
   (env SHAPESENSE_RUN_ID, minted by the runner);
 - a stage that raises is recorded as `failed` and the exception is
   re-raised, so a stale `passed` can never survive a broken rerun;
-- a stub raising NotImplementedError is recorded as `not_run`, never
-  `passed`;
+- a stage raising `StageNotReady` (a stub, or missing upstream results) is
+  recorded as `not_run`, never `passed`; a library's own
+  NotImplementedError is a real failure;
 - `is_cached` is true only for a `passed` status whose recorded inputs
   equal the current ones exactly.
 """
@@ -43,6 +44,10 @@ RESERVED_KEYS = {"stage", "owner", "run_id", "inputs", "started_at", "finished_a
 
 class StatusSchemaError(ValueError):
     """Raised when a status dict does not match the shared schema."""
+
+
+class StageNotReady(NotImplementedError):
+    """A stage cannot run yet: it is a stub or its upstream results are missing."""
 
 
 def now_iso() -> str:
@@ -127,7 +132,7 @@ def run_stage(stage: str, fn: Callable[[], dict | None], *, inputs: dict,
                 started_at=started)
     try:
         result = fn() or {}
-    except NotImplementedError as exc:
+    except StageNotReady as exc:
         return write_status(stage, status="not_run", finished_at=now_iso(),
                             metrics={}, checks={}, outputs=[], error=str(exc), **base)
     except BaseException as exc:

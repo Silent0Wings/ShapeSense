@@ -5,7 +5,7 @@ model bundle (export/) and their status. Every number in the report comes
 from an artifact, never typed by hand.
 
 run(config):
-  1. requires Stage 5 to have passed (else NotImplementedError -> not_run);
+  1. requires Stage 5 to have passed (else StageNotReady -> not_run);
   2. builds export/ (ONNX + standardize.py + labels.json + model_card.json);
   3. writes the generated LaTeX snippets (param_ranges.tex, pipeline_facts.tex);
   4. smoke-tests the bundle in a subprocess on a procedurally drawn hexagon;
@@ -27,6 +27,7 @@ from typing import Any
 
 from src.common.config import REPO_ROOT, class_names, load_config, resolve
 from src.common.hashing import config_subtree_hash, sha256_path
+from src.common.status import StageNotReady
 from src.stage6_report.snippets import write_snippets
 from src.stage6_report.traceability import check_report
 
@@ -95,14 +96,14 @@ def _tail(text: str) -> str:
 
 
 def stage5_status(config: dict) -> dict:
-    """The Stage 5 status dict; NotImplementedError (-> not_run) until Stage 5 passed."""
+    """The Stage 5 status dict; StageNotReady (-> not_run) until Stage 5 passed."""
     path = resolve(config["paths"]["artifacts_dir"]) / STAGE5_DIR / STATUS_FILE
     if not path.is_file():
-        raise NotImplementedError("Stage 5 results missing")
+        raise StageNotReady("Stage 5 results missing")
     with open(path, encoding="utf-8") as f:
         status = json.load(f)
     if status.get("status") != STATUS_PASSED:
-        raise NotImplementedError("Stage 5 results missing")
+        raise StageNotReady("Stage 5 results missing")
     return status
 
 

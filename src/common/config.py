@@ -19,6 +19,7 @@ from typing import Any
 import yaml
 
 RATIO_TOLERANCE = 1e-9  # split ratios must sum to 1 within this
+LOSO_ARMS = ("A1", "B")  # Decision 12: "retrain A1 and B without Hand-Drawn"
 
 
 class ConfigError(ValueError):
@@ -147,6 +148,9 @@ def validate_pipeline(cfg: dict) -> None:
         if key in seen:
             raise ConfigError(f"runs[{i}]: duplicate run {key}")
         seen.add(key)
+        if run.get("holdout_source") and key[0] in LOSO_ARMS and run["seed"] == seeds[0]:
+            raise ConfigError(f"runs[{i}]: {key[0]} seed {run['seed']} with a holdout_source "
+                              "collides with the automatic leave-one-source-out run")
 
     _require_number(cfg, "augment.rotate_deg", lo=0, hi=180)
     _require_range(cfg, "augment.scale")

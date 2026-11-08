@@ -24,7 +24,7 @@ def _fake_split(n_per_class=5, seed=0):
 
 
 def _loaders(images, labels, rows, seen):
-    def loader(config, split, per_class=None, seed=0):
+    def loader(config, split, rows=None):
         seen.append(split)
         return images, labels
 
@@ -125,3 +125,20 @@ def test_benchmark_reports_throughput_and_estimates():
                   min_batches=100)
     assert est_run_s(50, 30, 0.5) == pytest.approx(750.0)
     assert est_all_runs_s(23, 50, 30, 0.5) == pytest.approx(23 * 750.0)
+
+
+def test_store_reads_manifest_once(monkeypatch):
+    """Images and source ids come from one read of the manifest."""
+    import src.common.catalog as catalog
+
+    images, _, rows = _fake_split()
+    reads = []
+
+    def counting_rows(config, split):
+        reads.append(split)
+        return rows
+    monkeypatch.setattr(catalog, "load_split_rows", counting_rows)
+    monkeypatch.setattr(catalog, "load_images", lambda config, ids: images[[int(i) for i in ids]])
+    store = ImageStore.from_split(CONFIG, "train")
+    assert reads == ["train"]
+    assert store.source_ids.tolist() == [r["source_id"] for r in rows]

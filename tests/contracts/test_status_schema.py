@@ -34,13 +34,22 @@ def test_raising_stage_writes_failed_and_reraises(tmp_path):
     assert "leak detected" in d["error"]
 
 
-def test_not_implemented_writes_not_run(tmp_path):
+def test_stage_not_ready_writes_not_run(tmp_path):
     def stub():
-        raise NotImplementedError("Stage 9 not implemented yet")
+        raise status.StageNotReady("Stage 9 not implemented yet")
 
     result = status.run_stage("stage9", stub, inputs={}, artifacts_dir=tmp_path)
     assert result["status"] == "not_run"
     assert status.read_status("stage9", artifacts_dir=tmp_path)["status"] == "not_run"
+
+
+def test_library_notimplemented_is_failed(tmp_path):
+    def stage():
+        raise NotImplementedError("raised deep inside a library")
+
+    with pytest.raises(NotImplementedError):
+        status.run_stage("stage9", stage, inputs={}, artifacts_dir=tmp_path)
+    assert status.read_status("stage9", artifacts_dir=tmp_path)["status"] == "failed"
 
 
 def test_stage_can_report_its_own_failure(tmp_path):
