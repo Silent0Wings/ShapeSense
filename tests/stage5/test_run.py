@@ -140,3 +140,16 @@ def test_build_specs_reads_baseline_meta(tmp_path):
     hog = next(s for s in specs if s.name == f"{s5.BASELINE_PREFIX}svm_hog")
     assert hog.features == "hog" and hog.hog_pixels_per_cell == 8
     assert s5._arm_of(hog) is None
+
+
+def test_loso_macro_f1_averages_only_the_scored_classes():
+    y_true = np.array([2, 2, 4, 4])
+    y_pred = np.array([2, 2, 4, 4])
+    assert s5.scored_macro_f1(y_true, y_pred, 10) == pytest.approx(100.0)
+
+
+def test_loso_excluded_classes_read_from_run_json(tmp_path):
+    (tmp_path / "A1_loso_handdrawn_0").mkdir()
+    (tmp_path / "A1_loso_handdrawn_0" / "run.json").write_text(
+        '{"excluded_classes": [1]}', encoding="utf-8")
+    assert s5.loso_excluded_classes(tmp_path, "A1_loso_handdrawn_0") == (1,)

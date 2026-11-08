@@ -61,6 +61,7 @@ class ModelSpec:
     features: str | None = None
     hog_pixels_per_cell: int | None = None
     source_filter: str | None = None
+    excluded_labels: tuple[int, ...] = ()
     extra: dict = field(default_factory=dict)
 
 
@@ -292,6 +293,10 @@ def evaluate_models(
 
         if spec.source_filter is not None:
             mask = source_ids == spec.source_filter
+            images, labels = images[mask], labels[mask]
+            image_ids, source_ids = image_ids[mask], source_ids[mask]
+        if spec.excluded_labels:
+            mask = ~np.isin(labels, spec.excluded_labels)
             images, labels = images[mask], labels[mask]
             image_ids, source_ids = image_ids[mask], source_ids[mask]
         predict = predictors.get(spec.name) or default_predictor(spec)

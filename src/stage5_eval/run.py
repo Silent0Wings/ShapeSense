@@ -225,8 +225,21 @@ def build_specs(config: dict, shortcut_detected: bool) -> list[evaluate.ModelSpe
             specs.append(evaluate.ModelSpec(
                 name=name, kind=evaluate.KIND_CNN, path=path,
                 fingerprint=evaluate.model_fingerprint(path), source_filter=LOSO_SOURCE,
+                excluded_labels=loso_excluded_classes(d["stage4"], name),
                 extra={"arm": arm, "loso": True}))
     return specs
+
+
+def loso_excluded_classes(stage4_dir: Path, name: str) -> tuple[int, ...]:
+    """Classes a LOSO model never trained on (P-61); their rows are not scored."""
+    with open(Path(stage4_dir) / name / "run.json", encoding="utf-8") as f:
+        return tuple(int(c) for c in json.load(f)["excluded_classes"])
+
+
+def scored_macro_f1(y_true: np.ndarray, y_pred: np.ndarray, k: int) -> float:
+    """Macro-F1 over the classes present in ``y_true`` (a held-out source has few)."""
+    present = np.unique(y_true)
+    return float(per_class_f1(y_true, y_pred, k)[present].mean())
 
 
 def load_val_records(stage4_dir: Path, names: Sequence[str]) -> list[dict]:
@@ -551,7 +564,7 @@ def run(config: dict) -> dict:
                 loso.append({"name": spec.name, "arm": spec.extra["arm"], "source": LOSO_SOURCE,
                              "n": int(rec["labels"].size),
                              "accuracy": accuracy(rec["labels"], rec["preds"], k),
-                             "macro_f1": macro_f1(rec["labels"], rec["preds"], k),
+                             "macro_f1": scored_macro_f1(rec["labels"], rec["preds"], k),
                              "label": tables.LOSO_LABEL})
         single = single_source_classes(y, source_ids, names)
 

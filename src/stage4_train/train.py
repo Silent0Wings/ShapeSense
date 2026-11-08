@@ -34,6 +34,7 @@ import copy
 import csv
 import json
 import math
+import os
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -68,8 +69,9 @@ ValScorer = Callable[[int, np.ndarray, np.ndarray], float]
 # Pure helpers (NumPy only)
 # --------------------------------------------------------------------------- #
 
-def macro_f1_points(labels: np.ndarray, preds: np.ndarray, n_classes: int) -> float:
-    """Macro-F1 in points (0-100) over classes ``0..n_classes-1``.
+def macro_f1_points(labels: np.ndarray, preds: np.ndarray, n_classes: int,
+                    excluded: tuple[int, ...] = ()) -> float:
+    """Macro-F1 in points (0-100) over classes ``0..n_classes-1`` minus ``excluded``.
 
     Per class F1 = 2tp / (2tp + fp + fn); a class with no support and no
     predictions scores 0 (the scikit-learn ``zero_division=0`` convention
@@ -81,6 +83,8 @@ def macro_f1_points(labels: np.ndarray, preds: np.ndarray, n_classes: int) -> fl
         raise ValueError(f"labels {labels.shape} and preds {preds.shape} must match")
     f1s = []
     for c in range(n_classes):
+        if c in excluded:
+            continue
         tp = int(np.sum((preds == c) & (labels == c)))
         fp = int(np.sum((preds == c) & (labels != c)))
         fn = int(np.sum((preds != c) & (labels == c)))
@@ -135,7 +139,41 @@ def check_frozen_steps(config: dict, steps_per_epoch: int) -> int:
     return int(frozen)
 
 
-RECIPE_TRAIN_KEYS_IGNORED = ("num_threads", "parallel_runs", "tuned", "benchmark_batches")
+DEVICE_CHOICES = ("auto", "cpu", "cuda")
+
+
+def resolve_device(config: dict) -> str:
+    """``"cuda"`` or ``"cpu"`` from ``train.device`` (default ``auto``).
+
+    ``auto`` uses a GPU when one is visible. An explicit ``cuda`` without one
+    raises, so a run meant for the GPU can never fall back to the CPU silently.
+    """
+    choice = str(config["train"].get("device", "auto"))
+    if choice not in DEVICE_CHOICES:
+        raise ValueError(f"train.device must be one of {DEVICE_CHOICES}, got {choice!r}")
+    if choice == "cpu":
+        return "cpu"
+    if torch.cuda.is_available():
+        return "cuda"
+    if choice == "cuda":
+        raise ValueError("train.device is cuda but no CUDA GPU is available; "
+                         "install a CUDA build of PyTorch or set it to auto")
+    return "cpu"
+
+
+def runtime_id(config: dict) -> dict:
+    """Hardware and torch build a run trains on; part of the recipe.
+
+    CPU and GPU runs are not numerically identical, so a run is reused only
+    on the same device, GPU model and torch version.
+    """
+    device = resolve_device(config)
+    name = torch.cuda.get_device_name(0) if device == "cuda" else "cpu"
+    return {"device": device, "device_name": name, "torch": torch.__version__}
+
+
+RECIPE_TRAIN_KEYS_IGNORED = ("num_threads", "parallel_runs", "tuned", "benchmark_batches",
+                             "device")  # the resolved hardware is hashed via runtime_id
 RECIPE_CODE_DIRS = ("src/stage2_augment", "src/stage3_synth", "src/stage4_train")
 
 
@@ -151,6 +189,7 @@ def recipe_fingerprint(config: dict) -> str:
                                     "image_size", "taxonomy")}
     parts["train"] = train
     parts["code"] = {d: sha256_path(resolve(d)) for d in RECIPE_CODE_DIRS}
+    parts["runtime"] = runtime_id(config)
     # The data itself: a re-freeze (e.g. CRISP-DM iteration 1) must retrain.
     splits = resolve(config["paths"]["splits_dir"])
     parts["data"] = {s: sha256_path(splits / f"{s}.csv") for s in ("train", "val")}
@@ -188,7 +227,8 @@ def completed_run(run_dir: Path, hparams: dict, steps_per_epoch: int,
 # --------------------------------------------------------------------------- #
 
 def predict_proba(model: nn.Module, images_u8: np.ndarray, labels: np.ndarray | None = None,
-                  batch_size: int = EVAL_BATCH_SIZE) -> tuple[np.ndarray, float]:
+                  batch_size: int = EVAL_BATCH_SIZE,
+                  device: str = "cpu") -> tuple[np.ndarray, float]:
     """Softmax probabilities of ``model`` on uint8 (N, S, S) images.
 
     Returns ``(probs float32 (N, k), mean cross-entropy)``; the loss is
@@ -200,18 +240,22 @@ def predict_proba(model: nn.Module, images_u8: np.ndarray, labels: np.ndarray | 
     n = int(np.asarray(images_u8).shape[0])
     with torch.no_grad():
         for start in range(0, n, batch_size):
-            x = torch.from_numpy(to_float(images_u8[start:start + batch_size]))
+            x = torch.from_numpy(to_float(images_u8[start:start + batch_size])).to(device)
             logits = model(x)
             if labels is not None:
-                y = torch.from_numpy(np.asarray(labels[start:start + batch_size], dtype=np.int64))
+                y = torch.from_numpy(np.asarray(labels[start:start + batch_size],
+                                                dtype=np.int64)).to(device)
                 loss_sum += float(nn.functional.cross_entropy(logits, y, reduction="sum"))
-            chunks.append(torch.softmax(logits, dim=1).numpy().astype(np.float32))
+            chunks.append(torch.softmax(logits, dim=1).cpu().numpy().astype(np.float32))
     probs = np.concatenate(chunks, axis=0) if chunks else np.zeros((0, model.n_classes), np.float32)
     loss = (loss_sum / n) if (labels is not None and n) else float("nan")
     return probs, loss
 
 
 def _seed_everything(seed: int, num_threads: int) -> None:
+    # Required by deterministic CuBLAS operations; must be set before first CUDA use.
+    os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+    torch.backends.cudnn.benchmark = False
     torch.manual_seed(int(seed))
     torch.set_num_threads(int(num_threads))
     torch.use_deterministic_algorithms(True, warn_only=True)
@@ -269,7 +313,8 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
               hparams: dict, out_dir: Path, *,
               steps_per_epoch: int,
               val_image_ids: np.ndarray | None = None,
-              val_scorer: ValScorer | None = None) -> dict:
+              val_scorer: ValScorer | None = None,
+              excluded_classes: tuple[int, ...] = ()) -> dict:
     """Train one (arm, seed) CNN with validation-based early stopping (M3).
 
     Args:
@@ -294,6 +339,8 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
         val_scorer: optional selection hook ``fn(epoch_idx, probs, labels)
             -> points``; defaults to validation macro-F1. Tests inject a
             preset sequence to pin the selected epoch.
+        excluded_classes: classes never sampled and left out of validation
+            macro-F1 (P-61, leave-one-source-out runs only).
 
     Writes ``model.pt`` (TorchScript, best epoch), ``train_log.csv``,
     ``val_curve.png``, ``val_probs.npz`` (probs float32 (n_val, k), labels
@@ -311,8 +358,10 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    excluded = tuple(sorted(int(c) for c in excluded_classes))
+    device = resolve_device(config)
     _seed_everything(seed, train_cfg["num_threads"])
-    model = build_model(config, n_classes, hparams["dropout"])
+    model = build_model(config, n_classes, hparams["dropout"]).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=float(hparams["lr"]),
                                   weight_decay=float(train_cfg["weight_decay"]))
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
@@ -321,7 +370,8 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
                          synthetic_fraction, n_classes, seed=seed, steps=steps_per_epoch,
                          transform=transform if arm_cfg["augment"] else None,
                          generate=generate if arm_cfg["synthetic"] else None,
-                         class_idx=getattr(train_store, "class_idx", None))
+                         class_idx=getattr(train_store, "class_idx", None),
+                         excluded_classes=excluded)
     n_real, n_syn = batch_composition(arm_cfg, batch_size, synthetic_fraction)
     val_labels = np.asarray(val_store.labels, dtype=np.int64)
     n_val = int(val_labels.shape[0])
@@ -349,8 +399,8 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
         correct = 0
         seen = 0
         for batch in stream.epoch(epoch_idx):
-            x = torch.from_numpy(batch.images)
-            y = torch.from_numpy(batch.labels)
+            x = torch.from_numpy(batch.images).to(device)
+            y = torch.from_numpy(batch.labels).to(device)
             optimizer.zero_grad(set_to_none=True)
             logits = model(x)
             loss = nn.functional.cross_entropy(logits, y)
@@ -364,9 +414,9 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
             syn_total += int(batch.is_synthetic.sum())
             img_total += int(batch.is_synthetic.shape[0])
 
-        probs, val_loss = predict_proba(model, val_store.images, val_labels)
+        probs, val_loss = predict_proba(model, val_store.images, val_labels, device=device)
         preds = probs.argmax(axis=1)
-        val_f1 = macro_f1_points(val_labels, preds, n_classes)
+        val_f1 = macro_f1_points(val_labels, preds, n_classes, excluded=excluded)
         val_acc = accuracy_points(val_labels, preds)
         score = float(val_scorer(epoch_idx, probs, val_labels)) if val_scorer else val_f1
         epoch = epoch_idx + 1  # 1-based in logs and run.json
@@ -395,6 +445,7 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
 
     assert best_state is not None and best_probs is not None  # max_epochs >= 1 by config
     model.load_state_dict(best_state)
+    model.cpu()  # saved models stay device-neutral for Stages 5 and 6
     _save_torchscript(model, out_dir / MODEL_FILE)
     np.savez(out_dir / VAL_PROBS_FILE, probs=best_probs.astype(np.float32),
              labels=val_labels, image_ids=val_image_ids)
@@ -408,6 +459,9 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
         "hparams": {"lr": float(hparams["lr"]), "dropout": float(hparams["dropout"])},
         "steps_per_epoch": int(steps_per_epoch),
         "recipe": recipe_fingerprint(config),
+        "device": device,
+        "device_name": runtime_id(config)["device_name"],
+        "excluded_classes": list(excluded),
         "max_epochs": max_epochs,
         "batch_size": batch_size,
         "early_stopping_patience": patience,

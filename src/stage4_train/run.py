@@ -43,7 +43,8 @@ from src.stage4_train.sampling import batch_composition
 from src.stage4_train.sweep import (LOSO_ARMS, LOSO_HOLDOUT_SOURCE, STAGE_DIR_NAME,
                                     load_stores, run_specs, run_sweep,
                                     write_seed_disagreement)
-from src.stage4_train.train import MODEL_FILE, VAL_PROBS_FILE, required_steps_per_epoch
+from src.stage4_train.train import (MODEL_FILE, VAL_PROBS_FILE, required_steps_per_epoch,
+                                    resolve_device)
 from src.stage4_train.tuning import TUNING_JSON, grid_points, run_tuning
 
 STAGE = "stage4"
@@ -93,15 +94,16 @@ def sgd_step_fn(config: dict, n_classes: int, hparams: dict):
     """``fn(batch)`` doing one AdamW step of a fresh ``SmallCNN`` (benchmark timing only)."""
     torch.manual_seed(int(config["seed_set"][0]))
     torch.set_num_threads(int(config["train"]["num_threads"]))
-    model = build_model(config, n_classes, hparams["dropout"])
+    device = resolve_device(config)
+    model = build_model(config, n_classes, hparams["dropout"]).to(device)
     model.train()
     optimizer = torch.optim.AdamW(model.parameters(), lr=float(hparams["lr"]),
                                   weight_decay=float(config["train"]["weight_decay"]))
 
     def step(batch: Batch) -> None:
         optimizer.zero_grad(set_to_none=True)
-        loss = nn.functional.cross_entropy(model(torch.from_numpy(batch.images)),
-                                           torch.from_numpy(batch.labels))
+        loss = nn.functional.cross_entropy(model(torch.from_numpy(batch.images).to(device)),
+                                           torch.from_numpy(batch.labels).to(device))
         loss.backward()
         optimizer.step()
 
@@ -156,6 +158,7 @@ def run(config: dict, *, config_path: str | Path = DEFAULT_CONFIG) -> dict:
     max_epochs = int(train_cfg["max_epochs"])
     bench.update({
         "arm": BENCHMARK_ARM,
+        "device": resolve_device(config),
         "num_threads": int(train_cfg["num_threads"]),
         "parallel_runs": int(train_cfg["parallel_runs"]),
         "steps_per_epoch": steps_per_epoch,
