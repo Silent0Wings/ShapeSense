@@ -7,15 +7,13 @@ of 1 or 2 columns against every other column and reports:
   - approx FDs  X -> Y holds after removing at most MAX_ERROR of rows
                 (g3 error: share of rows that break it)
 
-    python scripts/discover_fds.py
+    python -m src.stage1_freeze.discover_fds
 """
 import csv
 import itertools
-import os
 from collections import Counter, defaultdict
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-META = os.path.join(ROOT, "data_set", "unified", "metadata.csv")
+from src.common.config import load_default_config, resolve
 
 # Categorical columns. Per-image unique ids (image_id, path, phash) and
 # continuous measurements are left out: a unique column determines
@@ -36,7 +34,8 @@ def g3(rows, lhs, rhs):
 
 
 def main():
-    with open(META, encoding="utf-8") as f:
+    meta = resolve(load_default_config()["paths"]["metadata"])   # paths.metadata, read at call time
+    with open(meta, encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
     exact, approx = [], []
     for k in (1, 2):

@@ -1,12 +1,12 @@
 """
 Build the unified, standardized shape dataset from the installed sources.
 
-    python scripts/build_unified_dataset.py
+    python -m src.stage1_freeze.build_unified_dataset [--out DIR]
 
 Order of operations (dedup BEFORE split, nothing augmented here):
   1. Sample candidates per (source, label), map labels to the 10-class
      taxonomy, drop out-of-taxonomy classes.
-  2. Standardize every image (scripts/standardize.py); rejected images are
+  2. Standardize every image (src/stage1_freeze/standardize.py); rejected images are
      logged to rejects.csv with the reason (Section D outlier examples).
   3. Remove exact duplicates (identical standardized pixels), across all
      sources.
@@ -15,8 +15,10 @@ Order of operations (dedup BEFORE split, nothing augmented here):
      70/15/15, so near-identical images never straddle train and test.
   6. Write PNGs, metadata.csv, and catalog.sqlite (the 5-table ERD).
 
-Outputs go to data_set/unified/ (git-ignored, like all of data_set/).
+Outputs go to data_set/unified/ by default (git-ignored, like all of data_set/);
+--out writes elsewhere (Stage 0 migration check rebuilds into artifacts/).
 """
+import argparse
 import csv
 import glob
 import json
@@ -24,16 +26,18 @@ import os
 import random
 import shutil
 import sqlite3
-import sys
 from collections import Counter, defaultdict
 
-import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image
 
-sys.path.insert(0, os.path.dirname(__file__))
-from standardize import Rejected, md5, phash, standardize  # noqa: E402
+from src.common.config import REPO_ROOT
+from src.common.imaging import md5, phash
+from src.common.neardup import near_dup_groups as _near_dup_groups
+from src.common.quickdraw import quickdraw_loader
+from src.stage1_freeze.standardize import Rejected, standardize
+from src.stage1_freeze.taxonomy import TAXONOMY  # fixed label set, label_id = index
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = str(REPO_ROOT)
 DATA = os.path.join(ROOT, "data_set")
 OUT = os.path.join(DATA, "unified")
 SEED = 42
@@ -41,8 +45,6 @@ CANDIDATES_PER_GROUP = 1500
 MAX_PER_GROUP = 1000
 NEAR_DUP_HAMMING = 2
 SPLIT = (0.70, 0.15, 0.15)
-
-from taxonomy import TAXONOMY  # noqa: E402  (fixed label set, label_id = index)
 
 SOURCES = {
     "quickdraw": dict(name="Quick, Draw! (subset)", domain="sketch", license="CC BY 4.0"),
@@ -67,58 +69,31 @@ LABEL_MAP = {
 }
 
 
-def _qd_loader(rec):
-    def load():
-        im = Image.new("RGB", (256, 256), "white")
-        d = ImageDraw.Draw(im)
-        for xs, ys in rec["drawing"]:
-            d.line(list(zip(xs, ys)), fill="black", width=3)
-        return im
-    return load
-
-
-def candidates():
+def candidates(data=DATA):
     """Yield (source_id, original_label, ref, loader) for every raw item."""
-    for path in sorted(glob.glob(os.path.join(DATA, "quickdraw", "subset", "*.ndjson"))):
+    for path in sorted(glob.glob(os.path.join(data, "quickdraw", "subset", "*.ndjson"))):
         with open(path, encoding="utf-8") as f:
             for line in f:
                 rec = json.loads(line)
-                yield "quickdraw", rec["word"], f"quickdraw/{rec['key_id']}", _qd_loader(rec)
-    for path in sorted(glob.glob(os.path.join(DATA, "kaggle_reevald", "dataset", "*", "*", "*.jpg"))):
+                yield "quickdraw", rec["word"], f"quickdraw/{rec['key_id']}", quickdraw_loader(rec)
+    for path in sorted(glob.glob(os.path.join(data, "kaggle_reevald", "dataset", "*", "*", "*.jpg"))):
         yield "kaggle_reevald", os.path.basename(os.path.dirname(path)), path, path
-    for path in sorted(glob.glob(os.path.join(DATA, "2D geometric shapes dataset", "output", "*.png"))):
+    for path in sorted(glob.glob(os.path.join(data, "2D geometric shapes dataset", "output", "*.png"))):
         yield "mendeley_elkorchi", os.path.basename(path).split("_")[0], path, path
-    for path in sorted(glob.glob(os.path.join(DATA, "github_handdrawn", "data", "*", "images", "*", "*.png"))):
+    for path in sorted(glob.glob(os.path.join(data, "github_handdrawn", "data", "*", "images", "*", "*.png"))):
         yield "github_handdrawn", os.path.basename(os.path.dirname(path)), path, path
 
 
 def near_dup_groups(hashes):
     """Union-find over pairs with Hamming distance <= NEAR_DUP_HAMMING."""
-    n = len(hashes)
-    parent = list(range(n))
-
-    def find(i):
-        while parent[i] != i:
-            parent[i] = parent[parent[i]]
-            i = parent[i]
-        return i
-
-    h = np.array(hashes, dtype=np.uint64)
-    for i in range(n):
-        x = np.bitwise_xor(h[i + 1:], h[i])
-        dist = np.unpackbits(x.view(np.uint8).reshape(-1, 8), axis=1).sum(axis=1)
-        for j in np.nonzero(dist <= NEAR_DUP_HAMMING)[0]:
-            a, b = find(i), find(i + 1 + int(j))
-            if a != b:
-                parent[b] = a
-    return [find(i) for i in range(n)]
+    return _near_dup_groups(hashes, NEAR_DUP_HAMMING)
 
 
-def main():
+def build(out=OUT, data=DATA):
     rng = random.Random(SEED)
     groups = defaultdict(list)
     dropped_classes = Counter()
-    for src, orig, ref, loader in candidates():
+    for src, orig, ref, loader in candidates(data):
         label = LABEL_MAP[src].get(orig)
         if label is None:
             dropped_classes[(src, orig)] += 1
@@ -180,19 +155,19 @@ def main():
             filled[split] += len(c)
 
     # Write images + metadata.
-    if os.path.isdir(OUT):
-        shutil.rmtree(OUT)
+    if os.path.isdir(out):
+        shutil.rmtree(out)
     for i, r in enumerate(sorted(kept, key=lambda r: (r["source_id"], r["label"], r["ref"]))):
         r["image_id"] = f"{r['source_id']}_{r['label']}_{i:06d}"
         rel = os.path.join(r["split"], r["label"], r["image_id"] + ".png")
-        os.makedirs(os.path.join(OUT, os.path.dirname(rel)), exist_ok=True)
-        Image.fromarray(r["arr"]).save(os.path.join(OUT, rel))
+        os.makedirs(os.path.join(out, os.path.dirname(rel)), exist_ok=True)
+        Image.fromarray(r["arr"]).save(os.path.join(out, rel))
         r["path"] = rel.replace(os.sep, "/")
 
     cols = ["image_id", "source_id", "domain", "license", "original_label", "label_id",
             "label_name", "path", "split", "native_width", "native_height", "native_mode",
             "outline_redrawn", "bg_luma", "fg_fraction", "shape_px", "phash"]
-    with open(os.path.join(OUT, "metadata.csv"), "w", newline="", encoding="utf-8") as f:
+    with open(os.path.join(out, "metadata.csv"), "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=cols)
         w.writeheader()
         for r in kept:
@@ -201,14 +176,14 @@ def main():
                         "license": SOURCES[r["source_id"]]["license"],
                         "label_id": TAXONOMY.index(r["label"]),
                         "label_name": r["label"], "phash": f"{r['phash']:016x}"})
-    with open(os.path.join(OUT, "rejects.csv"), "w", newline="", encoding="utf-8") as f:
+    with open(os.path.join(out, "rejects.csv"), "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["source_id", "original_label", "ref", "reason",
                                           "native_width", "native_height"])
         w.writeheader()
         w.writerows(rejects)
 
     # SQLite catalog: exactly the five ERD entities from the report.
-    db = sqlite3.connect(os.path.join(OUT, "catalog.sqlite"))
+    db = sqlite3.connect(os.path.join(out, "catalog.sqlite"))
     db.executescript("""
         CREATE TABLE Source (source_id TEXT PRIMARY KEY, name TEXT, license TEXT, domain TEXT);
         CREATE TABLE Label (label_id INTEGER PRIMARY KEY, label_name TEXT UNIQUE);
@@ -247,14 +222,22 @@ def main():
         "dropped_out_of_taxonomy": dropped_classes,
         "catalog_tables": 5,
         "catalog_columns": n_cols,
-        "disk_mb": round(sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fs in os.walk(OUT)
+        "disk_mb": round(sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fs in os.walk(out)
                              for f in fs) / 2**20, 1),
     }
     text = json.dumps({k: {str(kk): vv for kk, vv in v.items()} if isinstance(v, dict) else v
                        for k, v in summary.items()}, indent=2)
-    with open(os.path.join(OUT, "summary.json"), "w") as f:
+    with open(os.path.join(out, "summary.json"), "w") as f:
         f.write(text)
     print(text)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Build the unified, standardized shape dataset.")
+    parser.add_argument("--out", default=OUT, help="output directory (default data_set/unified)")
+    parser.add_argument("--data", default=DATA, help="raw data directory (default data_set)")
+    args = parser.parse_args()
+    build(args.out, args.data)
 
 
 if __name__ == "__main__":

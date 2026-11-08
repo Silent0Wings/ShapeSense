@@ -2,14 +2,13 @@
 Tier-1 visual audit of the unified dataset (Matplotlib only).
 Writes report figures into figures/.
 
-    python scripts/audit_dataset.py
+    python -m src.stage1_freeze.audit_dataset
 """
 import csv
 import glob
 import json
 import os
 import random
-import sys
 from collections import Counter, defaultdict
 
 import matplotlib
@@ -18,11 +17,14 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 from PIL import Image  # noqa: E402
 
-sys.path.insert(0, os.path.dirname(__file__))
-from build_unified_dataset import LABEL_MAP, TAXONOMY, _qd_loader  # noqa: E402
-from standardize import Rejected, standardize  # noqa: E402
+from src.common.config import REPO_ROOT  # noqa: E402
+from src.common.neardup import near_dup_groups as _near_dup_groups  # noqa: E402
+from src.common.quickdraw import quickdraw_loader  # noqa: E402
+from src.stage1_freeze.build_unified_dataset import LABEL_MAP, NEAR_DUP_HAMMING  # noqa: E402
+from src.stage1_freeze.standardize import Rejected, _flatten_alpha, _foreground_mask, standardize  # noqa: E402
+from src.stage1_freeze.taxonomy import TAXONOMY  # noqa: E402
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = str(REPO_ROOT)
 DATA = os.path.join(ROOT, "data_set")
 UNI = os.path.join(DATA, "unified")
 FIG = os.path.join(ROOT, "figures")
@@ -68,7 +70,7 @@ def raw_samples(n_per_source):
     for p in sorted(glob.glob(os.path.join(DATA, "quickdraw", "subset", "*.ndjson"))):
         with open(p, encoding="utf-8") as f:
             qd += [json.loads(line) for line in f]
-    picks["quickdraw"] = [_qd_loader(r) for r in rng.sample(qd, n_per_source)]
+    picks["quickdraw"] = [quickdraw_loader(r) for r in rng.sample(qd, n_per_source)]
     globs = {
         "kaggle_reevald": "kaggle_reevald/dataset/*/*/*.jpg",
         "mendeley_elkorchi": "2D geometric shapes dataset/output/*.png",
@@ -131,11 +133,10 @@ def outlier_examples():
     reasons = [k for k in ["no_contrast", "blank_or_near_blank", "shape_too_small", "degenerate_after_resize"] if by_reason[k]]
 
     # Near-duplicate group: the largest pHash group among El Korchi pentagons.
-    from build_unified_dataset import near_dup_groups  # noqa: E402
     with open(os.path.join(UNI, "metadata.csv"), encoding="utf-8") as f:
         pent = [r for r in csv.DictReader(f)
                 if r["source_id"] == "mendeley_elkorchi" and r["label_name"] == "pentagon"]
-    gid = near_dup_groups([int(r["phash"], 16) for r in pent])
+    gid = _near_dup_groups([int(r["phash"], 16) for r in pent], NEAR_DUP_HAMMING)
     big = Counter(gid).most_common(1)[0][0]
     group = [r for r, g in zip(pent, gid) if g == big]
 
@@ -169,7 +170,6 @@ def fill_to_outline():
     the sources that ship filled shapes on a coloured background. Picks the
     hard cases on purpose: lowest contrast, smallest shape, a star (hollow
     centre), plus one Dinesh image (same format, excluded for licensing)."""
-    from standardize import _flatten_alpha, _foreground_mask  # noqa: E402
     rng = random.Random(11)
     elk = rng.sample(glob.glob(os.path.join(DATA, "2D geometric shapes dataset", "output", "*.png")), 400)
     scored = []
