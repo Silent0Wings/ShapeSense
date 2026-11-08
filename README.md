@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banners/banner4x3.jpg" alt="ShapeSense pipeline banner: hand-drawn shapes passing through a neural network" width="640">
+</p>
+
 # ShapeSense — Phase 2 pipeline
 
 ShapeSense trains a small CNN to classify ten 2D shapes (circle, ellipse,
