@@ -151,6 +151,8 @@ ignore/             tracker (todo.md) and implementation plans (plan/)
   same shell that runs `git commit`.
 - **`--dashboard` cannot import `dashboard`**: start it through the runner (it
   uses `python -m streamlit run` from the repository root).
+- **Stage 3 fails its 2,000 img/s throughput gate**: the gate measures an idle
+  CPU. Stop any training first, then rerun `--stages 3`.
 - **Stage 4 is slow**: lower `train.parallel_runs` if the machine has fewer
   than 12 cores; results do not change (each run is seeded by arm and seed).
 
