@@ -201,3 +201,17 @@ def test_power_check_before_test_read():
     assert order == ["power", "evaluate", "analyse"]
     assert order.index("power") < order.index("evaluate")
     assert result == {"metrics": {"reads": 2}}
+
+
+def test_excluded_labels_drop_rows_after_the_source_filter(setup):
+    reader, specs, predictors, pred_dir = setup
+    spec = evaluate.ModelSpec(name="A_loso", kind=evaluate.KIND_CNN, path=specs[0].path,
+                              fingerprint=specs[0].fingerprint, source_filter="src_a",
+                              excluded_labels=(1,), extra={"arm": "A", "loso": True})
+    out = _evaluate([spec], reader, pred_dir, {"A_loso": predictors["A_0"]})
+    rec = out["models"]["A_loso"]
+    assert reader.calls == 1
+    assert rec["labels"].size > 0
+    assert 1 not in rec["labels"].tolist()
+    assert set(rec["source_ids"].tolist()) == {"src_a"}
+    assert rec["probs"].shape[0] == rec["labels"].size

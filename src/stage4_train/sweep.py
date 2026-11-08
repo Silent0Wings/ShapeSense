@@ -126,6 +126,16 @@ def job_specs(config: dict, steps_per_epoch: int, hparams: dict, loso: bool,
     return jobs
 
 
+def classes_lost_to_holdout(train_store: ImageStore) -> tuple[int, ...]:
+    """Classes with no training image left once a source is held out (P-61).
+
+    Hand-Drawn is the only source of ellipse, so its LOSO runs train on the
+    other nine classes. Call this for held-out runs only: an empty class in
+    an ordinary run must keep failing.
+    """
+    return tuple(int(c) for c in np.flatnonzero(train_store.class_counts() == 0))
+
+
 def run_job(spec: dict) -> dict:
     """Worker entry point (top-level so Windows ``spawn`` can pickle it).
 
@@ -140,12 +150,15 @@ def run_job(spec: dict) -> dict:
                          recipe_fingerprint(config))
     if done is not None:
         return done
-    train_store, val_store, ids = load_stores(config, spec.get("holdout_source"))
+    holdout = spec.get("holdout_source")
+    train_store, val_store, ids = load_stores(config, holdout)
+    excluded = classes_lost_to_holdout(train_store) if holdout else ()
     transform = build_transform(config)
     generate = build_generator(config)
     return train_one(spec["run_name"], spec["arm"], spec["seed"], config, train_store, val_store,
                      transform, generate, spec["hparams"], run_dir,
-                     steps_per_epoch=spec["steps_per_epoch"], val_image_ids=ids)
+                     steps_per_epoch=spec["steps_per_epoch"], val_image_ids=ids,
+                     excluded_classes=excluded)
 
 
 def run_sweep(config: dict, steps_per_epoch: int, hparams: dict, loso: bool, *,

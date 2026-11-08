@@ -63,6 +63,19 @@ def balanced_labels(n: int, n_classes: int, rng: np.random.Generator) -> np.ndar
     return labels
 
 
+def _labels_for_batch(n: int, n_classes: int, excluded: tuple[int, ...],
+                      rng: np.random.Generator) -> np.ndarray:
+    """``balanced_labels`` over every class except ``excluded``.
+
+    With nothing excluded this is exactly ``balanced_labels`` (same draws).
+    Used only by leave-one-source-out runs (P-61).
+    """
+    if not excluded:
+        return balanced_labels(n, n_classes, rng)
+    active = np.array([c for c in range(n_classes) if c not in excluded], dtype=np.int64)
+    return active[balanced_labels(n, active.size, rng)]
+
+
 def batch_composition(arm_cfg: dict, batch_size: int,
                       synthetic_fraction: float) -> tuple[int, int]:
     """Return ``(n_real, n_syn)`` for one batch of the given arm.
@@ -129,7 +142,8 @@ def make_batch(images_u8: np.ndarray, labels: np.ndarray, class_idx: list[np.nda
                arm_cfg: dict, batch_size: int, synthetic_fraction: float,
                n_classes: int, rng: np.random.Generator,
                transform: TransformLike | None = None,
-               generate: GenerateLike | None = None) -> Batch:
+               generate: GenerateLike | None = None,
+               excluded_classes: tuple[int, ...] = ()) -> Batch:
     """Build one training batch for an arm (Mission M2).
 
     Args:
@@ -142,6 +156,9 @@ def make_batch(images_u8: np.ndarray, labels: np.ndarray, class_idx: list[np.nda
         rng: the only source of randomness.
         transform: Stage 2 ``transform(img, label, rng)`` or None.
         generate: Stage 3 ``generate(label, rng)`` or None.
+        excluded_classes: labels never drawn, real or synthetic (P-61:
+            a held-out source that owns a whole class). Any other empty
+            class still raises in ``sample_real_indices``.
 
     Steps: balanced real labels -> class-balanced real indices; balanced
     synthetic labels -> ``generate``; if ``arm_cfg["augment"]`` apply
@@ -158,11 +175,12 @@ def make_batch(images_u8: np.ndarray, labels: np.ndarray, class_idx: list[np.nda
         raise ValueError("arm uses synthetic data but no generate callable was given")
     n_real, n_syn = batch_composition(arm_cfg, batch_size, synthetic_fraction)
 
-    real_labels = balanced_labels(n_real, n_classes, rng)
+    excluded = tuple(int(c) for c in excluded_classes)
+    real_labels = _labels_for_batch(n_real, n_classes, excluded, rng)
     real_idx = sample_real_indices(class_idx, real_labels, rng)
     real_imgs = np.asarray(images_u8)[real_idx]
 
-    syn_labels = balanced_labels(n_syn, n_classes, rng)
+    syn_labels = _labels_for_batch(n_syn, n_classes, excluded, rng)
     if n_syn:
         syn_imgs = np.stack([np.asarray(generate(int(lbl), rng), dtype=np.uint8)
                              for lbl in syn_labels])
@@ -207,7 +225,8 @@ class BatchStream:
                  transform: TransformLike | None = None,
                  generate: GenerateLike | None = None,
                  class_idx: list[np.ndarray] | None = None,
-                 epoch: int = 0) -> None:
+                 epoch: int = 0,
+                 excluded_classes: tuple[int, ...] = ()) -> None:
         if steps < 1:
             raise ValueError(f"steps must be >= 1, got {steps}")
         self.images_u8 = np.asarray(images_u8)
@@ -222,6 +241,7 @@ class BatchStream:
         self.transform = transform
         self.generate = generate
         self.current_epoch = int(epoch)
+        self.excluded_classes = tuple(int(c) for c in excluded_classes)
 
     def epoch(self, epoch: int) -> Iterator[Batch]:
         """Yield the ``steps`` batches of ``epoch`` (composition fixed per batch)."""
@@ -229,7 +249,8 @@ class BatchStream:
         for _ in range(self.steps):
             yield make_batch(self.images_u8, self.labels, self.class_idx, self.arm_cfg,
                              self.batch_size, self.synthetic_fraction, self.n_classes,
-                             rng, transform=self.transform, generate=self.generate)
+                             rng, transform=self.transform, generate=self.generate,
+                             excluded_classes=self.excluded_classes)
 
     def __iter__(self) -> Iterator[Batch]:
         return self.epoch(self.current_epoch)
