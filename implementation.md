@@ -28,7 +28,9 @@ finish line). Source facts come from the Phase 1 report.
 
 Each stage owner also has a standalone brief in `stages/stage_N.md`
 (N = 0–6), covering focus, goals, requirements, deliverables, pitfalls, a
-glossary and three practice missions.
+glossary and three practice missions. `stages/stage_7.md` is the final
+stage: a frozen public dashboard, built only after every gate is met and
+the user approves.
 
 ## Decisions to lock first (whole team, before Stage 1)
 
