@@ -1,10 +1,9 @@
-"""Validation-only search for CRISP-DM iteration 2.
+"""Validation-only search and experiment runner (CRISP-DM iterations 2 and 3).
 
     python -m src.stage4_train.search [--phase ablation|augment|synth|shares|grid|confirm|all]
 
-Implements the budgets in docs/crisp_dm/iteration_2/preregistration.md. Each
-trial trains one run with dotted config overrides, under
-``artifacts/stage4/tuning_iter2/<phase>/<trial>/``. A finished trial is
+Implements the budgets in the iteration pre-registrations. Each trial trains one
+run with dotted config overrides, under ``artifacts/stage4/tuning_iter3/<phase>/<trial>/``. A finished trial is
 reused only when its settings match, so a stopped search resumes. The test
 split is never touched: stores come from ``load_stores`` (train and val only).
 """
@@ -23,11 +22,13 @@ from threadpoolctl import threadpool_limits
 from src.common.config import DEFAULT_CONFIG, class_names, load_config, resolve, set_dotted, validate_pipeline
 from src.stage2_augment import build_transform
 from src.stage3_synth import build_generator
+from src.stage4_train.folds import grouped_folds, pooled
 from src.stage4_train.sweep import load_stores, run_specs
 from src.stage4_train.train import VAL_PROBS_FILE, train_one
 
 SEED = 20261109
-OUT_NAME = "tuning_iter2"
+OUT_NAME = "tuning_iter3"
+SUBSET_SEED = 20261109   # the same real-image subset for every arm
 RESULT_JSON = "result.json"
 WINNERS_JSON = "winners.json"
 START_HPARAMS = {"lr": 0.003, "dropout": 0.2}   # the iteration 1 winner
@@ -64,7 +65,7 @@ def run_trial(spec: dict) -> dict:
     """Worker entry point: train one trial, or return its finished result."""
     run_dir = Path(spec["out_dir"])
     done_path = run_dir / RESULT_JSON
-    settings = {k: spec[k] for k in ("arm", "seed", "overrides", "hparams")}
+    settings = {k: spec.get(k) for k in ("arm", "seed", "overrides", "hparams", "fold")}
     if done_path.is_file():
         done = json.loads(done_path.read_text(encoding="utf-8"))
         if done.get("settings") == settings:
@@ -77,6 +78,12 @@ def run_trial(spec: dict) -> dict:
     if "stores" not in _STORES:
         _STORES["stores"] = load_stores(config)
     train, val, ids = _STORES["stores"]
+    if spec.get("fold") is not None:
+        n_folds, index, fold_seed = spec["fold"]
+        pool = pooled(train, val)
+        kept, held = grouped_folds(pool, n_folds, fold_seed)[index]
+        train, val, ids = pool.take(kept), pool.take(held), None
+    train = train.real_subset(float(config["train"].get("real_fraction", 1.0)), SUBSET_SEED)
     info = train_one(spec["run_name"], spec["arm"], spec["seed"], config, train, val,
                      build_transform(config), build_generator(config), spec["hparams"], run_dir,
                      steps_per_epoch=int(config["train"]["steps_per_epoch"]), val_image_ids=ids)

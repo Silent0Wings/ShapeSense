@@ -273,7 +273,7 @@ def test_sweep_results_mark_held_out_runs_so_disagreement_skips_them(tmp_path):
     cfg["train"]["parallel_runs"] = 1
     cfg["runs"] = [{"arm": "A1", "seed": 0}, {"arm": "A1", "seed": 1}]
     cfg["evaluation"]["loso_seeds"] = 1
-    held_out = ("A0", "A1", "B", "A2")
+    held_out = ("A0", "A1", "B", "A2", "P")
     sizes = {"A1_0": 20, "A1_1": 20, **{f"{a}_loso_handdrawn_0": 7 for a in held_out}}
 
     def fake_job(spec):

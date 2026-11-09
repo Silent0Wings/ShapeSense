@@ -91,6 +91,8 @@ def batch_composition(arm_cfg: dict, batch_size: int,
     if not 0.0 <= share <= 1.0:
         raise ValueError(f"synthetic_fraction must be in [0, 1], got {share}")
     n_syn = int(round(batch_size * share)) if arm_cfg["synthetic"] else 0
+    if arm_cfg.get("equal_real"):       # synthetic images on top of a full real batch
+        return batch_size, n_syn
     return batch_size - n_syn, n_syn
 
 
@@ -206,7 +208,7 @@ def make_batch(images_u8: np.ndarray, labels: np.ndarray, class_idx: list[np.nda
         imgs = np.stack([img if i < n_clean else np.asarray(transform(img, int(lbl), rng), dtype=np.uint8)
                          for i, (img, lbl) in enumerate(zip(imgs, lbls))])
 
-    perm = rng.permutation(batch_size)
+    perm = rng.permutation(n_real + n_syn)
     return Batch(images=to_float(imgs[perm]), labels=lbls[perm], is_synthetic=is_syn[perm])
 
 

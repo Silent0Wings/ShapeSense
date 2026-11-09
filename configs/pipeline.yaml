@@ -39,7 +39,7 @@ modules:
   augment: augment
   synthetic: synthetic
 
-# The three arms; identical training, only the data stream differs.
+# The arms; one network and step budget, only the data stream and tuned settings differ.
 arms:
   A0:   # real only (control)
     { augment: false, synthetic: false,
@@ -57,6 +57,11 @@ arms:
     { augment: true, synthetic: true, clean_fraction: 0.411, synthetic_fraction: 0.198,
       hparams: { lr: 0.003, dropout: 0.2 },
       overrides: {"augment.rotate_deg": 20, "augment.scale": [0.904, 1.076], "augment.nonuniform_scale": 0.092, "augment.shear_deg": 1.4, "augment.translate_px": 0.0, "augment.noise_p": 0.385, "augment.blur_p": 0.373, "taxonomy.rotate_limit_deg": {"square": 10, "rectangle": 10, "diamond": 10}, "synth.radius_px": [12.5, 27.1], "synth.center_jitter_px": 5.3, "synth.vertex_jitter_px": 0.4, "synth.ellipse_max_axis_ratio": 2.46, "synth.rectangle_max_side_ratio": 3.99, "synth.diamond_acute_angle_deg": [54.9, 65.6], "synth.star_inner_ratio": [0.361, 0.586]} }
+
+  P:   # synthetic-only pretraining, then fine-tuning on real images (iteration 3)
+    { augment: true, synthetic: true, synthetic_fraction: 0.0, pretrain_fraction: 0.3,
+      hparams: { lr: 0.003, dropout: 0.2 },
+      overrides: {"augment.rotate_deg": 20, "augment.scale": [0.904, 1.076], "augment.nonuniform_scale": 0.092, "augment.shear_deg": 1.4, "augment.translate_px": 0.0, "augment.noise_p": 0.385, "augment.blur_p": 0.373, "taxonomy.rotate_limit_deg": {"square": 10, "rectangle": 10, "diamond": 10}} }
 
 # One entry per trained CNN (arm x seed). Only arm and seed may vary;
 # every training setting comes from `train`. Ablations are new entries.
@@ -81,6 +86,11 @@ runs:
   - { arm: A2, seed: 2 }
   - { arm: A2, seed: 3 }
   - { arm: A2, seed: 4 }
+  - { arm: P, seed: 0 }
+  - { arm: P, seed: 1 }
+  - { arm: P, seed: 2 }
+  - { arm: P, seed: 3 }
+  - { arm: P, seed: 4 }
 
 # Stage 2 augmentation ranges (train side only). Shear and non-uniform
 # scale are skipped for taxonomy.no_shear_no_nonuniform_scale classes.
