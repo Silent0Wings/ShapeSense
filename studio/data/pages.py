@@ -93,13 +93,17 @@ def _iteration2() -> dict:
             "comparisons": read_csv("iter2_comparisons"), "fresh_per_class": read_csv("iter2_fresh_per_class")}
 
 
+def _experiments() -> dict:
+    return {name: read_json(f"exp_{name}") for name in ("scarcity", "equal_real", "budget", "batchnorm", "preprocess", "one_transform_on", "val_vs_test")}
+
+
 def _live() -> dict:
     return {"arms": arms.available(), "provenance": arms.provenance()}
 
 
 BUILDERS = {"home": _home, "business": _business, "stage0": _stage0, "stage1": _stage1,
             "stage2": _stage2, "stage3": _stage3, "stage4": _stage4, "stage5": _stage5,
-            "stage6": _stage6, "live": _live, "iteration1": _iteration1, "iteration2": _iteration2,
+            "stage6": _stage6, "live": _live, "iteration1": _iteration1, "iteration2": _iteration2, "experiments": _experiments,
             "failures": dict, "failure": dict, "robustness": _robustness, "changes": dict}
 
 
