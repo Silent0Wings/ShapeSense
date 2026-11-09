@@ -102,7 +102,7 @@ const HELP = {
   'class distribution by source': 'How many images of each class each dataset gives.',
   'differences with confidence intervals': 'A dot is the difference in macro-F1. The line is its 95% interval.',
   'confusion matrices (soft-vote ensembles)': 'Rows are the true class, columns the prediction. Select a cell.',
-  'f1 per class': 'Each dot is one arm. Further right is better.',
+  'f1 per class': 'Each dot is one arm. Further right is better, and the bar shows how far apart the arms are.',
   'tuning grid (a1 validation, seed 0)': 'Learning rate and dropout tried once on A1.',
   'unseen-source check (9-class)': 'Models trained without Hand-Drawn, scored on Hand-Drawn.',
   'what if the rule had been different?': 'Re-applies the rule to stored results. Changes nothing.',
