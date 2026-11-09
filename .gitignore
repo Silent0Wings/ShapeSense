@@ -51,3 +51,6 @@ ignore/
 # Local commit tooling (never committed)
 .commit_guard/
 .pre-commit-config.yaml
+
+# Frozen copy of iteration 1 results (CRISP-DM iteration 2 keeps them untouched)
+archive/
