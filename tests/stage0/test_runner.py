@@ -111,3 +111,15 @@ def test_run_id_shared_by_all_stages(stages, tmp_path):
                   artifacts_dir=tmp_path, log=lambda s: None)
     ids = {status.read_status(f"stage{i}", tmp_path)["run_id"] for i in range(3)}
     assert ids == {"run-1"}
+
+
+def test_frozen_winners_restored_only_when_absent(tmp_path):
+    source = tmp_path / "committed.json"
+    source.write_text("committed", encoding="utf-8")
+    artifacts = tmp_path / "artifacts"
+    assert rp.restore_frozen_winners(artifacts, source) is True
+    target = artifacts / "stage4" / "tuning_iter2" / "winners.json"
+    assert target.read_text(encoding="utf-8") == "committed"
+    target.write_text("existing", encoding="utf-8")
+    assert rp.restore_frozen_winners(artifacts, source) is False
+    assert target.read_text(encoding="utf-8") == "existing"
