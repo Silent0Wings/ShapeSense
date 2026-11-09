@@ -110,3 +110,13 @@ tr:last-child td { border-bottom: 0; }
 .stat[data-tip] .stat-label, th[data-tip], h2[data-tip], h3[data-tip] { text-decoration: underline dotted var(--text-muted); text-underline-offset: 3px; }
 .hero { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
 .hero .big { font-size: 44px; font-weight: 720; line-height: 1; font-variant-numeric: tabular-nums; }
+.cycle .node.active rect { fill: var(--accent); stroke: var(--accent); }
+.cycle .node.active .name, .cycle .node.active .line { fill: var(--on-accent); }
+.cycle-list a[aria-current] { outline: 2px solid var(--accent); }
+.visual-block { margin-bottom: 22px; }
+.flow-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
+.flow-tag { font-weight: 650; font-size: 13px; min-width: 52px; }
+.flow-step { background: var(--surface-2); border-radius: 8px; padding: 7px 11px; font-size: 13.5px; }
+.flow-arrow { color: var(--text-muted); }
+.icon-button { display: inline-flex; align-items: center; justify-content: center; padding: 7px 10px; }
+.icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

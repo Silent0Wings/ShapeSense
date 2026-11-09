@@ -12,6 +12,8 @@ PACKAGE_DIR = Path(__file__).resolve().parent
 WEB_DIR = PACKAGE_DIR / "web"
 ARMS_DIR = PACKAGE_DIR / "out" / "arms"
 ARMS_MANIFEST = ARMS_DIR / "manifest.json"
+FEEDBACK_DIR = PACKAGE_DIR / "feedback"   # the one place the studio saves wrong predictions
+FEEDBACK_LABEL = "studio/feedback"
 
 ARMS = ("A0", "A1", "B", "A2")
 ERRORS_ARM = "A2"                  # the primary candidate; Stage 5 stores its mistakes

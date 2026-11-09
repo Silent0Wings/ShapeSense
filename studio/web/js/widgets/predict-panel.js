@@ -90,16 +90,16 @@ export function predictPanel({ arms, labels, compact = false }) {
 
   const pad = createPad({ onChange: debounce(run, 60) });
 
-  function feedback() {
-    if (!last) return;
-    const payload = { saved_at: new Date().toISOString(), note: 'Informal feedback for a future CRISP-DM iteration; not test data.',
-      strokes: pad.strokes(), results: last.results.map(({ arm, label, top }) => ({ arm, label, top })) };
-    const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
-    el('a', { href: url, download: `shapesense-feedback-${Date.now()}.json` }).click();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  async function feedback() {
+    if (!last) { message.replaceChildren(note('Draw a shape first, then save it.')); return; }
+    try {
+      const out = await post('/api/feedback', { image: pad.png(), strokes: pad.strokes(),
+        results: last.results.map(({ arm, label, top }) => ({ arm, label, top })) });
+      message.replaceChildren(note(`Saved to ${out.saved}`));
+    } catch (error) { message.replaceChildren(errorBox(error)); }
   }
 
-  const tools = compact ? null : el('button', { type: 'button', class: 'ghost', onclick: feedback, text: 'Wrong prediction? Save it' });
+  const tools = compact ? null : el('button', { type: 'button', class: 'ghost', onclick: feedback, text: 'Wrong prediction? Save it', 'data-tip': 'Saves this drawing and every answer to studio/feedback in this repository.' });
   return el('div', {},
     el('div', { class: compact ? 'predict-compact' : 'grid side', style: compact ? null : 'margin:0' },
       el('div', { class: 'pad-wrap' }, pad.canvas, pad.controls, tools),
