@@ -111,3 +111,29 @@ def verdict(
         "harmful_classes": [int(c) for c in np.flatnonzero(harmful)],
         "reported_drops": [int(c) for c in np.flatnonzero(reported)],
     }
+
+
+def robust_verdict(boot: dict, min_drop_points: float, min_gain_points: float) -> dict:
+    """The pre-registered iteration 3 rule, applied to a ``cluster_bootstrap`` result.
+
+    Pass iff the gain reaches ``min_gain_points``, the CI excludes 0, and no class
+    has a mean drop above max(``min_drop_points``, one bootstrap standard error of
+    that drop) with a Bonferroni-corrected CI excluding 0. ``strict_pass`` also
+    needs the CI to clear the minimum gain; it is reported and not required.
+    """
+    drop = np.asarray(boot["drop_observed"], dtype=np.float64)
+    thresholds = np.maximum(float(min_drop_points), np.asarray(boot["drop_se"], dtype=np.float64))
+    significant = np.asarray(boot["drop_ci_lo_adj"], dtype=np.float64) > 0.0
+    harmful = (drop > thresholds) & significant
+    delta = float(boot["delta"])
+    ci_lo, ci_hi = (float(v) for v in boot["ci"])
+    reasons: list[str] = []
+    if delta < min_gain_points:
+        reasons.append(f"gain {delta:.2f} < {float(min_gain_points):.2f} points")
+    if ci_lo <= 0.0:
+        reasons.append(f"CI includes 0 ([{ci_lo:.2f}, {ci_hi:.2f}])")
+    for c in np.flatnonzero(harmful):
+        reasons.append(f"class {int(c)}: drop {drop[c]:.2f} > {thresholds[c]:.2f} and corrected CI excludes 0")
+    return {"verdict": "pass" if not reasons else "fail", "delta": delta, "ci": [ci_lo, ci_hi],
+            "reasons": reasons, "harmful_classes": [int(c) for c in np.flatnonzero(harmful)],
+            "strict_pass": not reasons and ci_lo >= float(min_gain_points)}

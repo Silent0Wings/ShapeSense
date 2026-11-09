@@ -17,19 +17,20 @@ import torch
 from PIL import Image, ImageDraw
 from src.common.config import REPO_ROOT, class_names, load_config, resolve
 from src.common.hashing import sha256_path
+from src.common.perturb import SETS, build_set
+from src.common.robust_summary import summarise
 from src.stage4_train.data import ImageStore
 from src.stage4_train.sampling import to_float
 from src.stage4_train.train import macro_f1_points
 
-from robustness.perturb import SETS, build_set
 
 SPLIT = "val"
 SEED = 20261109
 ARMS = ("A0", "A1", "B", "A2")
 BATCH = 1024
-NOISE_FAMILIES = ("gaussian", "salt_pepper", "blur", "jpeg", "brightness", "contrast", "occlusion")
 EXAMPLE_CLASSES = ("square", "star")
 RECORDED_TOLERANCE = 0.01
+NOTE = "Validation images only, perturbed once with a fixed seed. Descriptive; made after iteration 2 closed; changes no verdict."
 OUT = REPO_ROOT / "docs" / "crisp_dm" / "iteration_2" / "robustness"
 
 
@@ -66,10 +67,6 @@ def confusion(labels: np.ndarray, preds: np.ndarray, n: int) -> np.ndarray:
     return np.bincount(labels * n + preds, minlength=n * n).reshape(n, n)
 
 
-def _summary(values: list[float]) -> dict[str, float]:
-    return {"mean": float(np.mean(values)), "std": float(np.std(values, ddof=1))}
-
-
 def score(store: ImageStore, sets: dict[str, np.ndarray], seeds: list[int], stage4, device: str) -> dict:
     labels, n = store.labels, store.n_classes
     per_run: dict[str, dict[int, dict[str, dict]]] = {arm: {} for arm in ARMS}
@@ -91,34 +88,6 @@ def score(store: ImageStore, sets: dict[str, np.ndarray], seeds: list[int], stag
             per_run[arm][seed] = scores
             print(f"{run}: clean accuracy {scores['clean']['accuracy']:.2f}", flush=True)
     return per_run
-
-
-def _family_drop(scores: dict, names: list[str]) -> float:
-    clean = scores["clean"]["accuracy"]
-    return float(np.mean([clean - scores[name]["accuracy"] for name in names]))
-
-
-def summarise(per_run: dict, seeds: list[int], labels: list[str], n_images: int) -> dict:
-    rotated = [n for n, s in SETS.items() if s[0] == "rotated" and n != "rot0"]
-    noisy = [n for n, s in SETS.items() if s[0] in NOISE_FAMILIES]
-    by_arm, families, per_class, matrices = {}, {}, {}, {}
-    for arm, runs in per_run.items():
-        by_arm[arm] = {name: {"accuracy": _summary([runs[s][name]["accuracy"] for s in seeds]),
-                              "macro_f1": _summary([runs[s][name]["macro_f1"] for s in seeds]),
-                              "drop": _summary([runs[s]["clean"]["accuracy"] - runs[s][name]["accuracy"] for s in seeds])}
-                       for name in SETS}
-        families[arm] = {"clean": _summary([runs[s]["clean"]["accuracy"] for s in seeds]),
-                         "rotated_drop": _summary([_family_drop(runs[s], rotated) for s in seeds]),
-                         "noisy_drop": _summary([_family_drop(runs[s], noisy) for s in seeds])}
-        for family in NOISE_FAMILIES:
-            names = [n for n, v in SETS.items() if v[0] == family]
-            families[arm][f"{family}_drop"] = _summary([_family_drop(runs[s], names) for s in seeds])
-        per_class[arm] = {name: np.mean([runs[s][name]["recall"] for s in seeds], axis=0).round(2).tolist() for name in SETS}
-        matrices[arm] = {name: np.sum([runs[s][name]["matrix"] for s in seeds], axis=0).tolist() for name in rotated}
-    return {"note": "Validation images only, perturbed once with a fixed seed. Descriptive; made after iteration 2 closed; changes no verdict.",
-            "split": SPLIT, "seed": SEED, "n_images": n_images, "training_seeds": seeds, "classes": labels,
-            "sets": [{"name": n, "family": v[0], "level": v[1]} for n, v in SETS.items()],
-            "by_arm": by_arm, "families": families, "per_class": per_class, "confusion_summed_over_seeds": matrices}
 
 
 def example_sheet(store: ImageStore, sets: dict[str, np.ndarray], labels: list[str], path) -> None:
@@ -145,7 +114,7 @@ def main() -> None:
     labels = class_names(config)
     per_run = score(store, sets, seeds, artifacts / "stage4", device)
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "results.json").write_text(json.dumps(summarise(per_run, seeds, labels, len(store)), indent=1) + "\n", encoding="utf-8")
+    (OUT / "results.json").write_text(json.dumps(summarise(per_run, seeds, labels, len(store), SPLIT, SEED, NOTE), indent=1) + "\n", encoding="utf-8")
     example_sheet(store, sets, labels, OUT / "examples.png")
     print(f"wrote {OUT / 'results.json'}")
 

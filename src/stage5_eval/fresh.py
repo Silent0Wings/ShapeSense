@@ -15,7 +15,7 @@ import numpy as np
 
 from src.stage5_eval import criterion, evaluate, tables
 from src.stage5_eval.metrics import accuracy, group_accuracy, macro_f1, per_class_f1
-from src.stage5_eval.stats import mcnemar_test, paired_bootstrap
+from src.stage5_eval.stats import analysis_rng, cluster_bootstrap, mcnemar_test
 
 
 def _thresholds(y: np.ndarray, k: int, noise_accuracy: float, min_drop: float) -> np.ndarray:
@@ -27,14 +27,15 @@ def _thresholds(y: np.ndarray, k: int, noise_accuracy: float, min_drop: float) -
 
 def analyse(models: Mapping[str, dict], specs: Sequence[evaluate.ModelSpec], arms: Sequence[str],
             arm_of: Callable, names: Sequence[str], reference: str, candidate: str, min_gain: float,
-            min_drop: float, n_boot: int, rng: np.random.Generator, ci_level: float,
+            min_drop: float, n_boot: int, seed: int, ci_level: float,
             ev_cfg: Mapping, tables_dir: Path) -> tuple[dict, list[Path]]:
     """Ensembles per arm, the primary comparison and tables on the fresh holdout."""
     k = len(names)
     ens = {arm: evaluate.ensemble([models[s.name] for s in specs if arm_of(s) == arm]) for arm in arms}
     y = ens[candidate]["labels"]
     sources = ens[candidate]["source_ids"]
-    boot = paired_bootstrap(y, ens[reference]["preds"], ens[candidate]["preds"], k, n_boot, rng, ci_level)
+    boot = cluster_bootstrap(y, ens[reference]["preds"], ens[candidate]["preds"], ens[candidate]["group_ids"], k, n_boot,
+                             analysis_rng(seed, "fresh/primary"), ci_level)
     thresholds = _thresholds(y, k, float(ev_cfg["noise_band_accuracy"]), min_drop)
     verdict = criterion.verdict(boot, thresholds, min_gain, report_drop_points=min_drop)
     mc = mcnemar_test(ens[reference]["preds"] == y, ens[candidate]["preds"] == y)

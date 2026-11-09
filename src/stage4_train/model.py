@@ -31,7 +31,7 @@ class SmallCNN(nn.Module):
     """Decision 8 CNN: 3 x [Conv-BN-ReLU-MaxPool] -> GAP -> Dropout -> Linear.
 
     Args:
-        channels: output channels per block, e.g. ``(32, 64, 128)``.
+        channels: output channels per block, e.g. ``(32, 64, 128, 128)``.
         dropout: dropout probability before the classifier.
         n_classes: number of output logits.
         in_channels: input image channels (``image_channels`` in config).
@@ -40,7 +40,7 @@ class SmallCNN(nn.Module):
     logits float32 (N, n_classes). TorchScript-compatible.
     """
 
-    def __init__(self, channels: Sequence[int] = (32, 64, 128), dropout: float = 0.2,
+    def __init__(self, channels: Sequence[int] = (32, 64, 128, 128), dropout: float = 0.2,
                  n_classes: int = 10, in_channels: int = 1) -> None:
         super().__init__()
         if len(channels) < 1:

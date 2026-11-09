@@ -33,8 +33,9 @@ from typing import Callable, Iterator
 import numpy as np
 
 from src.common.batch import Batch
+from src.common.features import PIXEL_SCALE
 
-UINT8_MAX = 255.0  # grey levels; divisor for the uint8 -> [0, 1] conversion
+UINT8_MAX = PIXEL_SCALE  # grey levels; divisor for the uint8 -> [0, 1] conversion
 
 TransformLike = Callable[[np.ndarray, int, np.random.Generator], np.ndarray]
 GenerateLike = Callable[[int, np.random.Generator], np.ndarray]
@@ -82,8 +83,7 @@ def batch_composition(arm_cfg: dict, batch_size: int,
 
     ``n_syn = round(batch_size * synthetic_fraction)`` when
     ``arm_cfg["synthetic"]`` is true, else 0 (Python ``round``: 256 * 0.3
-    = 76.8 -> 77, so arm B at batch 256 is 179 real + 77 synthetic,
-    Mission M2). The split is a per-batch quantity by construction.
+    = 76.8 -> 77). Tuned shares come from the arm's own ``synthetic_fraction``. The split is a per-batch quantity by construction.
     """
     if batch_size < 1:
         raise ValueError(f"batch_size must be >= 1, got {batch_size}")

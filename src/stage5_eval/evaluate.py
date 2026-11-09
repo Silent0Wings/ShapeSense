@@ -34,6 +34,7 @@ KIND_BASELINE = "baseline"  # joblib estimator with hard labels only
 FEATURE_PIXELS = "pixels"
 FEATURE_HOG = "hog"
 PREDICT_BATCH = 1024  # images per TorchScript forward pass
+PREPROCESSING_CODE = "src/common/features.py"
 CACHE_HASH_KEY = "model_hash"  # npz key carrying the model file hash
 CACHE_MANIFEST_KEY = "manifest_hash"  # npz key carrying the test manifest (test.csv) hash
 TEST_MANIFEST_FILE = "test.csv"  # under paths.splits_dir
@@ -67,7 +68,8 @@ class ModelSpec:
 
 
 def model_fingerprint(path: str | Path) -> str:
-    return sha256_path(path)
+    """The model file and the code that prepares its inputs, so a change to either is seen."""
+    return f"{sha256_path(path)}+{sha256_path(resolve(PREPROCESSING_CODE))}"
 
 
 def test_manifest_hash(config: dict) -> str:
@@ -161,11 +163,11 @@ def default_test_reader(config: dict) -> TestReader:
     return _read
 
 
-def fresh_holdout_reader(config: dict) -> TestReader:
-    """One logged read of the fresh holdout per call, like ``default_test_reader``."""
+def fresh_holdout_reader(config: dict, split: str = "fresh_holdout") -> TestReader:
+    """One logged read of a fresh holdout per call, like ``default_test_reader``."""
     def _read() -> tuple[list[dict], np.ndarray, np.ndarray]:
-        rows = load_split_rows(config, "fresh_holdout")
-        images, labels = load_fresh_images(config, rows)
+        rows = load_split_rows(config, split)
+        images, labels = load_fresh_images(config, rows, split)
         return rows, images, labels
     return _read
 
@@ -192,7 +194,7 @@ def cache_path(predictions_dir: str | Path, name: str) -> Path:
 
 def save_predictions(path: Path, *, probs: np.ndarray | None, preds: np.ndarray,
                      labels: np.ndarray, image_ids: np.ndarray, source_ids: np.ndarray,
-                     model_hash: str, manifest_hash: str) -> None:
+                     group_ids: np.ndarray, model_hash: str, manifest_hash: str) -> None:
     """Write one prediction cache file keyed on BOTH the model and the manifest hash."""
     path.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
@@ -203,6 +205,7 @@ def save_predictions(path: Path, *, probs: np.ndarray | None, preds: np.ndarray,
         labels=np.asarray(labels, dtype=np.int64),
         image_ids=np.asarray(image_ids).astype(str),
         source_ids=np.asarray(source_ids).astype(str),
+        group_ids=np.asarray(group_ids).astype(str),
         **{CACHE_HASH_KEY: np.asarray(model_hash), CACHE_MANIFEST_KEY: np.asarray(manifest_hash)},
     )
 
@@ -216,6 +219,7 @@ def load_predictions(path: Path) -> dict:
             "labels": z["labels"].astype(np.int64),
             "image_ids": z["image_ids"].astype(str),
             "source_ids": z["source_ids"].astype(str),
+            "group_ids": z["group_ids"].astype(str),
             CACHE_HASH_KEY: str(z[CACHE_HASH_KEY]),
             CACHE_MANIFEST_KEY: str(z[CACHE_MANIFEST_KEY]),
         }
@@ -242,10 +246,11 @@ def cached_for(path: Path, fingerprint: str, manifest_hash: str) -> dict | None:
 # --------------------------------------------------------------------------- #
 
 
-def _rows_arrays(rows: Sequence[Mapping[str, str]]) -> tuple[np.ndarray, np.ndarray]:
+def _rows_arrays(rows: Sequence[Mapping[str, str]]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     image_ids = np.asarray([str(r["image_id"]) for r in rows]).astype(str)
     source_ids = np.asarray([str(r["source_id"]) for r in rows]).astype(str)
-    return image_ids, source_ids
+    group_ids = np.asarray([str(r.get("phash_group", r["image_id"])) for r in rows]).astype(str)
+    return image_ids, source_ids, group_ids
 
 
 def evaluate_models(
@@ -292,7 +297,7 @@ def evaluate_models(
             continue
         rows, images, labels = test_reader()
         n_reads += 1
-        image_ids, source_ids = _rows_arrays(rows)
+        image_ids, source_ids, group_ids = _rows_arrays(rows)
         images = np.asarray(images)
         labels = np.asarray(labels, dtype=np.int64)
         if not (images.shape[0] == labels.shape[0] == image_ids.shape[0]):
@@ -304,23 +309,23 @@ def evaluate_models(
         if spec.source_filter is not None:
             mask = source_ids == spec.source_filter
             images, labels = images[mask], labels[mask]
-            image_ids, source_ids = image_ids[mask], source_ids[mask]
+            image_ids, source_ids, group_ids = image_ids[mask], source_ids[mask], group_ids[mask]
         if spec.excluded_labels:
             mask = ~np.isin(labels, spec.excluded_labels)
             images, labels = images[mask], labels[mask]
-            image_ids, source_ids = image_ids[mask], source_ids[mask]
+            image_ids, source_ids, group_ids = image_ids[mask], source_ids[mask], group_ids[mask]
         predict = predictors.get(spec.name) or default_predictor(spec)
         probs, preds = predict(images)
         preds = np.asarray(preds, dtype=np.int64)
         if preds.shape != labels.shape:
             raise ValueError(f"{spec.name}: predictor returned {preds.shape}, expected {labels.shape}")
         save_predictions(path, probs=probs, preds=preds, labels=labels, image_ids=image_ids,
-                         source_ids=source_ids, model_hash=spec.fingerprint,
+                         source_ids=source_ids, group_ids=group_ids, model_hash=spec.fingerprint,
                          manifest_hash=manifest_hash)
         results[spec.name] = {
             "probs": None if probs is None else np.asarray(probs, dtype=np.float32),
             "preds": preds, "labels": labels, "image_ids": image_ids,
-            "source_ids": source_ids, "from_cache": False, "path": path,
+            "source_ids": source_ids, "group_ids": group_ids, "from_cache": False, "path": path,
         }
     return {"models": results, "n_reads": n_reads, "images": last_images,
             "image_ids": last_ids, "labels": last_labels, "source_ids": last_sources}
@@ -378,4 +383,5 @@ def ensemble(records: Sequence[dict]) -> dict:
         "labels": np.asarray(ref["labels"], dtype=np.int64),
         "image_ids": np.asarray(ref["image_ids"]).astype(str),
         "source_ids": np.asarray(ref["source_ids"]).astype(str),
+        "group_ids": np.asarray(ref["group_ids"]).astype(str),
     }

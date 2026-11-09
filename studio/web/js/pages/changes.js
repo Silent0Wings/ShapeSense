@@ -3,7 +3,7 @@ import { STEP_NAME } from '../widgets/findings.js';
 import { boot } from './boot.js';
 
 const VERDICT_TONE = { Stands: 'warn', Partly: 'warn', 'Does not stand': 'good' };
-const STATE_TONE = { 'Next iteration': 'bad', Disclosed: 'warn', 'Fixed in this record': 'good', 'No action': 'good' };
+const STATE_TONE = { 'Next iteration': 'bad', Disclosed: 'warn', 'Fixed in this record': 'good', 'No action': 'good', 'Fixed in iteration 3': 'good' };
 
 boot('changes', (main, _data, meta) => {
   main.append(pageHead({ eyebrow: 'CRISP-DM record', title: 'Changes by CRISP-DM step',

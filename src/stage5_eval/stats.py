@@ -7,14 +7,18 @@ package-wide units convention.
 
 from __future__ import annotations
 
+import zlib
 from collections.abc import Mapping
 
 import numpy as np
+from scipy import sparse
 from statsmodels.stats.contingency_tables import mcnemar
 
 from src.stage5_eval.metrics import f1_from_confusion
 
 BOOT_CHUNK = 256  # bootstrap iterations processed per vectorised block
+CLUSTER_CHUNK = 64  # the same, for the cluster bootstrap
+EXACT_BELOW = 25  # discordant pairs below which McNemar uses the exact binomial
 
 
 def _confusions_at(
@@ -129,7 +133,8 @@ def paired_bootstrap(
 def mcnemar_test(correct_a: np.ndarray, correct_b: np.ndarray) -> dict:
     """McNemar's test on paired per-image correctness (stage_5.md M2).
 
-    Uses the chi-square approximation with continuity correction:
+    Uses the exact binomial when b + c is under ``EXACT_BELOW``, else the
+    chi-square approximation with continuity correction,
     statistic = (|b − c| − 1)² / (b + c).
 
     Args:
@@ -152,7 +157,8 @@ def mcnemar_test(correct_a: np.ndarray, correct_b: np.ndarray) -> dict:
     if b + c == 0:
         statistic, p_value = 0.0, 1.0
     else:
-        res = mcnemar([[both_right, b], [c, both_wrong]], exact=False, correction=True)
+        exact = b + c < EXACT_BELOW
+        res = mcnemar([[both_right, b], [c, both_wrong]], exact=exact, correction=not exact)
         statistic, p_value = float(res.statistic), float(res.pvalue)
     return {
         "b": b,
@@ -217,4 +223,94 @@ def per_seed_differences(
         "mean": float(diffs.mean()),
         "std": float(diffs.std(ddof=ddof)),
         "same_sign": same_sign,
+    }
+
+
+def analysis_rng(seed: int, name: str) -> np.random.Generator:
+    """A generator for one named analysis, so adding or reordering one changes no other."""
+    return np.random.default_rng(np.random.SeedSequence(seed, spawn_key=(zlib.crc32(name.encode("utf-8")),)))
+
+
+def _cluster_counts(codes: np.ndarray, clusters: np.ndarray, m: int, kk: int) -> sparse.csr_matrix:
+    """Sparse (m, k*k): how many images of each cluster fall in each confusion cell."""
+    return sparse.csr_matrix((np.ones(codes.size, dtype=np.int64), (clusters, codes)), shape=(m, kk))
+
+
+def cluster_bootstrap(
+    y: np.ndarray,
+    preds_a: np.ndarray,
+    preds_b: np.ndarray,
+    groups: np.ndarray,
+    n_classes: int,
+    n_boot: int,
+    rng: np.random.Generator,
+    ci_level: float,
+) -> dict:
+    """Paired bootstrap of the macro-F1 difference (b minus a), resampling clusters.
+
+    Near-duplicate images share a cluster, so they enter or leave a resample
+    together. ``preds_a`` and ``preds_b`` are (n,) or (levels, n); with several
+    levels the statistic is the mean over levels and every level is scored on
+    the same resample.
+
+    Returns the ``paired_bootstrap`` keys plus ``p_two_sided``, ``drop_se``,
+    ``drop_ci_lo_adj`` (per-class lower bound at the Bonferroni level) and
+    ``n_clusters``.
+    """
+    y = np.asarray(y, dtype=np.int64)
+    pa = np.atleast_2d(np.asarray(preds_a, dtype=np.int64))
+    pb = np.atleast_2d(np.asarray(preds_b, dtype=np.int64))
+    if y.ndim != 1 or y.size == 0 or pa.shape != pb.shape or pa.shape[1] != y.size:
+        raise ValueError("y, preds_a and preds_b must agree in length")
+    if len(groups) != y.size:
+        raise ValueError("groups must have one entry per image")
+    if n_boot <= 0:
+        raise ValueError("n_boot must be positive")
+    if not 0.0 < ci_level < 1.0:
+        raise ValueError("ci_level must lie strictly between 0 and 1")
+
+    _, clusters = np.unique(np.asarray(groups).astype(str), return_inverse=True)
+    m = int(clusters.max()) + 1
+    kk = n_classes * n_classes
+    counts_a = [_cluster_counts(y * n_classes + p, clusters, m, kk) for p in pa]
+    counts_b = [_cluster_counts(y * n_classes + p, clusters, m, kk) for p in pb]
+
+    def per_class(matrices: list, weights: np.ndarray) -> np.ndarray:
+        """Mean per-class F1 over levels, one row per row of ``weights``."""
+        scores = []
+        for matrix in matrices:
+            cells = np.asarray(matrix.T @ weights.T).T.astype(np.int64)
+            scores.append(f1_from_confusion(cells.reshape(-1, n_classes, n_classes)))
+        return np.mean(scores, axis=0)
+
+    observed = np.ones((1, m), dtype=np.int64)
+    f1_a, f1_b = per_class(counts_a, observed)[0], per_class(counts_b, observed)[0]
+    delta = float(f1_b.mean() - f1_a.mean())
+    deltas = np.empty(n_boot, dtype=np.float64)
+    drops = np.empty((n_boot, n_classes), dtype=np.float64)
+    equal = np.full(m, 1.0 / m)
+    for start in range(0, n_boot, CLUSTER_CHUNK):
+        stop = min(start + CLUSTER_CHUNK, n_boot)
+        weights = rng.multinomial(m, equal, size=stop - start)
+        fa, fb = per_class(counts_a, weights), per_class(counts_b, weights)
+        deltas[start:stop] = fb.mean(axis=1) - fa.mean(axis=1)
+        drops[start:stop] = fa - fb
+
+    alpha = 1.0 - ci_level
+    q_lo, q_hi = 100.0 * alpha / 2.0, 100.0 * (1.0 - alpha / 2.0)
+    lo, hi = np.percentile(deltas, [q_lo, q_hi])
+    tail = min(np.sum(deltas <= 0.0), np.sum(deltas >= 0.0))
+    return {
+        "delta": delta,
+        "ci": [float(lo), float(hi)],
+        "half_width": float((hi - lo) / 2.0),
+        "drop_observed": f1_a - f1_b,
+        "drop_ci_lo": np.percentile(drops, q_lo, axis=0),
+        "drop_ci_hi": np.percentile(drops, q_hi, axis=0),
+        "drop_se": drops.std(axis=0, ddof=1),
+        "drop_ci_lo_adj": np.percentile(drops, 100.0 * alpha / (2.0 * n_classes), axis=0),
+        "p_two_sided": float(min(1.0, 2.0 * (tail + 1) / (n_boot + 1))),
+        "n_boot": int(n_boot),
+        "ci_level": float(ci_level),
+        "n_clusters": m,
     }
