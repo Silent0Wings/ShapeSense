@@ -3,7 +3,7 @@
 import json
 
 from src.common.config import load_config
-from src.stage6_report.iteration2 import MACRO_NAMES, collect, log_table
+from src.stage6_report.iteration2 import MACRO_NAMES, change_tables, collect, failure_tables, log_table
 
 
 def _artifacts(tmp_path):
@@ -41,3 +41,16 @@ def test_findings_table_lists_every_step_of_the_iteration():
     for step in ("Data Understanding", "Data Preparation", "Modeling", "Evaluation"):
         assert step in table
     assert "\\begin{tabular}" in table
+
+
+def test_failure_tables_list_each_group_and_escape_text():
+    tables = failure_tables()
+    for group in ("1. Dropping the diamonds", "3. Finding out why", "Before this timeline"):
+        assert group in tables
+    assert "Still open" in tables and "91.7\\%" in tables
+
+
+def test_change_tables_group_changes_and_review_by_step():
+    tables = change_tables()
+    assert "Modeling: changes" in tables and "Evaluation: outside review" in tables
+    assert "Does not stand" in tables

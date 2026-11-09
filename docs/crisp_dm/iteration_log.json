@@ -31,5 +31,923 @@
         "deploy": "On drawn shapes, A1 and B can call a square a rectangle while A0 is right. That matches the test pattern but is informal evidence only. Iteration 2 exported A2_2 by the validation selection rule (validation macro-F1 95.46), and the studio serves all four arms live. The 60-drawing check is still open."
       }
     }
+  ],
+  "failures_note": "Every significant failure and how it was handled, in the order it happened, starting from dropping the Quick, Draw! diamonds. The one earlier fix is listed last. Kept apart from the closed iterations above. Smaller build issues are in plan_issues.md.",
+  "failures": [
+    {
+      "id": "F01",
+      "group": "1. Dropping the diamonds",
+      "iteration": "Iteration 1",
+      "step": "data",
+      "pipeline_stages": [
+        1
+      ],
+      "failure": "Most Quick, Draw! diamonds were not rhombi.",
+      "cause": "They were gems, cones, shields or scribbles, which contradicts the class definition.",
+      "handled": "Excluded all of them by rule before any test read (500 drawings), re-froze the split and retrained every model.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "images",
+          "title": "Review sheets of Quick, Draw! drawings labelled diamond",
+          "keys": [
+            "contact0",
+            "contact1"
+          ],
+          "caption": "Most are gems, cones or shields rather than rhombi. These drawings were removed before the split."
+        }
+      ]
+    },
+    {
+      "id": "F02",
+      "group": "2. Training and the first evaluation",
+      "iteration": "Iteration 1",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "Leave-one-source-out training could not run on all ten classes.",
+      "cause": "Ellipses exist only in the Hand-Drawn source.",
+      "handled": "Runs use nine classes and are scored on Hand-Drawn triangles and rectangles only.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Why the run could not start",
+          "before": [
+            "Hold out the Hand-Drawn source",
+            "No ellipse images left to train on",
+            "The run cannot start"
+          ],
+          "after": [
+            "Drop ellipse from these runs",
+            "Train on nine classes",
+            "Score on Hand-Drawn triangles and rectangles"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F03",
+      "group": "2. Training and the first evaluation",
+      "iteration": "Iteration 1",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "Stage 4 stalled on the GPU.",
+      "cause": "Too many training workers ran at once for 8 GB of memory.",
+      "handled": "Limited training to two parallel runs.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "What changed in training",
+          "before": [
+            "Many training workers at once",
+            "One 8 GB GPU is overloaded",
+            "Stage 4 stalls"
+          ],
+          "after": [
+            "At most two parallel runs",
+            "The GPU keeps up",
+            "All 32 trainings finish"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F04",
+      "group": "2. Training and the first evaluation",
+      "iteration": "Iteration 1",
+      "step": "eval",
+      "pipeline_stages": [
+        5
+      ],
+      "failure": "B vs A1 failed: -0.36 points, CI [-1.17, 0.41], and A0 with no augmentation scored highest.",
+      "cause": "The rotation range and the transform defects found in the next part of this timeline.",
+      "handled": "Kept the verdict unchanged and investigated on validation only, which started iteration 2.",
+      "state": "Verdict stands",
+      "visual": [
+        {
+          "kind": "verdict",
+          "source": "iteration1",
+          "required": 1,
+          "title": "Iteration 1 comparisons, macro-F1 points",
+          "caption": "The dashed line is the required gain. Only B vs A1 was the primary test."
+        }
+      ]
+    },
+    {
+      "id": "F05",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "data",
+      "pipeline_stages": [
+        1
+      ],
+      "failure": "The images reveal which source they came from.",
+      "cause": "A classifier told an image's source 91.7% of the time, against 46.7% for always guessing the largest source, so a model can lean on source style instead of shape.",
+      "handled": "Reported beside the results and checked with runs that hold out a whole source. It cannot be removed from these datasets.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Telling an image's source from its pixels",
+          "unit": "%",
+          "rows": [
+            {
+              "label": "Source classifier",
+              "value": 91.7,
+              "mark": true
+            },
+            {
+              "label": "Always guess the largest source",
+              "value": 46.7
+            }
+          ],
+          "caption": "A gap this large means a model can lean on source style instead of shape."
+        },
+        {
+          "kind": "images",
+          "title": "Training squares, one source per row",
+          "keys": [
+            "inv_square_sources"
+          ],
+          "caption": "Some sources draw squares upright and others at any angle, so orientation and style differ by source."
+        }
+      ]
+    },
+    {
+      "id": "F06",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "Augmentation and generator ranges were set by hand, and only A1 was tuned.",
+      "cause": "Iteration 1 tuned learning rate and dropout on A1 alone and reused the result for every arm.",
+      "handled": "Searched augmentation, generator and hyperparameters per arm on validation: 166 trials.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "A1 validation macro-F1",
+          "unit": "",
+          "domain": [
+            85,
+            100
+          ],
+          "rows": [
+            {
+              "label": "Hand-set ranges, rotation ±180°",
+              "value": 90.64
+            },
+            {
+              "label": "Ranges found by the search",
+              "value": 94.77,
+              "mark": true
+            }
+          ],
+          "caption": "Three seeds each, both with the transform defects fixed."
+        }
+      ]
+    },
+    {
+      "id": "F07",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "prep",
+      "pipeline_stages": [
+        2
+      ],
+      "failure": "Rotation up to ±180° hurt the classes that depend on orientation.",
+      "cause": "In several sources squares and rectangles are nearly always upright, so full rotation removed a clue. A square turned 45° also looks like a diamond.",
+      "handled": "Searched the range on validation. The winner is ±20°, capped at ±10° for square, rectangle and diamond.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "A1 validation macro-F1 by rotation range",
+          "unit": "",
+          "domain": [
+            85,
+            96
+          ],
+          "rows": [
+            {
+              "label": "No rotation",
+              "value": 89.38
+            },
+            {
+              "label": "±15°",
+              "value": 93.62,
+              "mark": true
+            },
+            {
+              "label": "±45°",
+              "value": 89.91
+            },
+            {
+              "label": "±90°",
+              "value": 90.58
+            },
+            {
+              "label": "±180°",
+              "value": 90.64
+            }
+          ],
+          "caption": "Three seeds each. Only ±15° stands clearly apart. The no-rotation runs stopped early (11 to 13 epochs), which lowers that score."
+        },
+        {
+          "kind": "augment",
+          "label": "square",
+          "title": "One real training square through the real transform",
+          "rows": [
+            {
+              "title": "Rotation up to ±180°, the iteration 1 range",
+              "values": {
+                "rotate_deg": 180
+              },
+              "uncapped": true
+            },
+            {
+              "title": "The final setting, capped at ±10° for squares",
+              "values": {}
+            }
+          ],
+          "caption": "Both rows use the fixed transform, so only the rotation range differs. Turned squares start to look like diamonds."
+        },
+        {
+          "kind": "images",
+          "title": "Training squares, one source per row",
+          "keys": [
+            "inv_square_sources"
+          ],
+          "caption": "Some sources draw squares upright and others at any angle, so orientation and style differ by source."
+        }
+      ]
+    },
+    {
+      "id": "F08",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "prep",
+      "pipeline_stages": [
+        2
+      ],
+      "failure": "Augmented shapes came out about 6 px too small.",
+      "cause": "The transform re-framed them to 51 px against 57 px in real images.",
+      "handled": "Corrected the framing margin (augment.frame_margin).",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Shape size in the image",
+          "unit": " px",
+          "rows": [
+            {
+              "label": "Real images",
+              "value": 57
+            },
+            {
+              "label": "Augmented, before the fix",
+              "value": 51,
+              "mark": true
+            }
+          ],
+          "caption": "Measured during the investigation."
+        },
+        {
+          "kind": "augment",
+          "label": "rectangle",
+          "title": "The fixed transform on a real training rectangle",
+          "rows": [
+            {
+              "title": "Current output",
+              "values": {}
+            }
+          ],
+          "caption": "After the fix, shapes keep about the same size as the original."
+        }
+      ]
+    },
+    {
+      "id": "F09",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "prep",
+      "pipeline_stages": [
+        2
+      ],
+      "failure": "1-px strokes broke into pieces after warping.",
+      "cause": "The cut applied after warping was too strict for thin lines.",
+      "handled": "The first fix barely helped (17.2 down to 16.3 pieces). A separate thin-line path brought it to 1.0 piece.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Pieces a 1-px stroke breaks into after warping",
+          "unit": "",
+          "rows": [
+            {
+              "label": "Before any fix",
+              "value": 17.2,
+              "mark": true
+            },
+            {
+              "label": "First fix",
+              "value": 16.3,
+              "mark": true
+            },
+            {
+              "label": "Final fix",
+              "value": 1.0
+            }
+          ],
+          "caption": "Mean number of separate pieces. A clean outline is 1."
+        }
+      ]
+    },
+    {
+      "id": "F10",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "prep",
+      "pipeline_stages": [
+        3
+      ],
+      "failure": "Synthetic strokes were thinner than real ones.",
+      "cause": "The generator drew 2 px against about 3.1 px in real images.",
+      "handled": "Set the generator stroke to 3 px.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Stroke width",
+          "unit": " px",
+          "rows": [
+            {
+              "label": "Generator before the fix",
+              "value": 2,
+              "mark": true
+            },
+            {
+              "label": "Real images",
+              "value": 3.1
+            },
+            {
+              "label": "Generator now",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "kind": "synth",
+          "label": "square",
+          "title": "Real training squares and generated squares",
+          "caption": "Generated with the final tuned settings."
+        }
+      ]
+    },
+    {
+      "id": "F11",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "A1 was still improving when training ended, and early stopping is unstable.",
+      "cause": "The budget is 30 epochs, and at learning rate 0.003 validation scores can swing by 30 points between epochs.",
+      "handled": "Kept the same budget and early stopping for every arm so the comparison stays fair. Not fixed.",
+      "state": "Still open",
+      "visual": [
+        {
+          "kind": "curve",
+          "run": "A2_1",
+          "title": "Validation macro-F1 per epoch, run A2_1",
+          "caption": "One of the final training runs."
+        }
+      ]
+    },
+    {
+      "id": "F12",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The first polarity experiment gave invalid results.",
+      "cause": "A patch leaked between reused worker processes.",
+      "handled": "Discarded it and reran with one task per worker. Polarity made no difference.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Validation macro-F1, standard and inverted images",
+          "unit": "",
+          "domain": [
+            88,
+            96
+          ],
+          "rows": [
+            {
+              "label": "A0 standard",
+              "value": 91.69
+            },
+            {
+              "label": "A0 inverted",
+              "value": 91.93
+            },
+            {
+              "label": "A1 standard",
+              "value": 93.62
+            },
+            {
+              "label": "A1 inverted",
+              "value": 93.57
+            }
+          ],
+          "caption": "From the valid rerun, three seeds each. The differences are within seed noise."
+        }
+      ]
+    },
+    {
+      "id": "F13",
+      "group": "4. The second evaluation",
+      "iteration": "Iteration 2",
+      "step": "eval",
+      "pipeline_stages": [
+        1,
+        5
+      ],
+      "failure": "The test split had already been read in iteration 1.",
+      "cause": "No untouched test data remained after iteration 1.",
+      "handled": "Pre-registered the reuse and built a fresh 4,500-image holdout. It has no Quick, Draw! images and uses sources seen in training.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Logged reads by the evaluation code",
+          "unit": " reads",
+          "rows": [
+            {
+              "label": "Test split, iteration 1",
+              "value": 13
+            },
+            {
+              "label": "Test split, iteration 2",
+              "value": 32,
+              "mark": true
+            },
+            {
+              "label": "Fresh holdout, iteration 2",
+              "value": 20
+            }
+          ],
+          "caption": "The test split is the same one in both iterations. The fresh holdout was first read in iteration 2."
+        }
+      ]
+    },
+    {
+      "id": "F14",
+      "group": "4. The second evaluation",
+      "iteration": "Iteration 2",
+      "step": "eval",
+      "pipeline_stages": [
+        5
+      ],
+      "failure": "A2 vs A0 failed: +0.06 on test and +0.08 on the fresh holdout, both CIs include 0.",
+      "cause": "With the defects fixed, every arm reaches about the same score on images from sources it trained on.",
+      "handled": "Recorded as a failure. No change was made after the test read. A third iteration would need to target unseen sources.",
+      "state": "Still open",
+      "visual": [
+        {
+          "kind": "verdict",
+          "source": "stage5",
+          "required": 1,
+          "title": "A2 vs A0, macro-F1 points",
+          "caption": "The dashed line is the required gain. Both intervals include 0 and neither reaches it."
+        }
+      ]
+    },
+    {
+      "id": "F15",
+      "group": "5. Closing out",
+      "iteration": "Iteration 2",
+      "step": "deploy",
+      "pipeline_stages": [
+        6
+      ],
+      "failure": "Drawing on the live page failed once the fourth arm was added.",
+      "cause": "The API still accepted at most three arms.",
+      "handled": "Tied the limit to the arm list and added a test.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "What happened to a drawing",
+          "before": [
+            "Draw a shape",
+            "Ask all four arms",
+            "The API allows three",
+            "Error, no answer"
+          ],
+          "after": [
+            "Draw a shape",
+            "Ask all four arms",
+            "The limit follows the arm list",
+            "Four answers"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F16",
+      "group": "5. Closing out",
+      "iteration": "Iteration 2",
+      "step": "deploy",
+      "pipeline_stages": [
+        4,
+        6
+      ],
+      "failure": "A clean clone could not find the tuning result.",
+      "cause": "artifacts/ is not in Git, and Stages 4 and 6 read the winners from there.",
+      "handled": "run_pipeline.py restores the committed copy when it is absent. The rehearsal then reproduced every result.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "A fresh copy of the repository",
+          "before": [
+            "Clone the repository",
+            "artifacts/ is not in Git",
+            "Tuning result missing",
+            "Stage 4 would fail"
+          ],
+          "after": [
+            "Clone the repository",
+            "Committed copy restored",
+            "All seven stages pass",
+            "Same results as the main run"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F17",
+      "group": "Before this timeline",
+      "iteration": "Before iteration 1",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The first CNN could not see a whole shape.",
+      "cause": "Three blocks gave a 22-px receptive field on 64-px images.",
+      "handled": "Moved to four convolution blocks.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "field",
+          "title": "How much of a 64-px image one output can see",
+          "before": 22,
+          "after": 46,
+          "shape": 55,
+          "frame": 64,
+          "caption": "The outline is a typical 55-px shape. The filled square is the receptive field. Three blocks see 22 px and four blocks see 46 px."
+        }
+      ]
+    }
+  ],
+  "changes_note": "Every change to data, training or evaluation, filed under its CRISP-DM step.",
+  "changes": [
+    {
+      "step": "data",
+      "what": "Quick, Draw! diamonds",
+      "before": "Included in the diamond class",
+      "after": "All excluded by rule (500 drawings), split re-frozen at 12,405 / 2,819 / 2,776",
+      "why": "Most were gems, cones or shields, not rhombi."
+    },
+    {
+      "step": "data",
+      "what": "Fresh holdout",
+      "before": "None",
+      "after": "4,500 images that informed no choice, sealed like the test split",
+      "why": "The test split had already been read in iteration 1."
+    },
+    {
+      "step": "prep",
+      "what": "Rotation range",
+      "before": "±180° for every class",
+      "after": "±20°, capped at ±10° for square, rectangle and diamond",
+      "why": "Full rotation removed an orientation clue."
+    },
+    {
+      "step": "prep",
+      "what": "Other augmentation settings",
+      "before": "Set by hand",
+      "after": "Searched on validation: scale 0.904 to 1.076, shear 1.4°, translation 0, noise probability 0.385, blur probability 0.373",
+      "why": "Every range had been a guess."
+    },
+    {
+      "step": "prep",
+      "what": "Shape framing after augmentation",
+      "before": "About 51 px against 57 px real",
+      "after": "Framing margin set by augment.frame_margin",
+      "why": "Augmented shapes came out too small."
+    },
+    {
+      "step": "prep",
+      "what": "1-px stroke handling",
+      "before": "17.2 pieces per stroke",
+      "after": "Separate thin-line path, 1.0 piece",
+      "why": "Warping broke thin strokes apart."
+    },
+    {
+      "step": "prep",
+      "what": "Synthetic stroke width",
+      "before": "2 px",
+      "after": "3 px, against about 3.1 px real",
+      "why": "The generator did not match real strokes."
+    },
+    {
+      "step": "prep",
+      "what": "Synthetic generator ranges",
+      "before": "Set by hand",
+      "after": "Searched on validation for B and for A2 separately",
+      "why": "Every range had been a guess."
+    },
+    {
+      "step": "model",
+      "what": "CNN depth",
+      "before": "Three blocks, 22-px receptive field",
+      "after": "Four blocks, 46-px receptive field",
+      "why": "The network could not see a whole shape."
+    },
+    {
+      "step": "model",
+      "what": "Training arms",
+      "before": "A0, A1, B",
+      "after": "A0, A1, B, A2. A2 batches hold 105 clean, 100 augmented and 51 synthetic images",
+      "why": "A1 and B saw no clean images during training."
+    },
+    {
+      "step": "model",
+      "what": "Synthetic share of a batch",
+      "before": "B 30%",
+      "after": "B 71 of 256 images (configured 27.8%), A2 51 of 256 (configured 19.8%)",
+      "why": "Chosen by the validation search."
+    },
+    {
+      "step": "model",
+      "what": "Hyperparameter tuning",
+      "before": "Learning rate and dropout tuned on A1, shared by every arm",
+      "after": "Tuned per arm: learning rate 0.003 for all, dropout 0.2, except A0 at 0.4",
+      "why": "A single arm's settings could favour that arm."
+    },
+    {
+      "step": "model",
+      "what": "Training seeds",
+      "before": "Three per arm",
+      "after": "Five per arm, plus three hold-out-source runs per arm",
+      "why": "To measure seed variation better."
+    },
+    {
+      "step": "model",
+      "what": "Parallel GPU runs",
+      "before": "More workers than the GPU could hold",
+      "after": "At most two (train.parallel_runs: 2)",
+      "why": "Stage 4 stalled on 8 GB of GPU memory."
+    },
+    {
+      "step": "eval",
+      "what": "Primary comparison",
+      "before": "B vs A1",
+      "after": "A2 vs A0, pre-registered before tuning",
+      "why": "Iteration 2 asks whether the full mix beats real images alone."
+    },
+    {
+      "step": "eval",
+      "what": "Evaluation data",
+      "before": "Test split",
+      "after": "Reused test split plus the fresh holdout",
+      "why": "To add evidence the first read could not have touched."
+    },
+    {
+      "step": "eval",
+      "what": "Robustness check",
+      "before": "None",
+      "after": "Fixed perturbed copies of validation, scored by all 20 models",
+      "why": "Clean accuracy does not show which model survives damage. Descriptive only; changes no verdict."
+    },
+    {
+      "step": "deploy",
+      "what": "Shipped model",
+      "before": "A0_0",
+      "after": "A2_2, chosen by validation macro-F1",
+      "why": "The selection rule picked the best validation run."
+    },
+    {
+      "step": "deploy",
+      "what": "Live models in the studio",
+      "before": "A0 from the bundle, A1 and B separately",
+      "after": "All four arms exported to studio/out/arms",
+      "why": "To compare every arm on the same drawing."
+    }
+  ],
+  "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",
+  "audit": [
+    {
+      "step": "data",
+      "claim": "Per-class test counts are never checked against noise_bands.csv.",
+      "verdict": "Stands",
+      "action": "The recorded total does agree (2,776). Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "prep",
+      "claim": "B and A2 inherit augmentation settings searched on A1.",
+      "verdict": "Stands",
+      "action": "Disclosed here. Only the generator and mix were searched for B and A2.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "prep",
+      "claim": "Scaling is defined twice, in training and in evaluation.",
+      "verdict": "Stands",
+      "action": "Both are 255 today, so no result is affected. Editing this code would change Stage 4's recorded hash and force a retrain. Left for the next iteration.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "model",
+      "claim": "Arms see different numbers of real images per step.",
+      "verdict": "Stands",
+      "action": "A0 and A1 256, A2 205, B 185. No equal-real run exists. Would need new training.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "model",
+      "claim": "BatchNorm statistics include synthetic images in B and A2.",
+      "verdict": "Stands",
+      "action": "No recalibration exists. Would need new runs, so it cannot be tested now.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "model",
+      "claim": "One learning rate and dropout were shared by every arm.",
+      "verdict": "Does not stand",
+      "action": "Each arm was tuned separately. They happen to share a learning rate, and A0's dropout differs.",
+      "state": "No action"
+    },
+    {
+      "step": "model",
+      "claim": "Early stopping can end runs before the schedule finishes.",
+      "verdict": "Partly",
+      "action": "17 of 20 main runs used all 30 epochs. A0 seed 1 ran 10, A1 seed 4 ran 13, B seed 3 ran 29.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "Deterministic mode is overstated.",
+      "verdict": "Partly",
+      "action": "It is best-effort: non-deterministic operations only warn. In practice the clean-clone rehearsal reproduced all 32 validation scores exactly on this GPU.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "Batches are drawn with replacement, so an epoch does not cover every image.",
+      "verdict": "Stands",
+      "action": "Disclosed here. An epoch is a fixed 49 steps, by design.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "Synthetic shares are rounded differently from the real batch.",
+      "verdict": "Stands",
+      "action": "27.8% and 19.8% are the configured values. Real batches hold 71 and 51 of 256 (27.7% and 19.9%), and the run logs average 27.73% and 19.92%.",
+      "state": "Fixed in this record"
+    },
+    {
+      "step": "model",
+      "claim": "Validation is reused for tuning, epoch selection and the power check.",
+      "verdict": "Stands",
+      "action": "Validation scores are optimistic. The verdicts use the test split and the fresh holdout only.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "A1 and B train on no clean images.",
+      "verdict": "Stands",
+      "action": "Deliberate. A2 is the arm that adds them.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "Baselines train on 600 real images per class.",
+      "verdict": "Stands",
+      "action": "Every class has at least 680 training images. Baselines are reference points only.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "model.py still names three blocks as its default.",
+      "verdict": "Stands",
+      "action": "The config always passes four, so no run is affected. Editing this code would change Stage 4's recorded hash and force a retrain. Left for the next iteration.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "eval",
+      "claim": "extra_reads is a constant, so that check cannot fail.",
+      "verdict": "Stands",
+      "action": "The access log independently shows no unexpected reads. Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "eval",
+      "claim": "The stored error images have no hash check.",
+      "verdict": "Stands",
+      "action": "The current file was written by this run. Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "eval",
+      "claim": "The gallery refresh forces an extra test read.",
+      "verdict": "Partly",
+      "action": "It happens only if the error file is missing, and it is counted.",
+      "state": "No action"
+    },
+    {
+      "step": "eval",
+      "claim": "Prediction cache keys miss preprocessing code.",
+      "verdict": "Stands",
+      "action": "Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "eval",
+      "claim": "The bootstrap treats images as independent.",
+      "verdict": "Stands",
+      "action": "Intervals may be too narrow. The preregistration says nothing changes after a test read. Left for the next iteration's preregistration.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "eval",
+      "claim": "The interval covers test sampling, not seed variation.",
+      "verdict": "Stands",
+      "action": "Seed differences are reported separately. The preregistration says nothing changes after a test read. Left for the next iteration's preregistration.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "eval",
+      "claim": "Nothing checks that ensembles have equal size.",
+      "verdict": "Does not stand",
+      "action": "The seed sets must match or the comparison raises an error.",
+      "state": "No action"
+    },
+    {
+      "step": "eval",
+      "claim": "The per-class harm rule has no multiple-testing correction.",
+      "verdict": "Stands",
+      "action": "The preregistration says nothing changes after a test read. Left for the next iteration's preregistration.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "eval",
+      "claim": "Rule 1 needs the interval above 0, not above the minimum gain.",
+      "verdict": "Stands",
+      "action": "This is the pre-registered rule, so it is intended. Iteration 2 fails either way.",
+      "state": "No action"
+    },
+    {
+      "step": "eval",
+      "claim": "McNemar is not exact for small counts, and differs from the primary metric.",
+      "verdict": "Stands",
+      "action": "The preregistration says nothing changes after a test read. Left for the next iteration's preregistration.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "eval",
+      "claim": "The power check is optimistic.",
+      "verdict": "Stands",
+      "action": "Treat it as a rough lower bound on the interval width.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "eval",
+      "claim": "One random generator is shared across analyses.",
+      "verdict": "Stands",
+      "action": "Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration.",
+      "state": "Next iteration"
+    },
+    {
+      "step": "eval",
+      "claim": "A2 has no pairwise test against A1 or B.",
+      "verdict": "Partly",
+      "action": "A2 is tested against A0 and B. Only A2 vs A1 is missing. The preregistration says nothing changes after a test read. Left for the next iteration's preregistration.",
+      "state": "Next iteration"
+    }
   ]
 }

@@ -789,6 +789,16 @@ training. The iteration 1 verdict in Section D stands and is not rewritten.
 
 {\small\InputIfFileExists{artifacts/stage6/generated/iteration_log.tex}{}{--}}
 
+\textbf{Failures and how each was handled, in the order they happened.} Some were fixed, and some remain open.
+
+{\small\InputIfFileExists{artifacts/stage6/generated/failures.tex}{}{--}}
+
+\textbf{Changes and review points by CRISP-DM step.} Every change to data,
+training or evaluation is filed under its step, followed by what two outside
+code reviews raised after iteration 2 closed. No verdict changed as a result.
+
+{\small\InputIfFileExists{artifacts/stage6/generated/changes.tex}{}{--}}
+
 \textbf{What changed.} The transform defects were fixed, then the augmentation
 and generator settings were tuned on validation only, under a plan committed
 before tuning (\nolinkurl{docs/crisp_dm/iteration_2/preregistration.md}). A new

@@ -53,7 +53,7 @@ def augment(req: AugmentRequest) -> dict:
         raise HTTPException(status_code=404, detail="no images for this class")
     image, row = found
     return {"source": row["source_id"],
-            **augment_ops.preview(image, req.label, req.values.model_dump(), req.seed, req.n)}
+            **augment_ops.preview(image, req.label, req.values.model_dump(), req.seed, req.n, req.uncapped)}
 
 
 @router.post("/api/synth")

@@ -30,6 +30,7 @@ DOCS: dict[str, str] = {
     "shortcut_notice": f"{_A}/stage1/NOTICE_shortcut.md",
     "iteration1": "docs/crisp_dm/iteration_1_quickdraw_diamonds.json",
     "iteration_log": "docs/crisp_dm/iteration_log.json",
+    "robustness": "docs/crisp_dm/iteration_2/robustness/results.json",
     "winners": f"{_A}/stage4/tuning_iter2/winners.json",
     "fresh_metrics": f"{_A}/stage5/tables/fresh_metrics.csv",
     "fresh_per_class": f"{_A}/stage5/tables/fresh_per_class.csv",
@@ -56,6 +57,8 @@ DOCS: dict[str, str] = {
 
 IMAGES: dict[str, str] = {
     **{f"contact{n}": f"{_A}/stage1/gemstone_contact_sheet_{n}.png" for n in range(5)},
+    "robustness_examples": "docs/crisp_dm/iteration_2/robustness/examples.png",
+    "inv_square_sources": "docs/crisp_dm/iteration_2/investigation/sheet_train_square_by_source.png",
     "qa2": f"{_A}/stage2/qa/qa_sheet.png",
     "qa3": f"{_A}/stage3/qa/qa_sheet.png",
     "smoke_hexagon": f"{_A}/stage6/smoke_hexagon.png",

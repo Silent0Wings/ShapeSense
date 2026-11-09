@@ -23,7 +23,7 @@ def _checked(cfg: dict) -> dict:
     return cfg
 
 
-def augment_config(values: dict) -> dict:
+def augment_config(values: dict, uncapped: bool = False) -> dict:
     """A config whose ``augment`` section holds the given slider values."""
     cfg = tuned()
     a = cfg["augment"]
@@ -34,6 +34,8 @@ def augment_config(values: dict) -> dict:
     a["translate_px"] = float(values["translate_px"])
     a["noise_p"] = float(values["noise_p"])
     a["blur_p"] = float(values["blur_p"])
+    if uncapped:
+        cfg["taxonomy"]["rotate_limit_deg"] = {}
     return _checked(cfg)
 
 

@@ -7,7 +7,7 @@ import pytest
 from PIL import Image
 from starlette.testclient import TestClient
 
-from studio import allowlist
+from studio import allowlist, settings
 from studio.data import samples
 from studio.ops.overrides import default_augment_values
 from studio.server.app import create_app
@@ -102,3 +102,53 @@ def test_non_png_and_oversized_drawings_rejected(client):
 def test_every_arm_can_be_asked_for_at_once(client):
     assert client.post("/api/infer", json={"image": _png(64), "arms": list(ARMS)}).status_code == 200
     assert client.post("/api/infer", json={"image": _png(64), "arms": [*ARMS, "A0"]}).status_code == 422
+
+
+def test_meta_carries_every_failure_with_how_it_was_handled(client):
+    failures = client.get("/api/meta").json()["failures"]
+    assert failures and all(f["failure"] and f["cause"] and f["handled"] for f in failures)
+    assert {f["state"] for f in failures} <= {"Overcome", "Partly", "Still open", "Verdict stands"}
+    assert any(f["state"] == "Still open" and "A2 vs A0" in f["failure"] for f in failures)
+
+
+def test_failures_run_in_order_and_each_maps_to_the_cycle(client):
+    meta = client.get("/api/meta").json()
+    failures = meta["failures"]
+    assert [f["id"] for f in failures] == [f"F{n:02d}" for n in range(1, len(failures) + 1)]
+    assert "diamonds" in failures[0]["failure"]
+    steps = {p["id"] for p in meta["phases"]}
+    assert all(f["step"] in steps and f["pipeline_stages"] for f in failures)
+    assert all(set(f["pipeline_stages"]) <= set(range(7)) for f in failures)
+    assert client.get("/failure.html").status_code == 200 and client.get("/failures.html").status_code == 200
+
+
+def test_every_failure_has_a_visual_with_allowed_images(client):
+    kinds = {"bars", "images", "flow", "field", "augment", "synth", "curve", "verdict"}
+    for failure in client.get("/api/meta").json()["failures"]:
+        assert failure["visual"] and {b["kind"] for b in failure["visual"]} <= kinds
+        for block in failure["visual"]:
+            assert set(block.get("keys", [])) <= set(allowlist.IMAGES)
+
+
+def test_feedback_saves_only_under_the_feedback_folder(client, tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "FEEDBACK_DIR", tmp_path / "saved")
+    body = {"image": _png(64), "strokes": [[[1, 2], [3, 4]]], "results": [{"arm": "A2", "label": "circle"}]}
+    saved = client.post("/api/feedback", json=body).json()["saved"]
+    assert saved.startswith(f"{settings.FEEDBACK_LABEL}/") and saved.endswith(".png")
+    names = sorted(p.suffix for p in (tmp_path / "saved").iterdir())
+    assert names == [".json", ".png"]
+
+
+def test_feedback_rejects_bad_drawings_and_extra_fields(client, tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "FEEDBACK_DIR", tmp_path / "saved")
+    good = {"image": _png(64), "strokes": [], "results": []}
+    assert client.post("/api/feedback", json={**good, "image": "data:text/plain;base64,AA=="}).status_code == 422
+    assert client.post("/api/feedback", json={**good, "path": "../../x"}).status_code == 422
+    assert not (tmp_path / "saved").exists()
+
+
+def test_changes_and_audit_points_sit_under_a_crisp_dm_step(client):
+    meta = client.get("/api/meta").json()
+    steps = {p["id"] for p in meta["phases"]}
+    assert meta["changes"] and all(c["step"] in steps and c["before"] and c["after"] for c in meta["changes"])
+    assert meta["audit"] and all(a["step"] in steps and a["verdict"] and a["action"] and a["state"] for a in meta["audit"])

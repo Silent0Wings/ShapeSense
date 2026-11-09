@@ -34,6 +34,7 @@ class AugmentRequest(_Strict):
     seed: int = Field(ge=0, le=2**31)
     n: int = Field(ge=1, le=MAX_VARIANTS)
     values: AugmentValues
+    uncapped: bool = False   # drop the per-class rotation limits, to show what they prevent
 
 
 class SynthValues(_Strict):
@@ -67,6 +68,12 @@ class SynthRequest(_Strict):
 class InferRequest(_Strict):
     image: str = Field(max_length=MAX_BODY_BYTES)
     arms: list[str] = Field(max_length=len(ARMS))
+
+
+class FeedbackRequest(_Strict):
+    image: str = Field(max_length=MAX_BODY_BYTES)
+    strokes: list[list[list[float]]] = Field(max_length=2000)
+    results: list[dict] = Field(max_length=len(ARMS))
 
 
 class WhatIfRequest(_Strict):

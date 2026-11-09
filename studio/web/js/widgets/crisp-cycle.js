@@ -35,9 +35,9 @@ function wrap(line, width = 31) {
   return out.slice(0, 3);
 }
 
-function node(phase, at, step) {
+function node(phase, at, step, active) {
   const lines = wrap(phase.status_line);
-  const group = s('a', { href: phase.page, class: 'node', 'aria-label': `${phase.name}: ${phase.status_line}` },
+  const group = s('a', { href: phase.page, class: active ? 'node active' : 'node', 'aria-label': `${phase.name}: ${phase.status_line}` },
     s('rect', { x: at.x - NODE_W / 2, y: at.y - NODE_H / 2, width: NODE_W, height: NODE_H, rx: 12 }),
     text(at.x, at.y - 21, `${step}. ${phase.name}`, { class: 'name', 'text-anchor': 'middle' }));
   lines.forEach((line, i) => group.append(text(at.x, at.y + 1 + i * 15, line, { class: 'line', 'text-anchor': 'middle' })));
@@ -47,7 +47,9 @@ function node(phase, at, step) {
 const marker = (id, cls) => s('marker', { id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' },
   s('path', { d: 'M0,0 L10,5 L0,10 z', class: cls, style: cls ? undefined : 'fill:var(--accent)' }));
 
-export function crispCycle({ phases, verdict }) {
+// `active` highlights one step; `focus` replaces the verdict in the centre.
+export function crispCycle({ phases, verdict, active, focus }) {
+  const centre = focus ?? { over: `${verdict ? verdict.label : 'Primary'} verdict`, big: verdict ? verdict.verdict.toUpperCase() : 'pending', under: 'Dashed: feedback arrows, including iteration 1' };
   const at = positions(phases.length);
   const root = s('svg', { class: 'cycle', viewBox: `0 0 ${W} ${H}`, role: 'group', 'aria-label': 'CRISP-DM cycle' },
     s('defs', {}, marker('forward', 'head'), marker('backward', '')));
@@ -56,11 +58,11 @@ export function crispCycle({ phases, verdict }) {
   root.append(arrow(at[3], at[2], -30, 'back', 'backward'));   // iteration 1: Modeling to Data Preparation
   root.append(arrow(at[4], at[2], -44, 'back', 'backward'));   // iteration 2: Evaluation to Data Preparation
   root.append(text(W / 2, H / 2 + 92, 'iteration 2', { class: 'center', 'text-anchor': 'middle' }));
-  root.append(text(W / 2, H / 2 - 22, `${verdict ? verdict.label : 'Primary'} verdict`, { class: 'center', 'text-anchor': 'middle' }));
-  root.append(text(W / 2, H / 2 + 12, verdict ? verdict.verdict.toUpperCase() : 'pending', { class: 'center-big', 'text-anchor': 'middle' }));
-  root.append(text(W / 2, H / 2 + 34, 'Dashed: feedback arrows, including iteration 1', { class: 'center', 'text-anchor': 'middle' }));
-  phases.forEach((phase, i) => root.append(node(phase, at[i], i + 1)));
+  root.append(text(W / 2, H / 2 - 22, centre.over, { class: 'center', 'text-anchor': 'middle' }));
+  root.append(text(W / 2, H / 2 + 12, centre.big, { class: 'center-big', 'text-anchor': 'middle' }));
+  root.append(text(W / 2, H / 2 + 34, centre.under, { class: 'center', 'text-anchor': 'middle' }));
+  phases.forEach((phase, i) => root.append(node(phase, at[i], i + 1, phase.id === active)));
   const list = el('ol', { class: 'cycle-list' }, phases.map((phase, i) => el('li', {},
-    el('a', { href: phase.page }, `${i + 1}. ${phase.name}`, el('span', { text: phase.status_line })))));
+    el('a', { href: phase.page, 'aria-current': phase.id === active ? 'step' : null }, `${i + 1}. ${phase.name}`, el('span', { text: phase.status_line })))));
   return el('div', {}, root, list);
 }

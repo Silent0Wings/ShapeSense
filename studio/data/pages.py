@@ -83,13 +83,18 @@ def _iteration1() -> dict:
             "comparisons": read_csv("iter1_comparisons"), "table_metrics": read_csv("iter1_metrics")}
 
 
+def _robustness() -> dict:
+    return {"results": read_json("robustness")}
+
+
 def _live() -> dict:
     return {"arms": arms.available(), "provenance": arms.provenance()}
 
 
 BUILDERS = {"home": _home, "business": _business, "stage0": _stage0, "stage1": _stage1,
             "stage2": _stage2, "stage3": _stage3, "stage4": _stage4, "stage5": _stage5,
-            "stage6": _stage6, "live": _live, "iteration1": _iteration1}
+            "stage6": _stage6, "live": _live, "iteration1": _iteration1,
+            "failures": dict, "failure": dict, "robustness": _robustness, "changes": dict}
 
 
 def build(name: str) -> dict | None:
@@ -100,4 +105,6 @@ def build(name: str) -> dict | None:
 def meta() -> dict:
     log = read_json("iteration_log") or {"iterations": []}
     return {"classes": list(classes()), "phases": phases(), "stage_phase": STAGE_PHASE,
-            "arms": arms.available(), "iterations": log["iterations"], "candidate": ERRORS_ARM}
+            "arms": arms.available(), "iterations": log["iterations"], "failures": log.get("failures", []),
+            "changes": log.get("changes", []), "audit": log.get("audit", []),
+            "candidate": ERRORS_ARM}

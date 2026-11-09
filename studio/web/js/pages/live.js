@@ -10,5 +10,5 @@ boot('live', (main, d, meta) => {
   main.append(card('Canvas', predictPanel({ arms: d.arms, labels: meta.classes })));
   main.append(card('How to read this',
     el('p', { text: `Live models: ${d.arms.map((a) => `${a} (${d.provenance[a]?.run ?? 'unknown run'}, validation ${fmt(d.provenance[a]?.val_macro_f1, 1)})`).join('; ')}.` }),
-    note('Below 50% confidence the answer is shown as "not sure". Sketched diamonds are outside the training data, because the diamond class comes only from rendered images. Drawings here are informal evidence and never affect the verdict. The saved feedback file stays on your computer.')));
+    note('Below 50% confidence the answer is shown as "not sure". Sketched diamonds are outside the training data, because the diamond class comes only from rendered images. Drawings here are informal evidence and never affect the verdict. Saved drawings go to studio/feedback in this repository.')));
 });

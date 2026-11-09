@@ -2,7 +2,9 @@
 
 Writes under ``artifacts/stage6/generated/``:
   ``iteration2_facts.tex``  macros from Stage 5, the search and the config;
-  ``iteration_log.tex``     the findings per CRISP-DM step, from the iteration log.
+  ``iteration_log.tex``     the findings per CRISP-DM step, from the iteration log;
+  ``failures.tex``          every recorded failure and how it was handled;
+  ``changes.tex``           every change and audit point, under its CRISP-DM step.
 Every number in that part of the report comes from these two files.
 """
 
@@ -97,6 +99,43 @@ def log_table(repo_root: Path = REPO_ROOT, iteration: int = 2) -> str:
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
 
 
+def failure_tables(repo_root: Path = REPO_ROOT) -> str:
+    """One table per failure group, so that each fits on a page."""
+    log = _load(repo_root / "docs" / "crisp_dm" / "iteration_log.json")
+    groups: dict[str, list[str]] = {}
+    for f in log.get("failures", []):
+        groups.setdefault(f["group"], []).append(
+            f"\\textbf{{{latex_escape(f['failure'])}}} {latex_escape(f['cause'])} & "
+            f"{latex_escape(f['handled'])} & {latex_escape(f['state'])} \\\\")
+    head = "\\begin{tabular}{p{0.34\\linewidth}p{0.46\\linewidth}p{0.11\\linewidth}}\n\\toprule\n"
+    return "\n\\medskip\n\n".join(
+        f"\\textit{{{latex_escape(name)}}}\n\n{head}What failed, and why & How it was handled & State \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n" for name, rows in groups.items())
+
+
+def _table(columns: str, head: str, rows: list[str]) -> str:
+    return f"\\begin{{tabular}}{{{columns}}}\n\\toprule\n{head} \\\\\n\\midrule\n" \
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
+
+
+def change_tables(repo_root: Path = REPO_ROOT) -> str:
+    """Per CRISP-DM step: what changed, then what the outside reviews found."""
+    log = _load(repo_root / "docs" / "crisp_dm" / "iteration_log.json")
+    wide = "p{0.20\\linewidth}p{0.30\\linewidth}p{0.41\\linewidth}"
+    review = "p{0.38\\linewidth}p{0.11\\linewidth}p{0.42\\linewidth}"
+    parts = []
+    for key, name in STEP_NAMES:
+        changes = [f"{latex_escape(c['what'])} & {latex_escape(c['before'])} & {latex_escape(c['after'])} \\\\"
+                   for c in log.get("changes", []) if c["step"] == key]
+        audit = [f"{latex_escape(a['claim'])} & {latex_escape(a['verdict'])} & {latex_escape(a['action'])} \\\\"
+                 for a in log.get("audit", []) if a["step"] == key]
+        if changes:
+            parts.append(f"\\textit{{{name}: changes}}\n\n" + _table(wide, "What changed & Before & After", changes))
+        if audit:
+            parts.append(f"\\textit{{{name}: outside review}}\n\n" + _table(review, "Point raised & Verdict & What was done", audit))
+    return "\n\\medskip\n\n".join(parts)
+
+
 def write_iteration2(config: Mapping, artifacts_dir: str | Path, repo_root: Path = REPO_ROOT) -> list[Path]:
     """Write both generated files; returns their paths."""
     out = Path(artifacts_dir) / "stage6" / "generated"
@@ -106,4 +145,6 @@ def write_iteration2(config: Mapping, artifacts_dir: str | Path, repo_root: Path
         f"\\providecommand{{\\{name}}}{{{macros[name]}}}\n" for name in MACRO_NAMES)
     (out / "iteration2_facts.tex").write_text(facts, encoding="utf-8")
     (out / "iteration_log.tex").write_text(log_table(repo_root), encoding="utf-8")
-    return [out / "iteration2_facts.tex", out / "iteration_log.tex"]
+    (out / "failures.tex").write_text(failure_tables(repo_root), encoding="utf-8")
+    (out / "changes.tex").write_text(change_tables(repo_root), encoding="utf-8")
+    return [out / "iteration2_facts.tex", out / "iteration_log.tex", out / "failures.tex", out / "changes.tex"]

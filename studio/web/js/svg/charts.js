@@ -55,7 +55,7 @@ export function heatmap({ cells, xLabels, yLabels, label, cellText, tip, onClick
   return root;
 }
 
-export function lines({ series, xs, label, yLabel, marker }) {
+export function lines({ series, xs, label, yLabel, marker, xLabels, xTitle = 'epoch' }) {
   const width = 560; const height = 220; const left = 42; const right = 12; const top = 10; const bottom = 186;
   const all = series.flatMap((d) => d.values);
   const lo = Math.min(...all); const hi = Math.max(...all);
@@ -67,8 +67,9 @@ export function lines({ series, xs, label, yLabel, marker }) {
     root.append(s('line', { class: 'grid-line', x1: left, x2: width - right, y1: y(v), y2: y(v) }),
       text(left - 6, y(v) + 4, v, { 'text-anchor': 'end' }));
   }
-  for (const v of ticks(xs[0], xs[xs.length - 1], 6)) root.append(text(x(v), bottom + 15, v, { 'text-anchor': 'middle' }));
-  root.append(text((left + width - right) / 2, height - 4, 'epoch', { 'text-anchor': 'middle' }));
+  if (xLabels) xs.forEach((v, i) => root.append(text(x(v), bottom + 15, xLabels[i], { 'text-anchor': 'middle', style: 'font-size:10.5px' })));
+  else for (const v of ticks(xs[0], xs[xs.length - 1], 6)) root.append(text(x(v), bottom + 15, v, { 'text-anchor': 'middle' }));
+  root.append(text((left + width - right) / 2, height - 4, xTitle, { 'text-anchor': 'middle' }));
   root.append(text(4, top + 2, yLabel, { 'text-anchor': 'start' }));
   for (const d of series) {
     root.append(s('path', { d: d.values.map((v, i) => `${i ? 'L' : 'M'}${x(xs[i])},${y(v)}`).join(''), fill: 'none', stroke: d.color, 'stroke-width': 2 }));
@@ -78,9 +79,20 @@ export function lines({ series, xs, label, yLabel, marker }) {
     root.append(s('line', { class: 'axis-line', x1: x(marker), x2: x(marker), y1: top, y2: bottom }));
     for (const d of series) root.append(s('circle', { cx: x(marker), cy: y(d.values[i]), r: 4.5, fill: d.color, stroke: 'var(--surface-1)', 'stroke-width': 2 }));
   }
-  const band = s('rect', { x: left, y: top, width: width - left - right, height: bottom - top, fill: 'transparent' });
-  hover(band, () => document.createTextNode(series.map((d) => `${d.label}: ${marker !== undefined ? d.values[xs.indexOf(marker)].toFixed(3) : ''}`).join('  ·  ')));
-  root.append(band);
+  if (marker !== undefined) {
+    const band = s('rect', { x: left, y: top, width: width - left - right, height: bottom - top, fill: 'transparent' });
+    hover(band, () => document.createTextNode(series.map((d) => `${d.label}: ${d.values[xs.indexOf(marker)].toFixed(3)}`).join('  ·  ')));
+    root.append(band);
+  }
+  if (xLabels) {
+    for (const d of series) {
+      d.values.forEach((v, i) => {
+        const dot = s('circle', { cx: x(xs[i]), cy: y(v), r: 4, fill: d.color, stroke: 'var(--surface-1)', 'stroke-width': 1.5 });
+        hover(dot, `${d.label}, ${xLabels[i]}: ${v.toFixed(1)}`);
+        root.append(dot);
+      });
+    }
+  }
   const wrap = document.createElement('div');
   if (series.length > 1) wrap.append(legend(series));
   wrap.append(root);
@@ -165,6 +177,29 @@ export function ciChart({ rows, label, required }) {
     const tip = `${row.label}: ${row.delta.toFixed(2)} points, CI [${row.ci[0].toFixed(2)}, ${row.ci[1].toFixed(2)}]`;
     hover(whisk, tip); hover(dot, tip);
     root.append(whisk, dot, text(scale(row.delta), y - 11, row.delta.toFixed(2), { 'text-anchor': 'middle' }));
+  });
+  return root;
+}
+
+// Labelled values. Bars start at zero; with a `domain` the values sit too close for
+// bars to show, so each is a dot on its own line and length carries no meaning.
+export function valueBars({ rows, label, unit = '', domain }) {
+  const width = 680; const rowH = 36; const left = 250; const right = 590; const top = 6;
+  const span = domain ?? [0, Math.max(...rows.map((r) => r.value))];
+  const scale = linear(span, [left, right]);
+  const bottom = top + rows.length * rowH;
+  const root = svgRoot(width, bottom + (domain ? 24 : 6), label);
+  if (domain) valueAxis(root, scale, ticks(span[0], span[1], 5), top, bottom);
+  rows.forEach((row, i) => {
+    const y = top + i * rowH + rowH / 2;
+    const fill = row.mark ? 'var(--accent)' : 'var(--text-muted)';
+    root.append(text(left - 12, y + 5, row.label, { 'text-anchor': 'end', style: 'font-size:13.5px;fill:var(--text-primary)' }));
+    if (domain) root.append(s('circle', { cx: scale(row.value), cy: y, r: 8, fill }));
+    else root.append(s('rect', { x: left, y: y - 8, width: Math.max(scale(row.value) - left, 2), height: 16, rx: 4, fill }));
+    root.append(text(width - 4, y + 5, `${row.value}${unit}`, { 'text-anchor': 'end', style: 'font-size:14px;font-variant-numeric:tabular-nums;fill:var(--text-primary)' }));
+    const band = s('rect', { x: 0, y: y - rowH / 2, width, height: rowH, fill: 'transparent' });
+    hover(band, `${row.label}: ${row.value}${unit}`);
+    root.append(band);
   });
   return root;
 }
