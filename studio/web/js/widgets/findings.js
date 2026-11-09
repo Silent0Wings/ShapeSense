@@ -8,7 +8,7 @@ const PAGE_STEPS = { business: ['business'], stage1: ['data', 'prep'], stage2: [
 
 const statusBadge = (it) => (it.status === 'closed' ? badge('good', 'Closed') : badge('warn', 'In progress'));
 
-export function iterationLog(iterations) {
+export function iterationLog(iterations = []) {
   return card('What each trip round the cycle found', iterations.map((it) => el('div', { style: 'margin-bottom:18px' },
     el('h3', {}, `Iteration ${it.id}: ${it.title} `, statusBadge(it)),
     el('p', { class: 'note', text: `${it.route}. ${it.trigger}` }),
@@ -18,7 +18,7 @@ export function iterationLog(iterations) {
 }
 
 // The findings recorded for the step or steps this page belongs to.
-export function pageFindings(page, iterations) {
+export function pageFindings(page, iterations = []) {
   const steps = PAGE_STEPS[page];
   if (!steps) return null;
   const rows = iterations.flatMap((it) => steps.filter((step) => it.findings[step]).map((step) => ({ it, step })));
