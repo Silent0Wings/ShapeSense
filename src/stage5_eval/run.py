@@ -28,23 +28,24 @@ import numpy as np
 
 from src.common.config import LOSO_ARMS, class_names, load_config, resolve
 from src.common.hashing import config_subtree_hash, sha256_path
-from src.common.splits import count_test_reads
+from src.common.splits import count_test_reads, reads_outside
 from src.common.status import StageNotReady, current_run_id
-from src.stage5_eval import criterion, evaluate, figures, fresh, tables
+from src.stage5_eval import criterion, evaluate, figures, fresh, robust, tables
 from src.stage5_eval.metrics import (accuracy, confusion, group_accuracy, macro_f1,
                                      per_class_f1)
 from src.stage5_eval.placeholders import write_placeholders
 from src.stage5_eval.power import align_validation_probs, check_arm_alignment, power_check
-from src.stage5_eval.stats import (holm, mcnemar_test, paired_bootstrap,
+from src.stage5_eval.stats import (analysis_rng, cluster_bootstrap, holm, mcnemar_test,
                                    per_seed_differences)
 
 STAGE = "stage5"
 DEPENDS = ["stage0", "stage1", "stage4"]
 
-# Arm roles in the pre-registered hypotheses (implementation.md Decision 9).
+# Arm roles; the comparisons themselves come from the config's evaluation section.
 ARM_CONTROL = "A0"  # real only
-ARM_AUG = "A1"  # real + augmentation; reference of the primary comparison
-ARM_SYNTH = "B"  # real + augmentation + synthetic; candidate of the primary comparison
+ARM_AUG = "A1"  # real + augmentation
+ARM_SYNTH = "B"  # real + augmentation + synthetic
+READER = "src.stage5_eval.evaluate"  # the only module whose sealed reads are accounted for
 PRIMARY_LABEL = f"{ARM_SYNTH} vs {ARM_AUG}"
 SECONDARY_PAIRS = ((ARM_CONTROL, ARM_AUG), (ARM_CONTROL, ARM_SYNTH))  # Holm over these two
 
@@ -128,6 +129,10 @@ def _dirs(config: dict) -> dict[str, Path]:
         "test_manifest": resolve(config["paths"]["splits_dir"]) / "test.csv",
         "fresh_manifest": resolve(config["paths"]["splits_dir"]) / "fresh_holdout.csv",
         "predictions_fresh": art / STAGE / "predictions_fresh",
+        "fresh2_manifest": resolve(config["paths"]["splits_dir"]) / "fresh_holdout_2.csv",
+        "predictions_fresh2": art / STAGE / "predictions_fresh2",
+        "predictions_robust": art / STAGE / "predictions_robust",
+        "perturbed": art / STAGE / "perturbed_fresh2",
     }
 
 
@@ -149,6 +154,7 @@ def inputs(config: dict) -> dict[str, str]:
         "source_classifier": sha256_path(d["stage1"] / SOURCE_CLASSIFIER_FILE),
         "test_manifest": sha256_path(d["test_manifest"]),
         "fresh_manifest": sha256_path(d["fresh_manifest"]),
+        "fresh2_manifest": sha256_path(d["fresh2_manifest"]),
         "baselines": sha256_path(d["stage4"] / "baselines"),
     }
     for run in config["runs"]:
@@ -178,6 +184,13 @@ def read_noise_bands(path: Path, n_classes: int) -> dict:
         raise ValueError(f"{path}: a class is missing from noise_bands.csv")
     return {"n_test": n_test, "noise_band_points": band, "threshold_points": threshold,
             "source_path": Path(path).as_posix(), "source_sha256": sha256_path(path)}
+
+
+def check_class_counts(y: np.ndarray, n_test: np.ndarray) -> None:
+    """The test labels must have exactly the per-class counts the thresholds were built for."""
+    counts = np.bincount(np.asarray(y, dtype=np.int64), minlength=np.asarray(n_test).size)
+    if not np.array_equal(counts, n_test):
+        raise ValueError(f"test labels have counts {counts.tolist()}, noise_bands.csv says {list(n_test)}")
 
 
 def thresholds_from_noise_bands(bands: dict) -> bool:
@@ -313,8 +326,20 @@ def is_full_split_spec(spec: evaluate.ModelSpec) -> bool:
     return spec.source_filter is None
 
 
+def _error_cache_current(err_path: Path, stamp: str) -> bool:
+    """True when the stored error images were made by these models on this manifest."""
+    err_path = Path(err_path)
+    if not err_path.is_file():
+        return False
+    try:
+        with np.load(err_path, allow_pickle=False) as z:
+            return str(z["stamp"]) == stamp
+    except (OSError, KeyError, ValueError):
+        return False
+
+
 def gallery_refresh_name(specs: Sequence[evaluate.ModelSpec], err_path: Path,
-                         candidate: str = ARM_SYNTH) -> str | None:
+                         candidate: str = ARM_SYNTH, stamp: str = "") -> str | None:
     """Which model's prediction cache to invalidate so the galleries get images.
 
     The error galleries need test images. When every model is served from
@@ -322,7 +347,7 @@ def gallery_refresh_name(specs: Sequence[evaluate.ModelSpec], err_path: Path,
     an evaluated model, so the first B-arm member is re-evaluated (its fresh,
     counted read supplies the images). Returns None when nothing is needed.
     """
-    if Path(err_path).is_file():
+    if _error_cache_current(err_path, stamp):
         return None
     for spec in specs:
         if _arm_of(spec) == candidate:
@@ -331,7 +356,7 @@ def gallery_refresh_name(specs: Sequence[evaluate.ModelSpec], err_path: Path,
 
 
 def gallery_errors(images: np.ndarray | None, err_path: Path, y: np.ndarray,
-                   pred_b: np.ndarray, image_ids: np.ndarray) -> tuple | None:
+                   pred_b: np.ndarray, image_ids: np.ndarray, stamp: str = "") -> tuple | None:
     """Misclassified B-ensemble images from the fresh read or the error cache.
 
     Never reads the test split. Returns ``(images, labels, preds)`` and writes
@@ -344,9 +369,9 @@ def gallery_errors(images: np.ndarray | None, err_path: Path, y: np.ndarray,
         err_images, err_y, err_pred = np.asarray(images)[wrong], y[wrong], pred_b[wrong]
         err_path.parent.mkdir(parents=True, exist_ok=True)
         np.savez_compressed(err_path, images=err_images, labels=err_y, preds=err_pred,
-                            image_ids=np.asarray(image_ids)[wrong])
+                            image_ids=np.asarray(image_ids)[wrong], stamp=np.asarray(stamp))
         return err_images, err_y, err_pred
-    if err_path.is_file():
+    if _error_cache_current(err_path, stamp):
         with np.load(err_path, allow_pickle=False) as z:
             return z["images"], z["labels"], z["preds"]
     return None
@@ -363,9 +388,9 @@ def _mean_std(values: Sequence[float]) -> tuple[float, float]:
     return float(arr.mean()), float(arr.std(ddof=ddof))
 
 
-def _compare(y: np.ndarray, pred_ref: np.ndarray, pred_cand: np.ndarray, k: int,
-             n_boot: int, rng: np.random.Generator, ci_level: float) -> dict:
-    boot = paired_bootstrap(y, pred_ref, pred_cand, k, n_boot, rng, ci_level)
+def _compare(y: np.ndarray, pred_ref: np.ndarray, pred_cand: np.ndarray, groups: np.ndarray, k: int,
+             n_boot: int, seed: int, name: str, ci_level: float) -> dict:
+    boot = cluster_bootstrap(y, pred_ref, pred_cand, groups, k, n_boot, analysis_rng(seed, name), ci_level)
     mc = mcnemar_test(pred_ref == y, pred_cand == y)
     return {"boot": boot, "mcnemar": mc}
 
@@ -441,7 +466,7 @@ def run(config: dict) -> dict:
     n_boot = int(ev_cfg["n_boot"])
     ci_level = float(crit["ci_level"])
     min_gain = float(crit["macro_f1_min_gain_points"])
-    rng = np.random.default_rng(int(ev_cfg["bootstrap_seed"]))
+    boot_seed = int(ev_cfg["bootstrap_seed"])
     run_id = current_run_id()
     bands = read_noise_bands(d["stage1"] / NOISE_BANDS_FILE, k)
     thresholds = bands["threshold_points"]
@@ -450,6 +475,8 @@ def run(config: dict) -> dict:
     pairs = [tuple(p) for p in ev_cfg["confusion_pairs"]]
     manifest_hash = sha256_path(d["test_manifest"])  # file bytes, not a split read
     err_path = d["predictions"] / errors_cache(candidate)
+    error_stamp = "+".join(s.fingerprint for s in specs if s.extra.get("arm") == candidate
+                           and is_full_split_spec(s)) + "@" + manifest_hash
     outputs: list[Path] = []
 
     # ---- (a) power check on validation probabilities, before any test read
@@ -460,8 +487,9 @@ def run(config: dict) -> dict:
         y_val_b, probs_b, ids_b = align_validation_probs(
             load_val_records(d["stage4"], names_by_arm[candidate]))
         check_arm_alignment(y_val, ids_a1, y_val_b, ids_b)
-        power = power_check(y_val, probs_a1, probs_b, n_test_published, k, n_boot, rng,
-                            ci_level, float(ev_cfg["power_halfwidth_limit_points"]))
+        power = power_check(y_val, probs_a1, probs_b, n_test_published, k, n_boot,
+                            analysis_rng(boot_seed, "power"), ci_level,
+                            float(ev_cfg["power_halfwidth_limit_points"]))
         reads_now = count_test_reads(run_id, log_path=d["log"])
         power["before_first_test_read"] = reads_now == 0
         power["access_log_reads_at_power_check"] = int(reads_now)
@@ -473,7 +501,7 @@ def run(config: dict) -> dict:
 
     # ---- (b) one test read per model (every read is tied to an evaluated model)
     def evaluate_fn(_power: dict) -> dict:
-        refresh = gallery_refresh_name(specs, err_path, candidate)
+        refresh = gallery_refresh_name(specs, err_path, candidate, error_stamp)
         if refresh is not None:
             evaluate.cache_path(d["predictions"], refresh).unlink(missing_ok=True)
         ev = evaluate.evaluate_models(config, specs, evaluate.default_test_reader(config),
@@ -484,12 +512,24 @@ def run(config: dict) -> dict:
                 config, [s for s in specs if _arm_of(s) is not None],
                 evaluate.fresh_holdout_reader(config), d["predictions_fresh"],
                 manifest_hash=sha256_path(d["fresh_manifest"]))
+        ev["fresh2"] = ev["robust"] = None
+        robust_cfg = ev_cfg.get("robust")
+        if robust_cfg and d["fresh2_manifest"].is_file():
+            arm_specs = [s for s in specs if _arm_of(s) is not None]
+            fresh2_hash = sha256_path(d["fresh2_manifest"])
+            ev["fresh2"] = evaluate.evaluate_models(
+                config, arm_specs, evaluate.fresh_holdout_reader(config, robust_cfg["split"]),
+                d["predictions_fresh2"], manifest_hash=fresh2_hash)
+            sets = robust.sets_for(ev["fresh2"]["images"], robust_cfg["levels"], int(robust_cfg["seed"]),
+                                   d["perturbed"], fresh2_hash)
+            ev["robust"] = robust.predict_levels(arm_specs, sets, ev["fresh2"]["models"],
+                                                 d["predictions_robust"], fresh2_hash)
         return ev
 
     # ---- (c)-(e) analysis on cached predictions
     def analyse_fn(power: dict, ev: dict) -> dict:
         models = ev["models"]
-        extra_reads = 0  # reads not tied to an evaluated model; must stay 0
+        extra_reads = reads_outside(run_id, READER, log_path=d["log"])  # must stay 0
         for spec in specs:
             outputs.append(models[spec.name]["path"])
 
@@ -538,7 +578,8 @@ def run(config: dict) -> dict:
             path = evaluate.cache_path(d["predictions"], f"ensemble_{arm}")
             evaluate.save_predictions(path, probs=rec["probs"], preds=rec["preds"],
                                       labels=rec["labels"], image_ids=rec["image_ids"],
-                                      source_ids=rec["source_ids"], model_hash=fp,
+                                      source_ids=rec["source_ids"], group_ids=rec["group_ids"],
+                                      model_hash=fp,
                                       manifest_hash=manifest_hash)
             outputs.append(path)
             rec["accuracy"] = accuracy(rec["labels"], rec["preds"], k)
@@ -551,6 +592,8 @@ def run(config: dict) -> dict:
                 raise ValueError(f"arm {needed} has no runs; the primary comparison needs it")
         y = ens[candidate]["labels"]
         source_ids = ens[candidate]["source_ids"]
+        group_ids = ens[candidate]["group_ids"]
+        check_class_counts(y, bands["n_test"])
 
         baselines = []
         for spec in specs:
@@ -560,16 +603,16 @@ def run(config: dict) -> dict:
                                   "accuracy": accuracy(rec["labels"], rec["preds"], k),
                                   "macro_f1": macro_f1(rec["labels"], rec["preds"], k)})
 
-        # primary (B vs A1), secondaries with Holm, per-seed robustness
-        primary = _compare(y, ens[reference]["preds"], ens[candidate]["preds"], k, n_boot, rng,
-                           ci_level)
+        # the comparison on the test split, secondaries with Holm, per-seed differences
+        primary = _compare(y, ens[reference]["preds"], ens[candidate]["preds"], group_ids, k, n_boot,
+                           boot_seed, "test/primary", ci_level)
         primary["label"] = primary_label
         secondary: dict[str, dict] = {}
         for ref, cand in pairs_secondary:
             if ref in ens and cand in ens:
-                secondary[f"{cand} vs {ref}"] = _compare(y, ens[ref]["preds"], ens[cand]["preds"],
-                                                         k, n_boot, rng, ci_level)
-        adjusted = holm({lbl: c["mcnemar"]["p_value"] for lbl, c in secondary.items()})
+                secondary[f"{cand} vs {ref}"] = _compare(y, ens[ref]["preds"], ens[cand]["preds"], group_ids,
+                                                         k, n_boot, boot_seed, f"test/{cand}_vs_{ref}", ci_level)
+        adjusted = holm({lbl: c["boot"]["p_two_sided"] for lbl, c in secondary.items()})
         for lbl, p_adj in adjusted.items():
             secondary[lbl]["p_holm"] = p_adj
         per_seed: dict[str, dict] = {}
@@ -634,7 +677,7 @@ def run(config: dict) -> dict:
         # model (evaluate_fn invalidates one B cache when the error cache is
         # missing) or from the error cache; otherwise the galleries are skipped.
         errors = gallery_errors(ev["images"], err_path, y, ens[candidate]["preds"],
-                                ens[candidate]["image_ids"])
+                                ens[candidate]["image_ids"], error_stamp)
         galleries = GALLERIES_SKIPPED
         if errors is not None:
             err_images, err_y, err_pred = errors
@@ -654,9 +697,18 @@ def run(config: dict) -> dict:
             fresh_reads = int(ev["fresh"]["n_reads"])
             fresh_result, fresh_outputs = fresh.analyse(
                 ev["fresh"]["models"], specs, arms, _arm_of, names, reference, candidate, min_gain,
-                float(crit["max_class_f1_drop_points"]), n_boot, rng, ci_level, ev_cfg, t)
+                float(crit["max_class_f1_drop_points"]), n_boot, boot_seed, ci_level, ev_cfg, t)
             outputs.extend(fresh_outputs)
-        expected = int(ev["n_reads"]) + fresh_reads
+        robust_result = None
+        fresh2_reads = 0
+        if ev["robust"] is not None:
+            fresh2_reads = int(ev["fresh2"]["n_reads"])
+            robust_result, robust_outputs = robust.analyse(
+                ev["fresh2"]["models"], ev["robust"], specs, arms, _arm_of, names, ev_cfg["robust"]["levels"],
+                reference, candidate, pairs_secondary, min_gain, float(crit["max_class_f1_drop_points"]),
+                n_boot, boot_seed, ci_level, t, d["stage5"])
+            outputs.extend(robust_outputs)
+        expected = int(ev["n_reads"]) + fresh_reads + fresh2_reads
         reads_ok = test_reads_ok(test_reads, expected, extra_reads)
         outputs.extend(tables.write_table(t, "test_reads",
                                           *tables.test_reads_rows(run_id, test_reads, expected)))
@@ -672,6 +724,7 @@ def run(config: dict) -> dict:
                 "reported_drops": verdict["reported_drops"],
                 "primary": {"label": primary_label, "mcnemar": primary["mcnemar"]},
                 "fresh_holdout": fresh_result,
+                "robust": robust_result,
                 "ensembles": {a: {"accuracy": ens[a]["accuracy"], "macro_f1": ens[a]["macro_f1"]}
                               for a in arms},
                 "baselines": baselines,
@@ -682,7 +735,8 @@ def run(config: dict) -> dict:
                 "power": power,
                 "per_seed": per_seed,
                 "secondary": {lbl: {"delta": c["boot"]["delta"], "ci": c["boot"]["ci"],
-                                    "p_raw": c["mcnemar"]["p_value"], "p_holm": c.get("p_holm")}
+                                    "p_raw": c["boot"]["p_two_sided"], "p_mcnemar": c["mcnemar"]["p_value"],
+                                    "p_holm": c.get("p_holm")}
                               for lbl, c in secondary.items()},
                 "gap_closed_fraction": gap_closed,
                 "shortcut_detected": shortcut_detected,
@@ -698,6 +752,11 @@ def run(config: dict) -> dict:
                 "test_reads_ok": bool(reads_ok),
             },
         }
+        if robust_result is not None:   # the pre-registered verdict; the test split stays descriptive
+            metrics = result["metrics"]
+            metrics["reused_test"] = {key: metrics[key] for key in ("verdict", "delta", "ci", "reasons", "harmful_classes")}
+            metrics.update(_jsonable({key: robust_result[key] for key in ("verdict", "delta", "ci", "reasons", "harmful_classes")}))
+            metrics["primary"] = {"label": robust_result["label"], "mcnemar": robust_result["mcnemar_clean"]}
         if not reads_ok:
             result["status"] = "failed"
             result["error"] = (f"test_access.log shows {test_reads} reads for run {run_id}, "

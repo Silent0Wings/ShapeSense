@@ -4,9 +4,10 @@ import numpy as np
 import pytest
 from PIL import Image, ImageDraw
 
-from robustness import perturb
-from robustness.perturb import SETS, build_set
-from robustness.run import SPLIT, _family_drop
+from robustness.run import SPLIT
+from src.common import perturb
+from src.common.perturb import SETS, build_set
+from src.common.robust_summary import family_drop
 
 
 def _outline(thickness=2):
@@ -59,4 +60,4 @@ def test_thin_strokes_stay_in_one_piece_after_rotation():
 
 def test_family_drop_is_clean_minus_perturbed():
     scores = {"clean": {"accuracy": 90.0}, "a": {"accuracy": 80.0}, "b": {"accuracy": 70.0}}
-    assert _family_drop(scores, ["a", "b"]) == 15.0
+    assert family_drop(scores, ["a", "b"]) == 15.0

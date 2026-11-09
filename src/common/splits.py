@@ -87,6 +87,16 @@ def load_split(name: str, *, splits_dir: str | Path | None = None,
     return rows
 
 
+def reads_outside(run_id: str, reader: str, *, log_path: str | Path | None = None) -> int:
+    """Sealed reads logged under run_id by anything other than ``reader``."""
+    log = Path(log_path or DEFAULT_LOG)
+    if not log.is_file():
+        return 0
+    with open(log, encoding="utf-8") as f:
+        fields = [line.rstrip("\n").split(",") for line in f]
+    return sum(1 for parts in fields if len(parts) >= 5 and parts[1] == run_id and parts[2] != reader)
+
+
 def count_test_reads(run_id: str, *, log_path: str | Path | None = None) -> int:
     """Number of test-split reads logged under run_id."""
     log = Path(log_path or DEFAULT_LOG)

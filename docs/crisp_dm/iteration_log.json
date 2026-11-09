@@ -40,7 +40,8 @@
       "decision": "Pre-registered in docs/crisp_dm/iteration_3/preregistration.md: A2 vs A0 on perturbed copies of a new, never-read 4,500-image holdout, with the evaluation repaired first.",
       "findings": {
         "business": "The question moves from clean accuracy on familiar sources to survival under damage, and to when synthetic data helps. Hypotheses, not results: A0 weakest under damage, A1 better, A2 best; B helps most when real data is scarce; synthetic pretraining recovers any domain gap.",
-        "data": "Built fresh holdout 2: 4,500 never-read images, ten classes, 300 per source and class. The build first reproduced the first holdout's manifest byte for byte, so its images could be excluded without opening them."
+        "data": "Built fresh holdout 2: 4,500 never-read images, ten classes, 300 per source and class. The build first reproduced the first holdout's manifest byte for byte, so its images could be excluded without opening them.",
+        "eval": "Repaired before any iteration 3 result: cluster bootstrap on near-duplicate groups, exact McNemar under 25 discordant pairs, one named generator per analysis, Holm on bootstrap p-values, Bonferroni-corrected harm rule, real read accounting, checked error and prediction caches, and a class-count check. The robustness code moved into Stage 5."
       }
     }
   ],
@@ -768,6 +769,41 @@
       "before": "A0 from the bundle, A1 and B separately",
       "after": "All four arms exported to studio/out/arms",
       "why": "To compare every arm on the same drawing."
+    },
+    {
+      "step": "eval",
+      "what": "Bootstrap",
+      "before": "Images resampled independently",
+      "after": "phash_group clusters resampled, source-clustered check beside the primary",
+      "why": "Near-duplicate images are not independent."
+    },
+    {
+      "step": "eval",
+      "what": "Harm rule",
+      "before": "One test per class, no correction",
+      "after": "Bonferroni-corrected interval, bootstrap standard error of the paired drop",
+      "why": "Ten classes tested at once raise false alarms."
+    },
+    {
+      "step": "eval",
+      "what": "Secondary tests",
+      "before": "Holm on McNemar accuracy p-values",
+      "after": "Holm on bootstrap macro-F1 p-values, with exact McNemar reported",
+      "why": "One metric across the primary and secondaries."
+    },
+    {
+      "step": "eval",
+      "what": "Primary comparison",
+      "before": "A2 vs A0 on clean images",
+      "after": "A2 vs A0 averaged over 23 damage levels on never-read fresh holdout 2",
+      "why": "Clean accuracy had stopped separating the arms."
+    },
+    {
+      "step": "data",
+      "what": "Second fresh holdout",
+      "before": "None",
+      "after": "4,500 never-read images, sealed",
+      "why": "The test split and the first holdout had both been read."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",
@@ -776,8 +812,8 @@
       "step": "data",
       "claim": "Per-class test counts are never checked against noise_bands.csv.",
       "verdict": "Stands",
-      "action": "The recorded total does agree (2,776). Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration.",
-      "state": "Next iteration"
+      "action": "Stage 5 now stops if the test labels do not match the counts the thresholds were built for.",
+      "state": "Fixed in iteration 3"
     },
     {
       "step": "prep",
@@ -790,8 +826,8 @@
       "step": "prep",
       "claim": "Scaling is defined twice, in training and in evaluation.",
       "verdict": "Stands",
-      "action": "Both are 255 today, so no result is affected. Editing this code would change Stage 4's recorded hash and force a retrain. Left for the next iteration.",
-      "state": "Next iteration"
+      "action": "Training now imports the one shared constant.",
+      "state": "Fixed in iteration 3"
     },
     {
       "step": "model",
@@ -867,22 +903,22 @@
       "step": "model",
       "claim": "model.py still names three blocks as its default.",
       "verdict": "Stands",
-      "action": "The config always passes four, so no run is affected. Editing this code would change Stage 4's recorded hash and force a retrain. Left for the next iteration.",
-      "state": "Next iteration"
+      "action": "The default and its docstring now say four blocks.",
+      "state": "Fixed in iteration 3"
     },
     {
       "step": "eval",
       "claim": "extra_reads is a constant, so that check cannot fail.",
       "verdict": "Stands",
-      "action": "The access log independently shows no unexpected reads. Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration.",
-      "state": "Next iteration"
+      "action": "It now counts sealed reads logged by any module other than the evaluator.",
+      "state": "Fixed in iteration 3"
     },
     {
       "step": "eval",
       "claim": "The stored error images have no hash check.",
       "verdict": "Stands",
-      "action": "The current file was written by this run. Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration.",
-      "state": "Next iteration"
+      "action": "The file carries a model and manifest stamp, and a stale file is ignored.",
+      "state": "Fixed in iteration 3"
     },
     {
       "step": "eval",
@@ -895,15 +931,15 @@
       "step": "eval",
       "claim": "Prediction cache keys miss preprocessing code.",
       "verdict": "Stands",
-      "action": "Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration.",
-      "state": "Next iteration"
+      "action": "The key now includes the preprocessing code.",
+      "state": "Fixed in iteration 3"
     },
     {
       "step": "eval",
       "claim": "The bootstrap treats images as independent.",
       "verdict": "Stands",
-      "action": "Intervals may be too narrow. The preregistration says nothing changes after a test read. Left for the next iteration's preregistration.",
-      "state": "Next iteration"
+      "action": "Comparisons now resample phash_group clusters, with a source-clustered check beside the primary.",
+      "state": "Fixed in iteration 3"
     },
     {
       "step": "eval",
@@ -923,8 +959,8 @@
       "step": "eval",
       "claim": "The per-class harm rule has no multiple-testing correction.",
       "verdict": "Stands",
-      "action": "The preregistration says nothing changes after a test read. Left for the next iteration's preregistration.",
-      "state": "Next iteration"
+      "action": "The rule now uses a Bonferroni-corrected interval and the paired drop's bootstrap standard error.",
+      "state": "Fixed in iteration 3"
     },
     {
       "step": "eval",
@@ -937,8 +973,8 @@
       "step": "eval",
       "claim": "McNemar is not exact for small counts, and differs from the primary metric.",
       "verdict": "Stands",
-      "action": "The preregistration says nothing changes after a test read. Left for the next iteration's preregistration.",
-      "state": "Next iteration"
+      "action": "McNemar is exact under 25 discordant pairs. Holm now uses bootstrap p-values on the same metric as the primary.",
+      "state": "Fixed in iteration 3"
     },
     {
       "step": "eval",
@@ -951,15 +987,15 @@
       "step": "eval",
       "claim": "One random generator is shared across analyses.",
       "verdict": "Stands",
-      "action": "Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration.",
-      "state": "Next iteration"
+      "action": "Each analysis has its own named generator.",
+      "state": "Fixed in iteration 3"
     },
     {
       "step": "eval",
       "claim": "A2 has no pairwise test against A1 or B.",
       "verdict": "Partly",
-      "action": "A2 is tested against A0 and B. Only A2 vs A1 is missing. The preregistration says nothing changes after a test read. Left for the next iteration's preregistration.",
-      "state": "Next iteration"
+      "action": "A2 vs A1 is now in the secondary comparisons.",
+      "state": "Fixed in iteration 3"
     }
   ]
 }

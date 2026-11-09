@@ -18,7 +18,7 @@ NAMES = ["a", "b", "c"]
 def test_primary_and_secondary_come_from_the_config():
     cfg = copy.deepcopy(load_config())
     assert s5.primary_roles(cfg) == ("A0", "A2")
-    assert s5.secondary_pairs(cfg) == (("A0", "A1"), ("A0", "B"), ("B", "A2"))
+    assert s5.secondary_pairs(cfg) == (("A0", "A1"), ("A0", "B"), ("A1", "A2"), ("B", "A2"))
     del cfg["evaluation"]["primary"], cfg["evaluation"]["secondary"]
     assert s5.primary_roles(cfg) == ("A1", "B")
     assert s5.secondary_pairs(cfg) == s5.SECONDARY_PAIRS
@@ -53,7 +53,7 @@ def test_stage5_reads_of_the_fresh_holdout_are_logged(tmp_path, monkeypatch):
 def _record(preds, y, ids):
     probs = np.eye(K)[preds].astype(np.float32)
     return {"probs": probs, "preds": preds, "labels": y, "image_ids": ids,
-            "source_ids": np.array(["s"] * len(y))}
+            "source_ids": np.array(["s"] * len(y)), "group_ids": np.arange(len(y)).astype(str)}
 
 
 def test_analyse_applies_the_locked_rule_to_the_fresh_holdout(tmp_path):
@@ -65,7 +65,7 @@ def test_analyse_applies_the_locked_rule_to_the_fresh_holdout(tmp_path):
     models = {"A0_0": _record(worse, y, ids), "A2_0": _record(good, y, ids)}
     specs = [SimpleNamespace(name="A0_0", arm="A0"), SimpleNamespace(name="A2_0", arm="A2")]
     result, outputs = fresh.analyse(models, specs, ["A0", "A2"], lambda s: s.arm, NAMES, "A0", "A2", 1.0, 2.0,
-                                    200, np.random.default_rng(0), 0.95, {"noise_band_accuracy": 0.9}, tmp_path)
+                                    200, 0, 0.95, {"noise_band_accuracy": 0.9}, tmp_path)
     assert result["label"] == "A2 vs A0" and result["verdict"] == "pass"
     assert result["delta"] > 1.0
     assert result["arms"]["A2"]["macro_f1"] == pytest.approx(100.0)
