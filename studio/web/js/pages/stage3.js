@@ -1,5 +1,5 @@
 import { post } from '../api.js';
-import { card, debounce, el, errorBox, fmt, latestOnly, note, pageHead, pixImg, stat, stats, table, tableView } from '../ui.js';
+import { card, el, errorBox, fmt, note, pageHead, pixImg, singleFlight, stat, stats, table, tableView } from '../ui.js';
 import { classPicker, sliderRow } from '../widgets/controls.js';
 import { boot } from './boot.js';
 
@@ -18,8 +18,14 @@ boot('stage3', (main, d, meta) => {
     chips: ['arm B only', 'margins enforced'] }));
 
   let seed = 3; let chosen = null;
-  const grid = el('div', { class: 'tiles' }); const detail = el('div', {}); const send = latestOnly((b) => post('/api/synth', b));
+  const grid = el('div', { class: 'tiles' }); const detail = el('div', {}); 
   const sliders = {};
+  const keepOrdered = (key) => {
+    for (const name of ['radius', 'diamond', 'star']) {
+      const lo = sliders[`${name}_lo`]; const hi = sliders[`${name}_hi`];
+      if (lo.get() > hi.get()) (key === `${name}_lo` ? hi.set(lo.get()) : lo.set(hi.get()));
+    }
+  };
   const values = () => Object.fromEntries(Object.entries(sliders).map(([k, s]) => [k, s.get()]));
 
   function showParams(item, button) {
@@ -37,30 +43,26 @@ boot('stage3', (main, d, meta) => {
       table(rows, [{ key: 'name', label: 'Parameter' }, { key: 'value', label: 'Value', num: true }]));
   }
 
-  const refresh = debounce(async () => {
+  const refresh = singleFlight(async () => {
     const v = values();
-    if (v.radius_lo > v.radius_hi || v.diamond_lo > v.diamond_hi || v.star_lo > v.star_hi) {
-      grid.replaceChildren(note('Set each minimum at or below its maximum.')); return;
-    }
     try {
-      const out = await send({ label: picker.value(), seed, n: 24, values: v });
-      if (!out) return;
+      const out = await post('/api/synth', { label: picker.value(), seed, n: 24, values: v });
       chosen = null;
       const buttons = out.items.map((item) => {
-        const b = el('button', { type: 'button', class: 'tile clickable', 'aria-pressed': 'false', 'aria-label': 'Show parameters', onclick: () => showParams(item, b) }, pixImg(item.image, { alt: 'Synthetic shape', size: 88 }));
+        const b = el('button', { type: 'button', class: 'tile clickable', 'aria-pressed': 'false', 'aria-label': 'Show parameters', onclick: () => showParams(item, b) }, pixImg(item.image, { alt: 'Synthetic shape', size: 88, tip: 'Select to see the values used to draw this shape.' }));
         return b;
       });
       grid.replaceChildren(...buttons);
       showParams(out.items[0], buttons[0]);
     } catch (error) { grid.replaceChildren(errorBox(error)); }
-  }, 120);
+  });
 
   const applyClass = () => {
     const name = meta.classes[picker.value()];
     for (const [key, , , , , only] of SLIDERS) if (only) sliders[key].enable(only === name, `Only used for ${only}`);
   };
   const picker = classPicker(meta.classes, () => { applyClass(); refresh(); }, 8);
-  for (const [key, label, min, max, step] of SLIDERS) sliders[key] = sliderRow({ label, min, max, step, value: d.defaults[key], note: ' ', onInput: refresh });
+  for (const [key, label, min, max, step] of SLIDERS) sliders[key] = sliderRow({ label, min, max, step, value: d.defaults[key], note: ' ', onInput: () => { keepOrdered(key); refresh(); } });
   applyClass();
 
   const ranges = Object.entries(d.ranges).filter(([k]) => k !== 'margins_in_force').flatMap(([name, params]) =>

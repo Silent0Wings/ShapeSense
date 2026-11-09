@@ -21,8 +21,8 @@ export const fmt = (value, digits = 2) =>
 
 export const signed = (value, digits = 2) => `${value > 0 ? '+' : ''}${fmt(value, digits)}`;
 
-export function pixImg(b64, { alt = '', size = 96 } = {}) {
-  return el('img', { class: 'pix', src: `data:image/png;base64,${b64}`, alt, width: size, height: size });
+export function pixImg(b64, { alt = '', size = 96, tip } = {}) {
+  return el('img', { class: 'pix', src: `data:image/png;base64,${b64}`, alt, width: size, height: size, 'data-tip': tip });
 }
 
 export function card(title, ...children) {
@@ -68,6 +68,17 @@ export function pageHead({ eyebrow, title, lede, chips = [] }) {
 export function debounce(fn, ms = 150) {
   let timer;
   return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
+}
+
+// Runs now if idle; otherwise once more when the running call ends, with the newest
+// state. Previews keep updating during a drag and requests can never pile up.
+export function singleFlight(task) {
+  let running = false; let again = false;
+  return async function pump() {
+    if (running) { again = true; return; }
+    running = true;
+    try { do { again = false; await task(); } while (again); } finally { running = false; }
+  };
 }
 
 // Keep only the newest of overlapping async calls.

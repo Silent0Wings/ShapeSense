@@ -1,5 +1,5 @@
 import { post } from '../api.js';
-import { card, debounce, el, errorBox, latestOnly, note, pageHead, pixImg, stat, stats } from '../ui.js';
+import { card, el, errorBox, note, pageHead, pixImg, singleFlight, stat, stats } from '../ui.js';
 import { classPicker, select, sliderRow } from '../widgets/controls.js';
 import { boot } from './boot.js';
 
@@ -23,24 +23,25 @@ boot('stage2', (main, d, meta) => {
 
   let index = 0; let seed = 7; let count = 12;
   const original = el('div', {}); const variants = el('div', { class: 'tiles' }); const status = el('p', { class: 'note' });
-  const send = latestOnly((body) => post('/api/augment', body));
   const sliders = {};
+  const keepOrdered = (key) => {
+    const lo = sliders.scale_lo; const hi = sliders.scale_hi;
+    if (lo.get() > hi.get()) (key === 'scale_lo' ? hi.set(lo.get()) : lo.set(hi.get()));
+  };
   const values = () => Object.fromEntries(Object.entries(sliders).map(([k, s]) => [k, s.get()]));
 
-  const refresh = debounce(async () => {
+  const refresh = singleFlight(async () => {
     const label = picker.value();
     const safe = d.no_shear.includes(meta.classes[label]);
     const body = values();
     if (safe) CLASS_RISK.forEach((k) => { body[k] = 0; });
-    if (body.scale_lo > body.scale_hi) { status.textContent = 'Set the scale minimum at or below the maximum.'; return; }
     try {
-      const out = await send({ label, index, seed, n: count, values: body });
-      if (!out) return;
-      original.replaceChildren(pixImg(out.original, { alt: 'Original image', size: 192 }));
-      variants.replaceChildren(...out.variants.map((b64, i) => el('div', { class: 'tile' }, pixImg(b64, { alt: `Variant ${i + 1}`, size: 96 }))));
+      const out = await post('/api/augment', { label, index, seed, n: count, values: body });
+      original.replaceChildren(pixImg(out.original, { alt: 'Original image', size: 192, tip: 'The training image before augmentation.' }));
+      variants.replaceChildren(...out.variants.map((b64, i) => el('div', { class: 'tile' }, pixImg(b64, { alt: `Variant ${i + 1}`, size: 96, tip: 'One independent random draw of this image.' }))));
       status.textContent = `Source: ${out.source}. Each tile is an independent draw.`;
     } catch (error) { variants.replaceChildren(errorBox(error)); }
-  }, 120);
+  });
 
   const applyClassRules = () => {
     const safe = d.no_shear.includes(meta.classes[picker.value()]);
@@ -48,7 +49,7 @@ boot('stage2', (main, d, meta) => {
   };
   const picker = classPicker(meta.classes, () => { index = 0; applyClassRules(); refresh(); }, 3);
   for (const [key, label, min, max, step, format] of SLIDERS) {
-    sliders[key] = sliderRow({ label, min, max, step, value: d.defaults[key], format, note: ' ', onInput: refresh });
+    sliders[key] = sliderRow({ label, min, max, step, value: d.defaults[key], format, note: ' ', onInput: () => { keepOrdered(key); refresh(); } });
   }
   const reset = () => { for (const k of Object.keys(sliders)) sliders[k].set(d.defaults[k]); refresh(); };
   applyClassRules();
@@ -68,7 +69,7 @@ boot('stage2', (main, d, meta) => {
         status),
       card('What each step does', el('ol', { style: 'margin:0;padding-left:20px' },
         ['Rotate by a random angle (any rotation keeps the class)', 'Scale, and for allowed classes stretch or shear', 'Re-frame so the shape fills the image like real data', 'Translate slightly', 'Optionally blur, then return to pure black and white', 'Optionally add ink next to the outline'].map((t) => el('li', { text: t }))),
-      note('Sliders set the range each random draw comes from. With everything at zero the output is still re-framed and made binary, which is why it can differ a little from the original.')))));
+      note('Sliders set the range each random draw comes from. With everything at zero the output is still re-framed and made binary, which is why it can differ a little from the original. The same random draw is kept while you move a slider, so a probability slider only changes the tiles whose roll crosses the new value.')))));
   main.append(el('div', { class: 'grid two' },
     card('Pool used here', stats(stat('Train images browsable', d.pool.train.kept.toLocaleString(), `of ${d.pool.train.total_manifest.toLocaleString()}`)), note('Augmentation runs only on the training side, after the split.')),
     card('QA sheet from Stage 2', el('img', { class: 'sheet', src: '/img/qa2', alt: 'Stage 2 quality-check sheet' }))));

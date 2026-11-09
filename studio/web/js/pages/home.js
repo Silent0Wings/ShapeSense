@@ -3,7 +3,7 @@ import { predictPanel } from '../widgets/predict-panel.js';
 import { badge, card, el, note, pageHead } from '../ui.js';
 import { boot } from './boot.js';
 
-boot('home', (main, data) => {
+boot('home', (main, data, meta) => {
   main.append(pageHead({
     eyebrow: 'Shape classification project',
     title: 'From business question to a live model',
@@ -13,7 +13,7 @@ boot('home', (main, data) => {
     note('Select a step to open it. The dashed Modeling arrow is iteration 1: a modeling finding sent the project back to Data Preparation.')));
   main.append(el('div', { class: 'grid two' },
     data.arms.length
-      ? card('Try it now', predictPanel({ arms: ['A0'], compact: true }))
+      ? card('Try it now', predictPanel({ arms: ['A0'], compact: true, labels: meta.classes }))
       : card('Try it now', note('No exported model yet. Run: python run_pipeline.py --stages 6')),
     card('Pipeline stages', el('div', { class: 'lights' }, data.lights.map((l) => el('a', { class: 'light', href: l.page },
       `${l.stage} · ${l.title}`, l.status === 'passed' ? badge('pass', 'Passed') : badge('fail', l.status)))))));

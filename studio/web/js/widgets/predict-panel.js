@@ -9,6 +9,7 @@ const ARM_COLOR = { A0: 'var(--series-1)', A1: 'var(--series-2)', B: 'var(--seri
 const ARM_LABEL = { A0: 'A0 · real only', A1: 'A1 · + augmentation', B: 'B · + synthetic' };
 const TOP_K = 3;
 const EMPTY = 'Draw a shape to see the prediction.';
+const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
 function probRow() {
   const name = el('span', { text: '–' });
@@ -42,10 +43,21 @@ function resultSlot(arm) {
   };
 }
 
-export function predictPanel({ arms, compact = false }) {
+export function predictPanel({ arms, labels, compact = false }) {
   const slots = Object.fromEntries(arms.map((arm) => [arm, resultSlot(arm)]));
   const seenSize = compact ? 96 : 128;
-  const seen = el('img', { class: 'pix', alt: '', width: seenSize, height: seenSize });
+  const seen = el('img', { class: 'pix', src: BLANK, alt: '', width: seenSize, height: seenSize, 'data-tip': 'Your drawing after the same standardization as the training images.' });
+  const chips = Object.fromEntries(labels.map((name) => {
+    const dots = arms.length > 1 ? arms.map((arm) => [arm, el('i', {})]) : [];
+    return [name, { node: el('span', { class: 'label-chip' }, dots.map(([, dot]) => dot), name), dots }];
+  }));
+  function markChips(results = []) {
+    for (const [name, chip] of Object.entries(chips)) {
+      const picked = results.filter((r) => !r.not_sure && r.label === name).map((r) => r.arm);
+      chip.node.classList.toggle('on', picked.length > 0);
+      chip.dots.forEach(([arm, dot]) => { dot.style.background = picked.includes(arm) ? ARM_COLOR[arm] : 'transparent'; });
+    }
+  }
   const message = el('div', { class: 'panel-msg' }, note(EMPTY));
   const send = latestOnly((image) => post('/api/infer', { image, arms }));
   let last = null;
@@ -53,7 +65,8 @@ export function predictPanel({ arms, compact = false }) {
   function reset(content) {
     last = null;
     Object.values(slots).forEach((slot) => slot.clear());
-    seen.removeAttribute('src'); seen.alt = '';
+    seen.src = BLANK; seen.alt = '';
+    markChips();
     message.replaceChildren(content);
   }
 
@@ -68,6 +81,7 @@ export function predictPanel({ arms, compact = false }) {
       }
       last = out;
       out.results.forEach((result) => slots[result.arm].show(result));
+      markChips(out.results);
       seen.src = `data:image/png;base64,${out.seen}`; seen.alt = 'Preprocessed drawing';
       message.replaceChildren(out.missing.length
         ? note(`Not exported yet: ${out.missing.join(', ')}. Run: python -m studio.tools.export_arms`) : '');
@@ -86,9 +100,12 @@ export function predictPanel({ arms, compact = false }) {
   }
 
   const tools = compact ? null : el('button', { type: 'button', class: 'ghost', onclick: feedback, text: 'Wrong prediction? Save it' });
-  return el('div', { class: compact ? 'predict-compact' : 'grid side', style: compact ? null : 'margin:0' },
-    el('div', { class: 'pad-wrap' }, pad.canvas, pad.controls, tools),
-    el('div', {},
-      el('div', { class: 'results' }, Object.values(slots).map((slot) => slot.root)),
-      el('h3', { text: 'What the model saw (64×64)' }), seen, message));
+  return el('div', {},
+    el('div', { class: compact ? 'predict-compact' : 'grid side', style: compact ? null : 'margin:0' },
+      el('div', { class: 'pad-wrap' }, pad.canvas, pad.controls, tools),
+      el('div', {},
+        el('div', { class: 'results' }, Object.values(slots).map((slot) => slot.root)),
+        el('h3', { text: 'What the model saw (64×64)' }), seen, message)),
+    el('div', { class: 'label-row', role: 'list', 'aria-label': 'All classes the models know' },
+      Object.values(chips).map((chip) => chip.node)));
 }
