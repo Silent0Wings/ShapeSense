@@ -1,4 +1,5 @@
 // The site navigation and theme switch, shared by every page.
+import { mountTips } from './tips.js';
 import { el } from './ui.js';
 
 const LINKS = [
@@ -38,4 +39,5 @@ export function mountNav() {
   document.querySelector('#nav').append(
     el('a', { class: 'brand', href: 'index.html' }, 'ShapeSense', el('span', { text: 'Studio' })),
     el('nav', { 'aria-label': 'Pages' }, groups), el('div', { class: 'nav-foot' }, themeButton()));
+  mountTips();
 }

@@ -21,7 +21,7 @@ function paint(ctx, strokes, paper, ink) {
 }
 
 export function createPad({ onChange }) {
-  const canvas = el('canvas', { class: 'pad', width: SIDE, height: SIDE, role: 'img', 'aria-label': 'Drawing area' });
+  const canvas = el('canvas', { class: 'pad', width: SIDE, height: SIDE, role: 'img', 'aria-label': 'Drawing area', 'data-tip': 'Draw one shape here with a mouse, finger or stylus.' });
   const ctx = canvas.getContext('2d');
   const strokes = [];
   let active = null;

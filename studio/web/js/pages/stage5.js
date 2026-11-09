@@ -16,7 +16,7 @@ function confusionCard(names, pairs) {
     try {
       const out = await get(`/api/stage5/errors?true=${t}&pred=${p}`);
       if (!out.available) { detail.replaceChildren(title, note('No images are shown for this cell. Only the three confusable pairs Stage 5 published are displayable.')); return; }
-      detail.replaceChildren(title, el('div', { class: 'tiles' }, out.images.map((b64) => pixImg(b64, { alt: 'Misclassified test image', size: 72 }))),
+      detail.replaceChildren(title, el('div', { class: 'tiles' }, out.images.map((b64) => pixImg(b64, { alt: 'Misclassified test image', size: 72, tip: 'A mistake Stage 5 stored for this pair.' }))),
         out.total > out.images.length ? note(`Showing ${out.images.length} of ${out.total}.`) : null);
     } catch (error) { detail.replaceChildren(errorBox(error)); }
   }

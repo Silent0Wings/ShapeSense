@@ -31,8 +31,8 @@ function browser(names, pool) {
         get(`/api/class-stats?label=${label}&split=${splitName}&seed=${seed}`)]);
       grid.replaceChildren(...items.items.map((it) => el('div', { class: 'tile' }, pixImg(it.image, { alt: 'Sample', size: 88 }), it.source)));
       summary.replaceChildren(
-        el('div', { class: 'tile' }, pixImg(st.mean, { alt: 'Mean image', size: 120 }), `Mean of ${st.n}`),
-        el('div', { class: 'tile' }, pixImg(st.spread, { alt: 'Spread image', size: 120 }), 'Spread (brighter = more varied)'));
+        el('div', { class: 'tile' }, pixImg(st.mean, { alt: 'Mean image', size: 120, tip: 'The average of these images. Sharp edges mean they line up.' }), `Mean of ${st.n}`),
+        el('div', { class: 'tile' }, Object.assign(pixImg(st.spread, { alt: 'Spread image', size: 120, tip: 'Pixel variation across these images. Brighter means more varied.' }), { className: 'pix keep-tone' }), 'Spread (brighter = more varied)'));
     } catch (error) { grid.replaceChildren(errorBox(error)); }
   }, 60);
   const picker = classPicker(names, load);
