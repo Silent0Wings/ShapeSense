@@ -184,7 +184,9 @@ def run_sweep(config: dict, steps_per_epoch: int, hparams: dict, loso: bool, *,
             pending.append(spec)
 
     results.update(run_specs(config, pending, job_runner=job_runner))
-    return [results[spec["run_name"]] for spec in jobs]
+    # run.json does not record the hold-out; callers need it to tell these runs apart.
+    return [{**results[spec["run_name"]], "holdout_source": spec["holdout_source"]}
+            for spec in jobs]
 
 
 def run_specs(config: dict, specs: list[dict], *,
