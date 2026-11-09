@@ -8,6 +8,7 @@ import pytest
 from studio.context import classes
 from studio.data import cache_check, confusion, errors, whatif
 from studio.data.tables import read_csv, read_json
+from studio.settings import ARMS, ERRORS_ARM
 
 ROOT = Path(__file__).resolve().parents[2]
 needs_stage5 = pytest.mark.skipif(not (ROOT / "artifacts" / "stage5" / "status.json").is_file(),
@@ -15,7 +16,7 @@ needs_stage5 = pytest.mark.skipif(not (ROOT / "artifacts" / "stage5" / "status.j
 
 
 @needs_stage5
-@pytest.mark.parametrize("arm", ["A0", "A1", "B"])
+@pytest.mark.parametrize("arm", ARMS)
 def test_confusion_matches_the_metrics_table(arm):
     matrix = confusion.counts(arm)
     total = sum(map(sum, matrix))
@@ -26,8 +27,8 @@ def test_confusion_matches_the_metrics_table(arm):
 
 
 @needs_stage5
-def test_stored_errors_equal_the_b_confusion_cells():
-    matrix = confusion.counts("B")
+def test_stored_errors_equal_the_candidate_confusion_cells():
+    matrix = confusion.counts(ERRORS_ARM)
     for true, pred in errors.allowed_cells():
         assert errors.page(true, pred, 0)["total"] == matrix[true][pred]
 

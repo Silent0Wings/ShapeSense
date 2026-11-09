@@ -24,4 +24,5 @@ def verdict() -> dict | None:
     if status is None or "verdict" not in status.get("metrics", {}):
         return None
     m = status["metrics"]
-    return {"verdict": m["verdict"], "delta": m["delta"], "ci": m["ci"], "reasons": m["reasons"]}
+    return {"verdict": m["verdict"], "delta": m["delta"], "ci": m["ci"], "reasons": m["reasons"],
+            "label": m["primary"]["label"]}

@@ -111,7 +111,7 @@ export function dots({ rows, series, label, domain }) {
 // One row per item: dots joined by a range bar, with each exact value in its own column.
 export function scoreRows({ rows, series, label, domain }) {
   const width = 780; const rowH = 38; const left = 104; const plotEnd = 556; const top = 30;
-  const columns = series.map((_, i) => 610 + i * 64);
+  const columns = series.map((_, i) => 610 + i * (series.length > 3 ? 54 : 64));
   const bottom = top + rows.length * rowH;
   const scale = linear(domain, [left, plotEnd]);
   const root = svgRoot(width, bottom + 34, label);

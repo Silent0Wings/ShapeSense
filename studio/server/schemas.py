@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from studio.settings import MAX_BODY_BYTES, MAX_VARIANTS
+from studio.settings import ARMS, MAX_BODY_BYTES, MAX_VARIANTS
 
 
 class _Strict(BaseModel):
@@ -66,7 +66,7 @@ class SynthRequest(_Strict):
 
 class InferRequest(_Strict):
     image: str = Field(max_length=MAX_BODY_BYTES)
-    arms: list[str] = Field(max_length=3)
+    arms: list[str] = Field(max_length=len(ARMS))
 
 
 class WhatIfRequest(_Strict):

@@ -19,7 +19,7 @@ const CLASS_RISK = ['nonuniform_scale', 'shear_deg'];
 boot('stage2', (main, d, meta) => {
   main.append(pageHead({ eyebrow: 'Stage 2 · CRISP-DM data preparation', title: 'Augmentation',
     lede: 'Every preview below runs the real Stage 2 code. Pick a class, then change the ranges and see how training images would be altered.',
-    chips: ['train side only', 'arms A1 and B', 'output is re-framed and binarised'] }));
+    chips: ['train side only', 'arms A1, B and A2', 'starts from the tuned settings', 'output is re-framed and binarised'] }));
 
   let index = 0; let seed = 7; let count = 12;
   const original = el('div', {}); const variants = el('div', { class: 'tiles' }); const status = el('p', { class: 'note' });
@@ -39,7 +39,8 @@ boot('stage2', (main, d, meta) => {
       const out = await post('/api/augment', { label, index, seed, n: count, values: body });
       original.replaceChildren(pixImg(out.original, { alt: 'Original image', size: 192, tip: 'The training image before augmentation.' }));
       variants.replaceChildren(...out.variants.map((b64, i) => el('div', { class: 'tile' }, pixImg(b64, { alt: `Variant ${i + 1}`, size: 96, tip: 'One independent random draw of this image.' }))));
-      status.textContent = `Source: ${out.source}. Each tile is an independent draw.`;
+      const cap = d.rotate_limits[meta.classes[label]];
+      status.textContent = `Source: ${out.source}. Each tile is an independent draw.${cap ? ` Rotation for this class is capped at ±${cap}°.` : ''}`;
     } catch (error) { variants.replaceChildren(errorBox(error)); }
   });
 

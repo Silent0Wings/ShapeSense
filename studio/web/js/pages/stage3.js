@@ -14,8 +14,8 @@ const SLIDERS = [
 
 boot('stage3', (main, d, meta) => {
   main.append(pageHead({ eyebrow: 'Stage 3 · CRISP-DM data preparation', title: 'Synthetic generator',
-    lede: 'Arm B draws 30% of each training batch from this generator. These samples come from the real Stage 3 code, including the margins that stop a shape looking like its neighbouring class.',
-    chips: ['arm B only', 'margins enforced'] }));
+    lede: 'Arms B and A2 draw part of each training batch from this generator. These samples come from the real Stage 3 code, including the margins that stop a shape looking like its neighbouring class.',
+    chips: ['arms B and A2', 'starts from the tuned settings', 'margins enforced'] }));
 
   let seed = 3; let chosen = null;
   const grid = el('div', { class: 'tiles' }); const detail = el('div', {}); 

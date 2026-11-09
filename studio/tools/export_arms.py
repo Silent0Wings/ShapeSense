@@ -1,8 +1,7 @@
-"""Export the best-validation A1 and B runs to ONNX for the arm comparison.
+"""Export each arm's best-validation run to ONNX for the arm comparison.
 
 Run once after Stage 4: ``python -m studio.tools.export_arms``. Reads only
-validation scores and writes only under studio/out/arms. A0 is the existing
-Stage 6 bundle, so it is not exported again.
+validation scores and writes only under studio/out/arms.
 """
 
 from __future__ import annotations
@@ -16,7 +15,7 @@ from src.stage6_report.export import export_candidates, export_onnx, select_mode
 from studio.context import config
 from studio.settings import ARMS_DIR, ARMS_MANIFEST
 
-ARMS_TO_EXPORT = ("A1", "B")
+ARMS_TO_EXPORT = ("A0", "A1", "B", "A2")
 
 
 def main() -> None:

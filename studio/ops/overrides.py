@@ -6,11 +6,16 @@ changed value in a deep copy. The committed config is never touched.
 
 from __future__ import annotations
 
-import copy
-
-from src.common.config import validate_pipeline
+from src.common.config import arm_config, validate_pipeline
 
 from studio.context import config
+
+PREVIEW_ARM = "A2"   # previews start from the settings chosen for the primary candidate
+
+
+def tuned() -> dict:
+    """A private copy of the config with the preview arm's tuned settings applied."""
+    return arm_config(config(), PREVIEW_ARM)
 
 
 def _checked(cfg: dict) -> dict:
@@ -20,7 +25,7 @@ def _checked(cfg: dict) -> dict:
 
 def augment_config(values: dict) -> dict:
     """A config whose ``augment`` section holds the given slider values."""
-    cfg = copy.deepcopy(config())
+    cfg = tuned()
     a = cfg["augment"]
     a["rotate_deg"] = float(values["rotate_deg"])
     a["scale"] = [float(values["scale_lo"]), float(values["scale_hi"])]
@@ -34,7 +39,7 @@ def augment_config(values: dict) -> dict:
 
 def synth_config(values: dict) -> dict:
     """A config whose ``synth`` section holds the given slider values."""
-    cfg = copy.deepcopy(config())
+    cfg = tuned()
     s = cfg["synth"]
     s["radius_px"] = [float(values["radius_lo"]), float(values["radius_hi"])]
     s["center_jitter_px"] = float(values["center_jitter_px"])
@@ -47,14 +52,14 @@ def synth_config(values: dict) -> dict:
 
 
 def default_augment_values() -> dict:
-    a = config()["augment"]
+    a = tuned()["augment"]
     return {"rotate_deg": a["rotate_deg"], "scale_lo": a["scale"][0], "scale_hi": a["scale"][1],
             "nonuniform_scale": a["nonuniform_scale"], "shear_deg": a["shear_deg"],
             "translate_px": a["translate_px"], "noise_p": a["noise_p"], "blur_p": a["blur_p"]}
 
 
 def default_synth_values() -> dict:
-    s = config()["synth"]
+    s = tuned()["synth"]
     return {"radius_lo": s["radius_px"][0], "radius_hi": s["radius_px"][1],
             "center_jitter_px": s["center_jitter_px"], "vertex_jitter_px": s["vertex_jitter_px"],
             "ellipse_max_axis_ratio": s["ellipse_max_axis_ratio"],

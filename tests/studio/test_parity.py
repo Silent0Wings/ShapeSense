@@ -8,13 +8,14 @@ import numpy as np
 import onnxruntime as ort
 import pytest
 from PIL import Image, ImageDraw
-from src.common.config import load_config
+from src.common.config import arm_config, load_config
 from src.stage2_augment import build_transform
 from src.stage3_synth import build_generator
 
 from studio.context import config
 from studio.inference import arms, predict as studio_predict
 from studio.ops import augment, overrides, synth
+from studio.settings import ARMS, ERRORS_ARM
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -29,7 +30,7 @@ def test_augmentation_matches_build_transform():
     image = _outline()
     values = overrides.default_augment_values()
     got = augment.variants(image, 3, values, seed=5, n=3)
-    transform = build_transform(load_config())
+    transform = build_transform(arm_config(load_config(), overrides.PREVIEW_ARM))
     want = [transform(image, 3, np.random.default_rng(5 + i)) for i in range(3)]
     assert all(np.array_equal(a, b) for a, b in zip(got, want))
 
@@ -68,9 +69,9 @@ def _bundle():
 
 
 @pytest.mark.skipif(not (ROOT / "export" / "model.onnx").is_file(), reason="needs the Stage 6 bundle")
-def test_a0_probabilities_match_the_shipped_bundle():
+def test_primary_arm_probabilities_match_the_shipped_bundle():
     bundle = _bundle()
-    out = studio_predict.infer(_drawing(), ["A0"])
+    out = studio_predict.infer(_drawing(), [ERRORS_ARM])
     assert out["status"] == "ok"
     want = bundle.predict_proba(bundle.preprocess(_drawing()))
     got = out["results"][0]["all"]
@@ -85,7 +86,7 @@ def test_blank_drawing_maps_to_the_demo_message():
 
 
 @pytest.mark.skipif(not arms.ARMS_MANIFEST.is_file(), reason="needs python -m studio.tools.export_arms")
-@pytest.mark.parametrize("arm", ["A1", "B"])
+@pytest.mark.parametrize("arm", ARMS)
 def test_arm_onnx_matches_its_torchscript(arm):
     torch = pytest.importorskip("torch")
     run = json.loads(arms.ARMS_MANIFEST.read_text(encoding="utf-8"))[arm]["run"]

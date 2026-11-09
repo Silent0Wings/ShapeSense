@@ -13,7 +13,8 @@ WEB_DIR = PACKAGE_DIR / "web"
 ARMS_DIR = PACKAGE_DIR / "out" / "arms"
 ARMS_MANIFEST = ARMS_DIR / "manifest.json"
 
-ARMS = ("A0", "A1", "B")
+ARMS = ("A0", "A1", "B", "A2")
+ERRORS_ARM = "A2"                  # the primary candidate; Stage 5 stores its mistakes
 POOL_SPLITS = ("train", "val")     # the only splits a browsing page may ask for
 AUGMENT_SPLIT = "train"            # Stage 2 runs on the training side only
 

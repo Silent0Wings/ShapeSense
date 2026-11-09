@@ -7,7 +7,8 @@ from studio.crisp_map import STAGE_PHASE, phases
 from studio.data import access_log, architecture, cache_check, lights, runs, samples
 from studio.data.tables import read_csv, read_json, read_text
 from studio.inference import arms
-from studio.ops.overrides import default_augment_values, default_synth_values
+from studio.ops.overrides import default_augment_values, default_synth_values, tuned
+from studio.settings import ERRORS_ARM
 
 
 def _home() -> dict:
@@ -40,6 +41,7 @@ def _stage1() -> dict:
 
 def _stage2() -> dict:
     return {"defaults": default_augment_values(), "no_shear": list(no_shear_classes()),
+            "rotate_limits": (tuned().get("taxonomy") or {}).get("rotate_limit_deg", {}),
             "qa_review": read_text("qa_review2"), "pool": _pool_note(),
             "blur_sigma": config()["augment"]["blur_sigma"]}
 
@@ -52,7 +54,7 @@ def _stage3() -> dict:
 
 def _stage4() -> dict:
     status = read_json("status4") or {"metrics": {}, "checks": {}}
-    return {"tuning": read_json("tuning"), "seed": read_json("seed_disagreement"),
+    return {"winners": read_json("winners"), "tuning": read_json("tuning"), "seed": read_json("seed_disagreement"),
             "baselines": read_json("baselines"), "benchmark": read_json("loader_benchmark"),
             "runs": runs.summary(), "layers": architecture.layers(),
             "checks": status.get("checks", {}), "train": config()["train"]}
@@ -64,7 +66,9 @@ def _stage5() -> dict:
             "table_metrics": read_csv("metrics"), "per_class": read_csv("per_class"),
             "comparisons": read_csv("comparisons"), "per_source": read_csv("per_source"),
             "power": read_json("power"), "access": access_log.summary(),
-            "pairs": [list(p) for p in confusion_pairs()], "criterion": config()["success_criterion"]}
+            "pairs": [list(p) for p in confusion_pairs()], "criterion": config()["success_criterion"],
+            "fresh": status["metrics"].get("fresh_holdout"), "fresh_metrics": read_csv("fresh_metrics"),
+            "fresh_per_class": read_csv("fresh_per_class"), "candidate": ERRORS_ARM}
 
 
 def _stage6() -> dict:
@@ -73,13 +77,19 @@ def _stage6() -> dict:
             "labels": read_json("labels"), "arms": arms.provenance(), "live": arms.available()}
 
 
+def _iteration1() -> dict:
+    status = read_json("iter1_status") or {"metrics": {}, "checks": {}}
+    return {"metrics": status["metrics"], "checks": status["checks"], "per_class": read_csv("iter1_per_class"),
+            "comparisons": read_csv("iter1_comparisons"), "table_metrics": read_csv("iter1_metrics")}
+
+
 def _live() -> dict:
     return {"arms": arms.available(), "provenance": arms.provenance()}
 
 
 BUILDERS = {"home": _home, "business": _business, "stage0": _stage0, "stage1": _stage1,
             "stage2": _stage2, "stage3": _stage3, "stage4": _stage4, "stage5": _stage5,
-            "stage6": _stage6, "live": _live}
+            "stage6": _stage6, "live": _live, "iteration1": _iteration1}
 
 
 def build(name: str) -> dict | None:
@@ -90,4 +100,4 @@ def build(name: str) -> dict | None:
 def meta() -> dict:
     log = read_json("iteration_log") or {"iterations": []}
     return {"classes": list(classes()), "phases": phases(), "stage_phase": STAGE_PHASE,
-            "arms": arms.available(), "iterations": log["iterations"]}
+            "arms": arms.available(), "iterations": log["iterations"], "candidate": ERRORS_ARM}

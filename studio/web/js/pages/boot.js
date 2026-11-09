@@ -21,4 +21,5 @@ export const ARM_SERIES = [
   { key: 'A0', label: 'A0 · real only', color: 'var(--series-1)' },
   { key: 'A1', label: 'A1 · + augmentation', color: 'var(--series-2)' },
   { key: 'B', label: 'B · + synthetic', color: 'var(--series-3)' },
+  { key: 'A2', label: 'A2 · clean + augmented + synthetic', color: 'var(--series-4)' },
 ];

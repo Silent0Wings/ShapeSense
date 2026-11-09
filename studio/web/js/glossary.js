@@ -26,7 +26,11 @@ const HELP = {
   'a0 · real only': 'Trained on real images only, with no augmentation.',
   'a1 · + augmentation': 'Real images plus class-safe augmentation.',
   'b · + synthetic': 'Augmented real images, with 30% of each batch swapped for synthetic shapes.',
-  a0: 'Arm A0: real images only.', a1: 'Arm A1: real images plus augmentation.', b: 'Arm B: A1 plus synthetic images.',
+  'a2 · clean + augmented + synthetic': 'Each batch mixes clean real, augmented real and synthetic images.',
+  a0: 'Arm A0: real images only.', a1: 'Arm A1: real images plus augmentation.', b: 'Arm B: A1 plus synthetic images.', a2: 'Arm A2: clean real, augmented real and synthetic images.',
+  'iteration 1 results': 'The first experiment and its verdict, kept unchanged.',
+  'fresh holdout': 'Images never used in any choice. The cleanest check available.',
+  'iteration 1 verdict': 'The first experiment: synthetic data (B) against augmentation (A1).',
   // Stage 2 and 3 controls
   'rotation range': 'Each image is rotated by a random angle within this range.',
   'scale, minimum': 'Smallest random size, relative to the standard framing.',
