@@ -46,7 +46,8 @@ code { font: 13px ui-monospace, Consolas, monospace; background: var(--surface-2
   background: var(--surface-1); border-right: 1px solid var(--line);
   display: flex; flex-direction: column; gap: 18px;
 }
-.brand { font-size: 18px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+.brand { display: flex; align-items: center; font-size: 18px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+.brand-icon { width: 28px; height: 28px; border-radius: 6px; margin-right: 8px; }
 .brand span { color: var(--text-muted); font-weight: 500; margin-left: 6px; }
 .nav-group { margin-bottom: 16px; }
 .nav-title { font-size: 11px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 6px; }
