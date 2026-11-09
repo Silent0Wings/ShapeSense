@@ -20,7 +20,7 @@ from typing import Any
 import yaml
 
 RATIO_TOLERANCE = 1e-9  # split ratios must sum to 1 within this
-LOSO_ARMS = ("A0", "A1", "B", "A2")  # iteration 2 holds the source out for every arm
+LOSO_ARMS = ("A0", "A1", "B", "A2", "P")  # iteration 2 holds the source out for every arm
 
 
 class ConfigError(ValueError):
@@ -93,6 +93,10 @@ def _check_arm_extras(arm: str, spec: dict, default_share: float) -> None:
                           "and sum to less than 1")
     if clean and not spec["augment"]:
         raise ConfigError(f"arms.{arm}.clean_fraction: only an augmenting arm can keep clean images")
+    if not 0.0 <= float(spec.get("pretrain_fraction", 0.0)) < 1.0:
+        raise ConfigError(f"arms.{arm}.pretrain_fraction: expected a share of the epochs in [0, 1)")
+    if not isinstance(spec.get("equal_real", False), bool):
+        raise ConfigError(f"arms.{arm}.equal_real: expected true or false")
     hparams = spec.get("hparams")
     if hparams is not None and not (float(hparams["lr"]) > 0 and 0 <= float(hparams["dropout"]) < 1):
         raise ConfigError(f"arms.{arm}.hparams: expected a positive lr and a dropout in [0, 1)")
@@ -194,6 +198,8 @@ def validate_pipeline(cfg: dict) -> None:
                 "parallel_runs", "benchmark_batches"):
         _require_number(cfg, f"train.{key}", lo=1)
     _require_number(cfg, "train.dropout", lo=0, hi=1)
+    if not 0.0 < float(cfg["train"].get("real_fraction", 1.0)) <= 1.0:
+        raise ConfigError("train.real_fraction: expected a share of the training images in (0, 1]")
     _require_number(cfg, "train.lr", lo=0)
     _require_number(cfg, "train.weight_decay", lo=0)
     spe = _get(cfg, "train.steps_per_epoch")

@@ -373,6 +373,16 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
                          class_idx=getattr(train_store, "class_idx", None),
                          excluded_classes=excluded)
     n_real, n_syn = batch_composition(arm_cfg, batch_size, synthetic_fraction)
+    # Arm P: the first epochs see synthetic images only, then real images take over.
+    pretrain_epochs = int(float(arm_cfg.get("pretrain_fraction", 0.0)) * max_epochs)
+    pretrain_stream = None
+    if pretrain_epochs:
+        pretrain_stream = BatchStream(train_store.images, train_store.labels,
+                                      {**arm_cfg, "synthetic_fraction": 1.0, "clean_fraction": 0.0}, batch_size,
+                                      synthetic_fraction, n_classes, seed=seed, steps=steps_per_epoch,
+                                      transform=transform if arm_cfg["augment"] else None, generate=generate,
+                                      class_idx=getattr(train_store, "class_idx", None),
+                                      excluded_classes=excluded)
     val_labels = np.asarray(val_store.labels, dtype=np.int64)
     n_val = int(val_labels.shape[0])
     if val_image_ids is None:
@@ -398,7 +408,8 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
         loss_sum = 0.0
         correct = 0
         seen = 0
-        for batch in stream.epoch(epoch_idx):
+        source = pretrain_stream if epoch_idx < pretrain_epochs else stream
+        for batch in source.epoch(epoch_idx):
             x = torch.from_numpy(batch.images).to(device)
             y = torch.from_numpy(batch.labels).to(device)
             optimizer.zero_grad(set_to_none=True)
@@ -431,6 +442,8 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
             "synthetic_share": syn_total / img_total if img_total else 0.0,
             "seconds": time.perf_counter() - t_epoch,
         })
+        if epoch_idx < pretrain_epochs:
+            continue                # the real-image phase decides the best epoch and patience
         if score > best_score:  # strict: ties keep the earlier epoch
             best_score = score
             best_epoch = epoch
@@ -470,6 +483,7 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
         "val_macro_f1": float(best_val_f1),
         "selection_score": float(best_score),
         "epochs_run": len(log_rows),
+        "pretrain_epochs": pretrain_epochs,
         "optimizer_steps": int(optimizer_steps),
         "realized_synthetic_share": syn_total / img_total if img_total else 0.0,
         "real_draws_per_step": int(n_real),

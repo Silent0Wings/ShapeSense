@@ -33,6 +33,7 @@ from src.stage4_train.sampling import class_index, to_float
 __all__ = ["ImageStore", "to_float", "ALLOWED_SPLITS"]
 
 ALLOWED_SPLITS = ("train", "val")  # Stage 4 never reads "test" (R8)
+GROUP_COLUMN = "phash_group"
 SOURCE_COLUMN = "source_id"       # manifest column holding the source id
 
 ImagesLoader = Callable[..., tuple[np.ndarray, np.ndarray]]
@@ -66,6 +67,7 @@ class ImageStore:
     labels: np.ndarray
     source_ids: np.ndarray
     n_classes: int
+    group_ids: np.ndarray | None = None
     class_idx: list[np.ndarray] = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -103,8 +105,9 @@ class ImageStore:
         if len(rows) != len(labels):
             raise ValueError(f"{split}: {len(rows)} manifest rows but {len(labels)} images")
         source_ids = np.array([row[SOURCE_COLUMN] for row in rows], dtype=str)
+        groups = np.array([row.get(GROUP_COLUMN, row[SOURCE_COLUMN]) for row in rows], dtype=str)
         n_classes = len(config["taxonomy"]["classes"])
-        return cls(images=images, labels=labels, source_ids=source_ids, n_classes=n_classes)
+        return cls(images=images, labels=labels, source_ids=source_ids, n_classes=n_classes, group_ids=groups)
 
     def filter_out_source(self, source_id: str) -> "ImageStore":
         """Return a new store without the images of ``source_id``.
@@ -112,9 +115,34 @@ class ImageStore:
         Used for the Hand-Drawn leave-one-source-out runs (Decision 12).
         The original store is left unchanged.
         """
-        keep = self.source_ids != str(source_id)
-        return ImageStore(images=self.images[keep], labels=self.labels[keep],
-                          source_ids=self.source_ids[keep], n_classes=self.n_classes)
+        return self.take(np.flatnonzero(self.source_ids != str(source_id)))
+
+    def take(self, positions: np.ndarray) -> "ImageStore":
+        """A new store holding only the images at ``positions``."""
+        return ImageStore(images=self.images[positions], labels=self.labels[positions],
+                          source_ids=self.source_ids[positions], n_classes=self.n_classes,
+                          group_ids=None if self.group_ids is None else self.group_ids[positions])
+
+    def real_subset(self, fraction: float, seed: int) -> "ImageStore":
+        """About ``fraction`` of each class, whole near-duplicate groups at a time.
+
+        The same fraction and seed give the same images for every arm.
+        """
+        if fraction >= 1.0:
+            return self
+        rng = np.random.default_rng(int(seed))
+        chosen: set[str] = set()
+        for positions in self.class_idx:
+            groups = np.unique(self.group_ids[positions])
+            rng.shuffle(groups)
+            target, count = int(np.ceil(fraction * positions.size)), 0
+            sizes = {g: int(n) for g, n in zip(*np.unique(self.group_ids[positions], return_counts=True))}
+            for group in groups:
+                if count >= target:
+                    break
+                chosen.add(str(group))
+                count += sizes[str(group)]
+        return self.take(np.flatnonzero(np.isin(self.group_ids, sorted(chosen))))
 
     def class_counts(self) -> np.ndarray:
         """int64 (n_classes,) number of stored images per class."""
