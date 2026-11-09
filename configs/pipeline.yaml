@@ -105,8 +105,9 @@ train:
   tuned: false               # true once the Decision 7 winner is frozen
   device: cuda               # auto | cpu | cuda; cuda fails loudly when no GPU is visible
   num_threads: 2             # torch CPU threads per run (scales sublinearly)
-  parallel_runs: 3           # independent runs trained at once; 8 GB RTX 3080 Laptop:
-                             # 5 at once exhausted VRAM and stalled (measured 2026-11-08);
+  parallel_runs: 2           # independent runs trained at once; 8 GB RTX 3080 Laptop:
+                             # the parent keeps GPU memory after the benchmark, so 3 workers
+                             # (4 GPU processes) filled the VRAM and stalled (2026-11-08);
                              # each run stays deterministic from (arm, seed)
   tuning:
     arm: A1
