@@ -2,6 +2,7 @@
 import { get, page } from '../api.js';
 import { mountNav } from '../nav.js';
 import { errorBox } from '../ui.js';
+import { pageFindings } from '../widgets/findings.js';
 
 export async function boot(name, render) {
   mountNav();
@@ -9,6 +10,8 @@ export async function boot(name, render) {
   try {
     const [data, meta] = await Promise.all([page(name), get('/api/meta')]);
     await render(main, data, meta);
+    const findings = pageFindings(name, meta.iterations);
+    if (findings) main.append(findings);
   } catch (error) {
     main.replaceChildren(errorBox(error));
   }
