@@ -3,7 +3,7 @@ import { mountTips } from './tips.js';
 import { el } from './ui.js';
 
 const LINKS = [
-  { group: 'Overview', items: [['index.html', 'CRISP-DM cycle'], ['business.html', 'Business understanding'], ['iteration1.html', 'Iteration 1 results'], ['iteration2.html', 'Iteration 2 results'], ['failures.html', 'Failure timeline'], ['changes.html', 'Changes by CRISP-DM step'], ['robustness.html', 'Robustness check']] },
+  { group: 'Overview', items: [['index.html', 'CRISP-DM cycle'], ['business.html', 'Business understanding'], ['iteration1.html', 'Iteration 1 results'], ['iteration2.html', 'Iteration 2 results'], ['experiments.html', 'Iteration 3 experiments'], ['failures.html', 'Failure timeline'], ['changes.html', 'Changes by CRISP-DM step'], ['robustness.html', 'Robustness check']] },
   { group: 'Pipeline stages', items: [
     ['stage0.html', '0 · Infrastructure'], ['stage1.html', '1 · Data freeze'], ['stage2.html', '2 · Augmentation'],
     ['stage3.html', '3 · Synthetic generator'], ['stage4.html', '4 · Training'], ['stage5.html', '5 · Evaluation'],

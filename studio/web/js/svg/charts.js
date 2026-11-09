@@ -70,7 +70,7 @@ export function lines({ series, xs, label, yLabel, marker, xLabels, xTitle = 'ep
   if (xLabels) xs.forEach((v, i) => root.append(text(x(v), bottom + 15, xLabels[i], { 'text-anchor': 'middle', style: 'font-size:10.5px' })));
   else for (const v of ticks(xs[0], xs[xs.length - 1], 6)) root.append(text(x(v), bottom + 15, v, { 'text-anchor': 'middle' }));
   root.append(text((left + width - right) / 2, height - 4, xTitle, { 'text-anchor': 'middle' }));
-  root.append(text(4, top + 2, yLabel, { 'text-anchor': 'start' }));
+  root.append(text(12, (top + bottom) / 2, yLabel, { 'text-anchor': 'middle', transform: `rotate(-90 12 ${(top + bottom) / 2})` }));
   for (const d of series) {
     root.append(s('path', { d: d.values.map((v, i) => `${i ? 'L' : 'M'}${x(xs[i])},${y(v)}`).join(''), fill: 'none', stroke: d.color, 'stroke-width': 2 }));
   }

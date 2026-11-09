@@ -56,7 +56,7 @@ opened.clear()
 client = TestClient(create_app(), base_url="http://127.0.0.1:8765")
 page = client.get
 for name in ("home", "business", "stage0", "stage1", "stage2", "stage3", "stage4", "stage5",
-             "stage6", "live", "iteration1", "iteration2", "failures", "failure", "robustness", "changes"):
+             "stage6", "live", "iteration1", "iteration2", "experiments", "failures", "failure", "robustness", "changes"):
     page(f"/api/page/{name}")
 stage2 = page("/api/page/stage2").json()["defaults"]
 stage3 = page("/api/page/stage3").json()["defaults"]

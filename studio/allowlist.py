@@ -34,6 +34,7 @@ DOCS: dict[str, str] = {
     "winners": f"{_A}/stage4/tuning_iter2/winners.json",
     "fresh_metrics": f"{_A}/stage5/tables/fresh_metrics.csv",
     "fresh_per_class": f"{_A}/stage5/tables/fresh_per_class.csv",
+    **{f"exp_{n}": f"docs/crisp_dm/iteration_3/experiments/{n}.json" for n in ("scarcity", "equal_real", "budget", "batchnorm", "preprocess", "one_transform_on", "val_vs_test")},
     "iter2_status": "docs/crisp_dm/iteration_2/data/stage5_status.json",
     "iter2_per_class": "docs/crisp_dm/iteration_2/data/per_class.csv",
     "iter2_comparisons": "docs/crisp_dm/iteration_2/data/comparisons.csv",
