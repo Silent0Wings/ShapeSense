@@ -1,0 +1,1154 @@
+[
+  {
+    "name": "grid_A0_lr0.0003_d0.2",
+    "settings": {
+      "arm": "A0",
+      "seed": 0,
+      "overrides": {},
+      "hparams": {
+        "lr": 0.0003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.92325497561387,
+    "best_epoch": 24,
+    "epochs_run": 29,
+    "per_class": {
+      "circle": 95.31459170013387,
+      "ellipse": 78.91566265060241,
+      "triangle": 93.88839681133747,
+      "square": 96.36608344549126,
+      "rectangle": 90.03322259136213,
+      "pentagon": 96.95121951219512,
+      "hexagon": 87.20173535791757,
+      "octagon": 87.35632183908046,
+      "star": 98.36660617059891,
+      "diamond": 94.83870967741936
+    }
+  },
+  {
+    "name": "grid_A0_lr0.0003_d0.4",
+    "settings": {
+      "arm": "A0",
+      "seed": 0,
+      "overrides": {},
+      "hparams": {
+        "lr": 0.0003,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 90.07315844591452,
+    "best_epoch": 15,
+    "epochs_run": 20,
+    "per_class": {
+      "circle": 92.91338582677166,
+      "ellipse": 73.59050445103857,
+      "triangle": 93.03106633081444,
+      "square": 94.0554821664465,
+      "rectangle": 89.1651865008881,
+      "pentagon": 91.33333333333333,
+      "hexagon": 86.11764705882354,
+      "octagon": 87.11111111111111,
+      "star": 97.98903107861061,
+      "diamond": 95.42483660130719
+    }
+  },
+  {
+    "name": "grid_A0_lr0.001_d0.2",
+    "settings": {
+      "arm": "A0",
+      "seed": 0,
+      "overrides": {},
+      "hparams": {
+        "lr": 0.001,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 86.61195684937628,
+    "best_epoch": 5,
+    "epochs_run": 10,
+    "per_class": {
+      "circle": 90.07832898172323,
+      "ellipse": 61.74496644295302,
+      "triangle": 92.17081850533808,
+      "square": 92.88486416558861,
+      "rectangle": 85.29411764705883,
+      "pentagon": 85.31468531468532,
+      "hexagon": 81.86528497409327,
+      "octagon": 83.5117773019272,
+      "star": 98.73417721518987,
+      "diamond": 94.52054794520548
+    }
+  },
+  {
+    "name": "grid_A0_lr0.001_d0.4",
+    "settings": {
+      "arm": "A0",
+      "seed": 0,
+      "overrides": {},
+      "hparams": {
+        "lr": 0.001,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 82.98686222256106,
+    "best_epoch": 5,
+    "epochs_run": 10,
+    "per_class": {
+      "circle": 86.61417322834646,
+      "ellipse": 63.86946386946387,
+      "triangle": 91.08391608391608,
+      "square": 85.71428571428571,
+      "rectangle": 86.3013698630137,
+      "pentagon": 61.86440677966102,
+      "hexagon": 80.20565552699229,
+      "octagon": 81.9672131147541,
+      "star": 98.01084990958408,
+      "diamond": 94.23728813559322
+    }
+  },
+  {
+    "name": "grid_A0_lr0.003_d0.2",
+    "settings": {
+      "arm": "A0",
+      "seed": 0,
+      "overrides": {},
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 93.90861301954807,
+    "best_epoch": 19,
+    "epochs_run": 24,
+    "per_class": {
+      "circle": 95.75596816976127,
+      "ellipse": 84.3205574912892,
+      "triangle": 95.71303587051618,
+      "square": 97.74834437086092,
+      "rectangle": 92.40924092409242,
+      "pentagon": 98.46153846153847,
+      "hexagon": 88.83928571428571,
+      "octagon": 89.760348583878,
+      "star": 99.6376811594203,
+      "diamond": 96.44012944983818
+    }
+  },
+  {
+    "name": "grid_A0_lr0.003_d0.4",
+    "settings": {
+      "arm": "A0",
+      "seed": 0,
+      "overrides": {},
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 94.17777736651783,
+    "best_epoch": 28,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 96.15894039735099,
+      "ellipse": 85.8108108108108,
+      "triangle": 95.78675838349098,
+      "square": 97.98115746971736,
+      "rectangle": 92.3841059602649,
+      "pentagon": 97.84615384615384,
+      "hexagon": 89.41684665226782,
+      "octagon": 89.60739030023095,
+      "star": 99.09584086799276,
+      "diamond": 97.6897689768977
+    }
+  },
+  {
+    "name": "grid_A1_lr0.0003_d0.2",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        }
+      },
+      "hparams": {
+        "lr": 0.0003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 90.72792844105372,
+    "best_epoch": 12,
+    "epochs_run": 17,
+    "per_class": {
+      "circle": 89.01569186875892,
+      "ellipse": 71.91011235955057,
+      "triangle": 93.0728241563055,
+      "square": 97.47675962815406,
+      "rectangle": 87.90849673202614,
+      "pentagon": 99.39024390243902,
+      "hexagon": 88.69565217391305,
+      "octagon": 86.42533936651584,
+      "star": 98.54545454545455,
+      "diamond": 94.83870967741936
+    }
+  },
+  {
+    "name": "grid_A1_lr0.0003_d0.4",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        }
+      },
+      "hparams": {
+        "lr": 0.0003,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 89.92640129468337,
+    "best_epoch": 13,
+    "epochs_run": 18,
+    "per_class": {
+      "circle": 89.17018284106892,
+      "ellipse": 69.18604651162791,
+      "triangle": 92.25589225589225,
+      "square": 96.58792650918635,
+      "rectangle": 87.45519713261649,
+      "pentagon": 99.39024390243902,
+      "hexagon": 86.38297872340425,
+      "octagon": 85.77981651376147,
+      "star": 98.17518248175182,
+      "diamond": 94.88054607508532
+    }
+  },
+  {
+    "name": "grid_A1_lr0.001_d0.2",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        }
+      },
+      "hparams": {
+        "lr": 0.001,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 92.29313111100572,
+    "best_epoch": 11,
+    "epochs_run": 16,
+    "per_class": {
+      "circle": 93.6,
+      "ellipse": 80.54607508532423,
+      "triangle": 94.19014084507042,
+      "square": 96.58792650918635,
+      "rectangle": 87.27858293075684,
+      "pentagon": 99.69418960244649,
+      "hexagon": 88.68778280542986,
+      "octagon": 87.91208791208791,
+      "star": 98.72495446265938,
+      "diamond": 95.7095709570957
+    }
+  },
+  {
+    "name": "grid_A1_lr0.001_d0.4",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        }
+      },
+      "hparams": {
+        "lr": 0.001,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 93.3566656836286,
+    "best_epoch": 28,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 93.68131868131869,
+      "ellipse": 83.6923076923077,
+      "triangle": 95.15260323159785,
+      "square": 97.48344370860927,
+      "rectangle": 89.2109500805153,
+      "pentagon": 100.0,
+      "hexagon": 90.15317286652079,
+      "octagon": 88.20960698689956,
+      "star": 99.27272727272727,
+      "diamond": 96.71052631578948
+    }
+  },
+  {
+    "name": "grid_A1_lr0.003_d0.2",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        }
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 94.69074375589686,
+    "best_epoch": 27,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 95.35519125683061,
+      "ellipse": 87.89808917197452,
+      "triangle": 96.89991142604075,
+      "square": 97.86666666666666,
+      "rectangle": 92.60450160771704,
+      "pentagon": 100.0,
+      "hexagon": 89.69957081545064,
+      "octagon": 89.43820224719101,
+      "star": 99.45553539019964,
+      "diamond": 97.6897689768977
+    }
+  },
+  {
+    "name": "grid_A1_lr0.003_d0.4",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        }
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 93.70143750853292,
+    "best_epoch": 12,
+    "epochs_run": 17,
+    "per_class": {
+      "circle": 94.48183041722746,
+      "ellipse": 83.43949044585987,
+      "triangle": 95.74283231972198,
+      "square": 97.87234042553192,
+      "rectangle": 90.87893864013267,
+      "pentagon": 99.69418960244649,
+      "hexagon": 89.29384965831436,
+      "octagon": 90.30837004405286,
+      "star": 98.9090909090909,
+      "diamond": 96.39344262295081
+    }
+  },
+  {
+    "name": "grid_B_lr0.0003_d0.2",
+    "settings": {
+      "arm": "B",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ]
+      },
+      "hparams": {
+        "lr": 0.0003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.52780193252092,
+    "best_epoch": 28,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 90.02849002849003,
+      "ellipse": 79.26829268292683,
+      "triangle": 94.00179051029544,
+      "square": 97.10526315789474,
+      "rectangle": 88.63636363636364,
+      "pentagon": 99.69418960244649,
+      "hexagon": 88.45315904139433,
+      "octagon": 84.36830835117773,
+      "star": 98.91696750902527,
+      "diamond": 94.8051948051948
+    }
+  },
+  {
+    "name": "grid_B_lr0.0003_d0.4",
+    "settings": {
+      "arm": "B",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ]
+      },
+      "hparams": {
+        "lr": 0.0003,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 90.7593445978585,
+    "best_epoch": 23,
+    "epochs_run": 28,
+    "per_class": {
+      "circle": 89.73277074542898,
+      "ellipse": 74.69135802469135,
+      "triangle": 93.21739130434783,
+      "square": 96.47058823529412,
+      "rectangle": 87.93388429752066,
+      "pentagon": 99.38650306748467,
+      "hexagon": 88.98876404494382,
+      "octagon": 85.52631578947368,
+      "star": 98.18181818181819,
+      "diamond": 93.4640522875817
+    }
+  },
+  {
+    "name": "grid_B_lr0.001_d0.2",
+    "settings": {
+      "arm": "B",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ]
+      },
+      "hparams": {
+        "lr": 0.001,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 93.62756139231674,
+    "best_epoch": 23,
+    "epochs_run": 28,
+    "per_class": {
+      "circle": 93.72384937238493,
+      "ellipse": 84.24242424242425,
+      "triangle": 95.95782073813709,
+      "square": 97.35449735449735,
+      "rectangle": 90.17713365539453,
+      "pentagon": 100.0,
+      "hexagon": 90.19607843137256,
+      "octagon": 88.88888888888889,
+      "star": 98.72495446265938,
+      "diamond": 97.00996677740864
+    }
+  },
+  {
+    "name": "grid_B_lr0.001_d0.4",
+    "settings": {
+      "arm": "B",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ]
+      },
+      "hparams": {
+        "lr": 0.001,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 93.10194180257548,
+    "best_epoch": 18,
+    "epochs_run": 23,
+    "per_class": {
+      "circle": 93.57045143638851,
+      "ellipse": 80.93841642228739,
+      "triangle": 95.04778453518679,
+      "square": 97.35449735449735,
+      "rectangle": 90.4201680672269,
+      "pentagon": 99.69418960244649,
+      "hexagon": 90.66666666666667,
+      "octagon": 89.14027149321267,
+      "star": 98.53479853479854,
+      "diamond": 95.65217391304348
+    }
+  },
+  {
+    "name": "grid_B_lr0.003_d0.2",
+    "settings": {
+      "arm": "B",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ]
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 94.35798574066476,
+    "best_epoch": 25,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 94.93844049247606,
+      "ellipse": 84.4311377245509,
+      "triangle": 96.38128861429833,
+      "square": 98.52744310575636,
+      "rectangle": 92.33278955954323,
+      "pentagon": 100.0,
+      "hexagon": 89.95633187772926,
+      "octagon": 90.09009009009009,
+      "star": 98.9090909090909,
+      "diamond": 98.01324503311258
+    }
+  },
+  {
+    "name": "grid_B_lr0.003_d0.4",
+    "settings": {
+      "arm": "B",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ]
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 93.81586911147947,
+    "best_epoch": 25,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 94.93844049247606,
+      "ellipse": 83.83233532934132,
+      "triangle": 96.63120567375887,
+      "square": 98.26435246995995,
+      "rectangle": 90.76175040518639,
+      "pentagon": 100.0,
+      "hexagon": 88.30022075055187,
+      "octagon": 88.78923766816143,
+      "star": 99.27272727272727,
+      "diamond": 97.36842105263158
+    }
+  },
+  {
+    "name": "grid_A2_lr0.0003_d0.2",
+    "settings": {
+      "arm": "A2",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ],
+        "arms.A2.clean_fraction": 0.337,
+        "arms.A2.synthetic_fraction": 0.162
+      },
+      "hparams": {
+        "lr": 0.0003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.11225138297232,
+    "best_epoch": 13,
+    "epochs_run": 18,
+    "per_class": {
+      "circle": 90.8835904628331,
+      "ellipse": 75.51622418879056,
+      "triangle": 93.23050556983719,
+      "square": 97.34042553191489,
+      "rectangle": 89.42807625649914,
+      "pentagon": 99.69418960244649,
+      "hexagon": 87.02928870292887,
+      "octagon": 85.44600938967136,
+      "star": 98.36065573770492,
+      "diamond": 94.19354838709677
+    }
+  },
+  {
+    "name": "grid_A2_lr0.0003_d0.4",
+    "settings": {
+      "arm": "A2",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ],
+        "arms.A2.clean_fraction": 0.337,
+        "arms.A2.synthetic_fraction": 0.162
+      },
+      "hparams": {
+        "lr": 0.0003,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 91.68109838673806,
+    "best_epoch": 26,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 90.93484419263456,
+      "ellipse": 77.8443113772455,
+      "triangle": 94.5969884853853,
+      "square": 97.6063829787234,
+      "rectangle": 90.18302828618968,
+      "pentagon": 99.39024390243902,
+      "hexagon": 89.03508771929825,
+      "octagon": 83.65180467091295,
+      "star": 98.72958257713249,
+      "diamond": 94.83870967741936
+    }
+  },
+  {
+    "name": "grid_A2_lr0.001_d0.2",
+    "settings": {
+      "arm": "A2",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ],
+        "arms.A2.clean_fraction": 0.337,
+        "arms.A2.synthetic_fraction": 0.162
+      },
+      "hparams": {
+        "lr": 0.001,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 94.12501697416712,
+    "best_epoch": 28,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 94.92455418381344,
+      "ellipse": 86.06811145510837,
+      "triangle": 96.01417183348096,
+      "square": 97.99732977303071,
+      "rectangle": 91.80327868852459,
+      "pentagon": 99.69418960244649,
+      "hexagon": 90.6318082788671,
+      "octagon": 88.83928571428571,
+      "star": 99.45750452079567,
+      "diamond": 95.81993569131832
+    }
+  },
+  {
+    "name": "grid_A2_lr0.001_d0.4",
+    "settings": {
+      "arm": "A2",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ],
+        "arms.A2.clean_fraction": 0.337,
+        "arms.A2.synthetic_fraction": 0.162
+      },
+      "hparams": {
+        "lr": 0.001,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 93.68362768510406,
+    "best_epoch": 28,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 95.06849315068493,
+      "ellipse": 83.85093167701864,
+      "triangle": 95.39823008849558,
+      "square": 97.86666666666666,
+      "rectangle": 90.9688013136289,
+      "pentagon": 99.69418960244649,
+      "hexagon": 90.71274298056156,
+      "octagon": 89.03803131991052,
+      "star": 99.09255898366607,
+      "diamond": 95.14563106796116
+    }
+  },
+  {
+    "name": "grid_A2_lr0.003_d0.2",
+    "settings": {
+      "arm": "A2",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ],
+        "arms.A2.clean_fraction": 0.337,
+        "arms.A2.synthetic_fraction": 0.162
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 95.3063990375067,
+    "best_epoch": 28,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 96.17486338797814,
+      "ellipse": 88.9589905362776,
+      "triangle": 97.44942832014073,
+      "square": 98.1283422459893,
+      "rectangle": 93.13725490196079,
+      "pentagon": 100.0,
+      "hexagon": 91.1062906724512,
+      "octagon": 90.625,
+      "star": 99.45750452079567,
+      "diamond": 98.02631578947368
+    }
+  },
+  {
+    "name": "grid_A2_lr0.003_d0.4",
+    "settings": {
+      "arm": "A2",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 20,
+        "augment.scale": [
+          0.904,
+          1.076
+        ],
+        "augment.nonuniform_scale": 0.092,
+        "augment.shear_deg": 1.4,
+        "augment.translate_px": 0.0,
+        "augment.noise_p": 0.385,
+        "augment.blur_p": 0.373,
+        "taxonomy.rotate_limit_deg": {
+          "square": 10,
+          "rectangle": 10,
+          "diamond": 10
+        },
+        "arms.B.synthetic_fraction": 0.2,
+        "synth.radius_px": [
+          12.5,
+          27.1
+        ],
+        "synth.center_jitter_px": 5.3,
+        "synth.vertex_jitter_px": 0.4,
+        "synth.ellipse_max_axis_ratio": 2.46,
+        "synth.rectangle_max_side_ratio": 3.99,
+        "synth.diamond_acute_angle_deg": [
+          54.9,
+          65.6
+        ],
+        "synth.star_inner_ratio": [
+          0.361,
+          0.586
+        ],
+        "arms.A2.clean_fraction": 0.337,
+        "arms.A2.synthetic_fraction": 0.162
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.4
+      }
+    },
+    "val_macro_f1": 94.88653030306047,
+    "best_epoch": 28,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 95.64032697547684,
+      "ellipse": 87.22741433021807,
+      "triangle": 96.9053934571176,
+      "square": 97.99732977303071,
+      "rectangle": 92.78688524590164,
+      "pentagon": 100.0,
+      "hexagon": 91.06753812636165,
+      "octagon": 90.38031319910515,
+      "star": 99.45750452079567,
+      "diamond": 97.40259740259741
+    }
+  }
+]

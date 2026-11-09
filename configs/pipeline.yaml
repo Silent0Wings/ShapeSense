@@ -41,11 +41,22 @@ modules:
 
 # The three arms; identical training, only the data stream differs.
 arms:
-  A0: { augment: false, synthetic: false }   # report's "Model A" (control)
-  A1: { augment: true,  synthetic: false }   # isolates augmentation effect
-  B:  { augment: true,  synthetic: true }    # report's "Model B"
-  A2: { augment: true,  synthetic: true, clean_fraction: 0.3, synthetic_fraction: 0.2 }
-                                             # clean real + augmented real + synthetic
+  A0:   # real only (control)
+    { augment: false, synthetic: false,
+      hparams: { lr: 0.003, dropout: 0.4 },
+      overrides: {} }
+  A1:   # + augmentation
+    { augment: true, synthetic: false,
+      hparams: { lr: 0.003, dropout: 0.2 },
+      overrides: {"augment.rotate_deg": 20, "augment.scale": [0.904, 1.076], "augment.nonuniform_scale": 0.092, "augment.shear_deg": 1.4, "augment.translate_px": 0.0, "augment.noise_p": 0.385, "augment.blur_p": 0.373, "taxonomy.rotate_limit_deg": {"square": 10, "rectangle": 10, "diamond": 10}} }
+  B:   # + augmentation + synthetic
+    { augment: true, synthetic: true, synthetic_fraction: 0.278,
+      hparams: { lr: 0.003, dropout: 0.2 },
+      overrides: {"augment.rotate_deg": 20, "augment.scale": [0.904, 1.076], "augment.nonuniform_scale": 0.092, "augment.shear_deg": 1.4, "augment.translate_px": 0.0, "augment.noise_p": 0.385, "augment.blur_p": 0.373, "taxonomy.rotate_limit_deg": {"square": 10, "rectangle": 10, "diamond": 10}, "synth.radius_px": [19.7, 24.8], "synth.center_jitter_px": 3.7, "synth.vertex_jitter_px": 1.6, "synth.ellipse_max_axis_ratio": 3.7, "synth.rectangle_max_side_ratio": 1.78, "synth.diamond_acute_angle_deg": [55.1, 60.9], "synth.star_inner_ratio": [0.398, 0.514]} }
+  A2:   # clean real + augmented real + synthetic
+    { augment: true, synthetic: true, clean_fraction: 0.411, synthetic_fraction: 0.198,
+      hparams: { lr: 0.003, dropout: 0.2 },
+      overrides: {"augment.rotate_deg": 20, "augment.scale": [0.904, 1.076], "augment.nonuniform_scale": 0.092, "augment.shear_deg": 1.4, "augment.translate_px": 0.0, "augment.noise_p": 0.385, "augment.blur_p": 0.373, "taxonomy.rotate_limit_deg": {"square": 10, "rectangle": 10, "diamond": 10}, "synth.radius_px": [12.5, 27.1], "synth.center_jitter_px": 5.3, "synth.vertex_jitter_px": 0.4, "synth.ellipse_max_axis_ratio": 2.46, "synth.rectangle_max_side_ratio": 3.99, "synth.diamond_acute_angle_deg": [54.9, 65.6], "synth.star_inner_ratio": [0.361, 0.586]} }
 
 # One entry per trained CNN (arm x seed). Only arm and seed may vary;
 # every training setting comes from `train`. Ablations are new entries.
@@ -116,7 +127,7 @@ train:
   selection_metric: val_macro_f1
   steps_per_epoch: 49        # Decision 13: frozen from arm A0 = ceil(12405 train / 256);
                              # re-frozen after CRISP-DM iteration 1 (was 50)
-  tuned: false               # true once the Decision 7 winner is frozen
+  tuned: true                # iteration 2: chosen by src/stage4_train/search.py
   device: cuda               # auto | cpu | cuda; cuda fails loudly when no GPU is visible
   num_threads: 2             # torch CPU threads per run (scales sublinearly)
   parallel_runs: 2           # independent runs trained at once; 8 GB RTX 3080 Laptop:
