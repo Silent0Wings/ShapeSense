@@ -40,7 +40,9 @@
 \providecommand{\NearDupGroups}{--}
 \providecommand{\LargestNearDupGroup}{--}
 % Stage 6: facts from the Stage 1/3/4/5 status files, the config and export/.
-\InputIfFileExists{artifacts/stage6/generated/pipeline_facts.tex}{}{}
+% Sections A to J report iteration 1 from frozen copies, so later runs cannot change them.
+\InputIfFileExists{docs/crisp_dm/iteration_1/pipeline_facts.tex}{}{}
+\InputIfFileExists{artifacts/stage6/generated/iteration2_facts.tex}{}{}
 % CRISP-DM iteration 1: committed evidence (validation only) + Stage 1 count.
 \InputIfFileExists{docs/crisp_dm/iteration_1_quickdraw_diamonds.tex}{}{}
 \InputIfFileExists{artifacts/stage1/exclusions.tex}{}{}
@@ -66,6 +68,42 @@
 \providecommand{\IterOneAOneSeedTwoQDRecall}{--}
 \providecommand{\IterOneAOneSeedTwoRenderRecall}{--}
 \providecommand{\IterOneAOneSeedTwoQDAsTriangle}{--}
+\providecommand{\ItwoPrimary}{--}
+\providecommand{\ItwoDelta}{--}
+\providecommand{\ItwoCILo}{--}
+\providecommand{\ItwoCIHi}{--}
+\providecommand{\ItwoVerdict}{--}
+\providecommand{\ItwoReads}{--}
+\providecommand{\ItwoFreshN}{--}
+\providecommand{\ItwoFreshDelta}{--}
+\providecommand{\ItwoFreshCILo}{--}
+\providecommand{\ItwoFreshCIHi}{--}
+\providecommand{\ItwoFreshVerdict}{--}
+\providecommand{\ItwoRotate}{--}
+\providecommand{\ItwoRotateCap}{--}
+\providecommand{\ItwoAtwoClean}{--}
+\providecommand{\ItwoAtwoSynth}{--}
+\providecommand{\ItwoBSynth}{--}
+\providecommand{\ItwoEnsAzero}{--}
+\providecommand{\ItwoEnsAone}{--}
+\providecommand{\ItwoEnsB}{--}
+\providecommand{\ItwoEnsAtwo}{--}
+\providecommand{\ItwoFreshAzero}{--}
+\providecommand{\ItwoFreshAone}{--}
+\providecommand{\ItwoFreshB}{--}
+\providecommand{\ItwoFreshAtwo}{--}
+\providecommand{\ItwoValAzero}{--}
+\providecommand{\ItwoValAone}{--}
+\providecommand{\ItwoValB}{--}
+\providecommand{\ItwoValAtwo}{--}
+\providecommand{\ItwoTrialsAzero}{--}
+\providecommand{\ItwoTrialsAone}{--}
+\providecommand{\ItwoTrialsB}{--}
+\providecommand{\ItwoTrialsAtwo}{--}
+\providecommand{\ItwoLosoAzero}{--}
+\providecommand{\ItwoLosoAone}{--}
+\providecommand{\ItwoLosoB}{--}
+\providecommand{\ItwoLosoAtwo}{--}
 \providecommand{\BatchSize}{--}
 \providecommand{\SeedsPerArm}{--}
 \providecommand{\SyntheticSharePct}{--}
@@ -174,6 +212,9 @@ Ray Ntukanyagwe         & \TBD \\
 \addcontentsline{toc}{section}{A. Introduction and CRISP-DM recap}
 % =====================================================================
 
+\textbf{Note.} Sections A to J report iteration 1 and its verdict, unchanged.
+Iteration 2 is a separate experiment, reported in Section K.
+
 The project trains one classifier for \NumClasses{} geometric shape classes
 (circle, ellipse, triangle, square, rectangle, pentagon, hexagon, octagon,
 star, diamond) across digital renders and hand-drawn sketches. The Phase 1
@@ -213,11 +254,14 @@ All arms are tested once on the same locked real test split.
 \draw[arr] (ev) -- (de);
 \draw[arr] (de.north) -- node[font=\scriptsize, left]{new cycle} (bu.south);
 \draw[arr, dashed] (mo.north) -- node[font=\scriptsize, right]{iteration 1} (dp.south);
+\draw[arr, dashed] (ev.north) to[bend left=18] node[font=\scriptsize, above]{iteration 2} (dp.south west);
 \end{tikzpicture}}
 \caption{The project on CRISP-DM. Every step is now covered; Deployment, left
 open in Phase 1, is closed by the exported model and the demo (Section F). The
 dashed arrow is iteration 1: a Modeling finding sent the project back to Data
-Preparation (Section B, \emph{CRISP-DM iteration 1}).}
+Preparation (Section B, \emph{CRISP-DM iteration 1}). The second dashed arrow
+is iteration 2: an Evaluation finding sent the project back to Data Preparation
+(Section K).}
 \label{fig:crisp}
 \end{figure}
 
@@ -331,7 +375,7 @@ the stage renders for review.
 
 \begin{figure}[H]
 \centering
-\GuardedGraphic{0.85\linewidth}{artifacts/stage2/qa/qa_sheet.png}
+\GuardedGraphic{0.85\linewidth}{docs/crisp_dm/iteration_1/figures/qa_stage2.png}
 \caption{Stage 2 QA sheet: one row per class, original followed by augmented
 samples.}
 \label{fig:augqa}
@@ -358,12 +402,12 @@ force. Throughput: \ThroughputSynth{} images per second against a target of
 force (generated from \texttt{artifacts/stage3/param\_ranges.json}).}
 \label{tab:paramranges}
 \scriptsize
-\InputIfFileExists{artifacts/stage6/generated/param_ranges.tex}{}{--}
+\InputIfFileExists{docs/crisp_dm/iteration_1/param_ranges.tex}{}{--}
 \end{table}
 
 \begin{figure}[H]
 \centering
-\GuardedGraphic{0.85\linewidth}{artifacts/stage3/qa/qa_sheet.png}
+\GuardedGraphic{0.85\linewidth}{docs/crisp_dm/iteration_1/figures/qa_stage3.png}
 \caption{Stage 3 QA sheet: synthetic samples per class.}
 \label{fig:synthqa}
 \end{figure}
@@ -443,7 +487,7 @@ hypothesis.
 % =====================================================================
 
 Every table in this section is \texttt{\textbackslash input} from
-\nolinkurl{artifacts/stage5/tables/} exactly as Stage 5 wrote it; nothing is
+\nolinkurl{docs/crisp_dm/iteration_1/tables/} exactly as Stage 5 wrote it; nothing is
 retyped. If a table shows only a dash, Stage 5 has not run on this machine.
 
 \textbf{What the primary number means (Decision 13).} B is compared with A1
@@ -457,7 +501,7 @@ synthetic data help?'', not ``does adding it help?''. The latter is the
 deferred \texttt{B\_equalreal} ablation (Section H).
 
 \textbf{Verdict.} \begingroup\catcode`\<=\active\def<{\textless{}}%
-\InputIfFileExists{artifacts/stage5/tables/verdict.tex}{}{--}\endgroup
+\InputIfFileExists{docs/crisp_dm/iteration_1/tables/verdict.tex}{}{--}\endgroup
 \par\noindent Stage 5 status verdict: \textbf{\Verdict}. A failed verdict
 with honest confidence intervals is a valid, reportable result: in CRISP-DM
 terms the loop goes back to business understanding, and the likely levers are
@@ -469,7 +513,7 @@ the synthetic ratio, the generator or the label rules.
 models, per-seed mean $\pm$ std, soft-vote ensembles and baselines.}
 \label{tab:metrics}
 \small
-\InputIfFileExists{artifacts/stage5/tables/metrics.tex}{}{--}
+\InputIfFileExists{docs/crisp_dm/iteration_1/tables/metrics.tex}{}{--}
 \end{table}
 
 \begin{table}[H]
@@ -478,7 +522,7 @@ models, per-seed mean $\pm$ std, soft-vote ensembles and baselines.}
 secondary tests, with per-seed robustness (mean $\pm$ std of the paired
 per-seed differences and whether every seed has the same sign).}
 \label{tab:comparisons}
-\IfFileExists{artifacts/stage5/tables/comparisons.tex}{\resizebox{\linewidth}{!}{\input{artifacts/stage5/tables/comparisons.tex}}}{--}
+\IfFileExists{docs/crisp_dm/iteration_1/tables/comparisons.tex}{\resizebox{\linewidth}{!}{\input{docs/crisp_dm/iteration_1/tables/comparisons.tex}}}{--}
 \end{table}
 
 \begin{table}[H]
@@ -488,7 +532,7 @@ the class threshold $\max(\MaxClassDropPoints, \text{noise band})$ and the
 guardrail flag. An asterisk marks a single-source class when the Stage 1
 shortcut check fired.}
 \label{tab:perclass}
-\IfFileExists{artifacts/stage5/tables/per_class.tex}{\resizebox{\linewidth}{!}{\input{artifacts/stage5/tables/per_class.tex}}}{--}
+\IfFileExists{docs/crisp_dm/iteration_1/tables/per_class.tex}{\resizebox{\linewidth}{!}{\input{docs/crisp_dm/iteration_1/tables/per_class.tex}}}{--}
 \end{table}
 
 \textbf{Same-source vs unseen-source generalization (R19).} The primary test
@@ -510,7 +554,7 @@ unseen-source result says how it does on one specific source it never saw.
 ``Held-out source'' rows are the unseen-source leave-one-source-out results.}
 \label{tab:persource}
 \small
-\InputIfFileExists{artifacts/stage5/tables/per_source.tex}{}{--}
+\InputIfFileExists{docs/crisp_dm/iteration_1/tables/per_source.tex}{}{--}
 \end{table}
 
 \textbf{Seed robustness.} Mean pairwise disagreement between seed models on
@@ -523,7 +567,7 @@ the primary CI resamples test images, not seeds.
 \caption{Power check, run on validation before the test set was opened.}
 \label{tab:power}
 \small
-\InputIfFileExists{artifacts/stage5/tables/power.tex}{}{--}
+\InputIfFileExists{docs/crisp_dm/iteration_1/tables/power.tex}{}{--}
 \end{table}
 
 \begin{table}[H]
@@ -532,14 +576,14 @@ the primary CI resamples test images, not seeds.
 and per baseline).}
 \label{tab:testreads}
 \small
-\InputIfFileExists{artifacts/stage5/tables/test_reads.tex}{}{--}
+\InputIfFileExists{docs/crisp_dm/iteration_1/tables/test_reads.tex}{}{--}
 \end{table}
 
 \begin{figure}[H]
 \centering
-\GuardedGraphic{0.32\linewidth}{artifacts/stage5/figures/confusion_A0.png}\hfill
-\GuardedGraphic{0.32\linewidth}{artifacts/stage5/figures/confusion_A1.png}\hfill
-\GuardedGraphic{0.32\linewidth}{artifacts/stage5/figures/confusion_B.png}
+\GuardedGraphic{0.32\linewidth}{docs/crisp_dm/iteration_1/figures/confusion_A0.png}\hfill
+\GuardedGraphic{0.32\linewidth}{docs/crisp_dm/iteration_1/figures/confusion_A1.png}\hfill
+\GuardedGraphic{0.32\linewidth}{docs/crisp_dm/iteration_1/figures/confusion_B.png}
 \caption{Confusion matrices of the soft-vote ensembles on the test split:
 A0 (left), A1 (middle), B (right).}
 \label{fig:confusion}
@@ -547,9 +591,9 @@ A0 (left), A1 (middle), B (right).}
 
 \begin{figure}[H]
 \centering
-\GuardedGraphic{0.68\linewidth}{artifacts/stage5/figures/errors_square_diamond.png}\\[4pt]
-\GuardedGraphic{0.68\linewidth}{artifacts/stage5/figures/errors_square_rectangle.png}\\[4pt]
-\GuardedGraphic{0.68\linewidth}{artifacts/stage5/figures/errors_circle_ellipse.png}
+\GuardedGraphic{0.68\linewidth}{docs/crisp_dm/iteration_1/figures/errors_square_diamond.png}\\[4pt]
+\GuardedGraphic{0.68\linewidth}{docs/crisp_dm/iteration_1/figures/errors_square_rectangle.png}\\[4pt]
+\GuardedGraphic{0.68\linewidth}{docs/crisp_dm/iteration_1/figures/errors_circle_ellipse.png}
 \caption{Error galleries for the three ambiguous pairs (square/diamond,
 square/rectangle, circle/ellipse), rendered by Stage 5. Stage 6 may not read
 test images, so these are shown exactly as written.}
@@ -730,6 +774,86 @@ data they cover.
 
 \newpage
 % =====================================================================
+% =====================================================================
+\section*{K. CRISP-DM iteration 2}
+\addcontentsline{toc}{section}{K. CRISP-DM iteration 2}
+% =====================================================================
+
+Iteration 1 ended with a valid fail: synthetic data did not improve on
+augmentation, and the unaugmented arm scored highest. Finding a problem at
+Evaluation and going back is part of the CRISP-DM loop. An investigation on
+train and validation data only then looked for the cause, before any new
+training. The iteration 1 verdict in Section D stands and is not rewritten.
+
+\textbf{Findings at each step.}
+
+{\small\InputIfFileExists{artifacts/stage6/generated/iteration_log.tex}{}{--}}
+
+\textbf{What changed.} The transform defects were fixed, then the augmentation
+and generator settings were tuned on validation only, under a plan committed
+before tuning (\nolinkurl{docs/crisp_dm/iteration_2/preregistration.md}). A new
+arm, \textbf{A2}, mixes clean real, augmented real and synthetic images in each
+batch: \ItwoAtwoClean\% clean and \ItwoAtwoSynth\% synthetic. Every arm got its
+own learning-rate and dropout tuning. The search chose rotation of
+$\pm$\ItwoRotate$^\circ$, capped at $\pm$\ItwoRotateCap$^\circ$ for square,
+rectangle and diamond, and \ItwoBSynth\% synthetic images for B. Trials per arm:
+A0 \ItwoTrialsAzero, A1 \ItwoTrialsAone, B \ItwoTrialsB, A2 \ItwoTrialsAtwo.
+A0 has no augmentation settings to search, so it received fewer trials, which
+gives the tuned arms some selection advantage on validation.
+
+\begin{table}[H]
+\centering
+\caption{Iteration 2 macro-F1 by arm: mean on validation over the tuning seeds,
+soft-vote ensemble on the reused test split, and on the fresh holdout.}
+\label{tab:itertwo}
+\begin{tabular}{lrrr}
+\toprule
+Arm & Validation & Reused test split & Fresh holdout \\
+\midrule
+A0 & \ItwoValAzero & \ItwoEnsAzero & \ItwoFreshAzero \\
+A1 & \ItwoValAone & \ItwoEnsAone & \ItwoFreshAone \\
+B & \ItwoValB & \ItwoEnsB & \ItwoFreshB \\
+A2 & \ItwoValAtwo & \ItwoEnsAtwo & \ItwoFreshAtwo \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Pre-registered result (\ItwoPrimary).} On the reused test split the
+macro-F1 change is \ItwoDelta{} points, \CILevelPct\% paired bootstrap CI
+[\ItwoCILo, \ItwoCIHi], verdict: \textbf{\ItwoVerdict}. On the fresh holdout of
+\ItwoFreshN{} images the change is \ItwoFreshDelta{} points, CI
+[\ItwoFreshCILo, \ItwoFreshCIHi], verdict: \textbf{\ItwoFreshVerdict}.
+
+\textbf{How much weight this can carry.} The test split was read in iteration 1
+and its per-class results shaped this plan, so a second read is weaker evidence
+than a first. The fresh holdout has never informed any choice and is the cleaner
+check, with limits: its images come from sources seen in training, and it holds
+no Quick, Draw! sketches because every local drawing was already in the catalog.
+It was read once per model, in this run only.
+
+\textbf{Unseen source.} Mean accuracy of the Hand-Drawn hold-out models on
+Hand-Drawn triangles and rectangles of the test split, three seeds per arm:
+A0 \ItwoLosoAzero\%, A1 \ItwoLosoAone\%, B \ItwoLosoB\%, A2 \ItwoLosoAtwo\%.
+Ellipse is excluded because Hand-Drawn is its only source.
+
+\textbf{Limitations.} Rotation was tuned on validation, so the chosen range
+favours whatever the same-source split rewards. Whether orientation is a cue
+the deployed model may use is a design decision for the project owner.
+
+\begin{table}[H]
+\centering
+\caption{Iteration 2 comparisons on the reused test split.}
+\small
+\IfFileExists{artifacts/stage5/tables/comparisons.tex}{\resizebox{\linewidth}{!}{\input{artifacts/stage5/tables/comparisons.tex}}}{--}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Iteration 2 per-class F1 on the fresh holdout.}
+\small
+\InputIfFileExists{artifacts/stage5/tables/fresh_per_class.tex}{}{--}
+\end{table}
+
 \begin{thebibliography}{9}
 \bibitem{quickdraw} Google Creative Lab. \emph{The Quick, Draw! Dataset}.
   License: CC BY 4.0.
