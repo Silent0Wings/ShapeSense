@@ -13,8 +13,8 @@ from src.common.config import load_config
 from src.stage4_train import sweep
 from src.stage4_train.data import ImageStore
 from src.stage4_train.sampling import BatchStream, balanced_labels, class_index, make_batch
-from src.stage4_train.train import (MODEL_FILE, macro_f1_points, recipe_fingerprint,
-                                    resolve_device, runtime_id, train_one)
+from src.stage4_train.train import (MODEL_FILE, VAL_PROBS_FILE, macro_f1_points,
+                                    recipe_fingerprint, resolve_device, runtime_id, train_one)
 
 N_CLASSES = 10
 SIZE = 16             # small test images; make_batch is size-agnostic
@@ -263,3 +263,30 @@ def test_cuda_run_saves_a_cpu_model(tmp_path):
     assert out["excluded_classes"] == []
     model = torch.jit.load(tmp_path / MODEL_FILE)
     assert {p.device.type for p in model.parameters()} == {"cpu"}
+
+
+# --- seed disagreement with held-out runs ------------------------------------
+
+def test_sweep_results_mark_held_out_runs_so_disagreement_skips_them(tmp_path):
+    """Held-out runs have a smaller validation set and must not be compared."""
+    cfg = _config("cpu")
+    cfg["train"]["parallel_runs"] = 1
+    cfg["runs"] = [{"arm": "A1", "seed": 0}, {"arm": "A1", "seed": 1}]
+    sizes = {"A1_0": 20, "A1_1": 20, "A1_loso_handdrawn_0": 7, "B_loso_handdrawn_0": 7}
+
+    def fake_job(spec):
+        out = tmp_path / spec["run_name"]
+        out.mkdir()
+        np.savez(out / VAL_PROBS_FILE, probs=np.eye(N_CLASSES)[np.zeros(sizes[spec["run_name"]],
+                                                                        dtype=np.int64)])
+        return {"run_name": spec["run_name"], "arm": spec["arm"], "seed": spec["seed"]}
+
+    results = sweep.run_sweep(cfg, 1, {"lr": 0.001, "dropout": 0.2}, True, out_dir=tmp_path,
+                              job_runner=fake_job)
+    held_out = {r["run_name"]: r["holdout_source"] for r in results}
+    assert held_out == {"A1_0": None, "A1_1": None,
+                        "A1_loso_handdrawn_0": "github_handdrawn",
+                        "B_loso_handdrawn_0": "github_handdrawn"}
+    out = sweep.seed_disagreement(tmp_path, results)
+    assert out["per_arm"]["A1"]["runs"] == ["A1_0", "A1_1"]
+    assert "B" not in out["per_arm"]
