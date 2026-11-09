@@ -11,7 +11,7 @@ from studio import allowlist
 from studio.data import samples
 from studio.ops.overrides import default_augment_values
 from studio.server.app import create_app
-from studio.settings import MAX_BODY_BYTES, MAX_PNG_SIDE
+from studio.settings import ARMS, MAX_BODY_BYTES, MAX_PNG_SIDE
 
 
 @pytest.fixture(scope="module")
@@ -97,3 +97,8 @@ def test_non_png_and_oversized_drawings_rejected(client):
     assert client.post("/api/infer", json={"image": "data:text/plain;base64,AA==", "arms": []}).status_code == 422
     assert client.post("/api/infer", json={"image": _png(MAX_PNG_SIDE + 1), "arms": []}).status_code == 422
     assert client.post("/api/infer", json={"image": _png(64), "arms": ["C9"]}).status_code == 422
+
+
+def test_every_arm_can_be_asked_for_at_once(client):
+    assert client.post("/api/infer", json={"image": _png(64), "arms": list(ARMS)}).status_code == 200
+    assert client.post("/api/infer", json={"image": _png(64), "arms": [*ARMS, "A0"]}).status_code == 422

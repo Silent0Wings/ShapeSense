@@ -8,11 +8,11 @@ function tuningCard(t) {
   const lrs = [...new Set(t.grid.map((g) => g.lr))]; const drops = [...new Set(t.grid.map((g) => g.dropout))];
   const lo = Math.min(...t.grid.map((g) => g.val_macro_f1)); const hi = Math.max(...t.grid.map((g) => g.val_macro_f1));
   const cells = t.grid.map((g) => ({ x: lrs.indexOf(g.lr), y: drops.indexOf(g.dropout), t: (g.val_macro_f1 - lo) / ((hi - lo) || 1), g }));
-  return card('Tuning grid (A1 validation, seed 0)',
+  return card('Iteration 1 tuning grid (A1 validation, seed 0)',
     el('div', { style: 'max-width:360px' }, heatmap({ cells, xLabels: lrs.map(String), yLabels: drops.map(String), label: 'Validation macro-F1 by learning rate and dropout', size: 68,
       cellText: (c) => fmt(c.g.val_macro_f1, 1), tip: (c) => `lr ${c.g.lr}, dropout ${c.g.dropout}: ${fmt(c.g.val_macro_f1, 2)} (best epoch ${c.g.best_epoch})`,
       marked: (c) => c.g.lr === t.winner.lr && c.g.dropout === t.winner.dropout, xTitle: 'learning rate', yTitle: 'dropout' })),
-    note(`Winner (outlined): learning rate ${t.winner.lr}, dropout ${t.winner.dropout}. Tuned once on A1 and frozen for every arm.`));
+    note(`Winner (outlined): learning rate ${t.winner.lr}, dropout ${t.winner.dropout}. Iteration 1 tuned once on A1 and froze this for every arm; iteration 2 tuned each arm separately.`));
 }
 
 function runsCard(d) {
@@ -50,14 +50,14 @@ function compareCard(d) {
   }, {});
   const all = Object.values(rows);
   return card('Validation macro-F1 by arm and seed',
-    dots({ rows: all, series: ARM_SERIES, label: 'Validation macro-F1 by seed and arm', domain: [86, 96] }),
+    dots({ rows: all, series: ARM_SERIES, label: 'Validation macro-F1 by seed and arm', domain: [86, 98] }),
     tableView(d.runs, [{ key: 'name', label: 'Run' }, { label: 'Val macro-F1', num: true, render: (r) => fmt(r.val_macro_f1) }, { key: 'best_epoch', label: 'Best epoch', num: true }, { key: 'epochs_run', label: 'Epochs run', num: true }, { label: 'Held-out source', render: (r) => r.holdout_source || '–' }]),
     note('Selection used validation only. These are not test results.'));
 }
 
 boot('stage4', (main, d) => {
   main.append(pageHead({ eyebrow: 'Stage 4 · CRISP-DM modeling', title: 'Training',
-    lede: 'One small CNN recipe, the same step budget for every arm, three seeds per arm, plus two runs that hold out a whole source.',
+    lede: 'One small CNN, the same step budget for every arm, five seeds per arm, plus runs that hold out a whole source. Settings were tuned on validation only.',
     chips: ['one GPU', 'same steps per arm', 'early stopping on validation'] }));
   const info = d.benchmark; const seeds = d.seed.per_arm;
   main.append(card('Run setup', stats(stat('Steps per epoch', d.train.steps_per_epoch), stat('Max epochs', d.train.max_epochs), stat('Batch size', d.train.batch_size),
@@ -66,6 +66,11 @@ boot('stage4', (main, d) => {
   main.append(el('div', { class: 'grid two' },
     card('Architecture', table(d.layers, [{ key: 'layer', label: 'Layer' }, { key: 'detail', label: 'Detail' }, { key: 'shape', label: 'Output', num: true }])),
     tuningCard(d.tuning)));
+  if (d.winners) {
+    main.append(card('Search on validation (iteration 2)', table(Object.entries(d.winners.winners).map(([arm, w]) => ({ arm, mean: w.mean_val_macro_f1, seeds: w.val_macro_f1_by_seed.map((v) => fmt(v, 1)).join(', '), trials: d.winners.trials_per_arm[arm], lr: w.hparams.lr, dropout: w.hparams.dropout })),
+      [{ key: 'arm', label: 'Arm' }, { label: 'Mean val macro-F1', num: true, render: (r) => fmt(r.mean, 2) }, { key: 'seeds', label: 'Seeds 0, 1, 2' }, { key: 'lr', label: 'Learning rate', num: true }, { key: 'dropout', label: 'Dropout', num: true }, { key: 'trials', label: 'Trials', num: true }]),
+    note('Each arm got its own learning-rate and dropout tuning. A0 has no augmentation settings to search, so it had fewer trials.')));
+  }
   main.append(compareCard(d));
   main.append(runsCard(d));
   main.append(el('div', { class: 'grid two' },

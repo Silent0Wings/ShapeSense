@@ -23,15 +23,19 @@ from starlette.testclient import TestClient  # noqa: E402
 
 sys.path.insert(0, ".")
 from studio.server.app import create_app  # noqa: E402
-from studio.settings import ARMS  # noqa: E402
+from studio.settings import ARMS, ERRORS_ARM  # noqa: E402
 
-ALLOWED_PREDICTIONS = {f"ensemble_{a}.npz" for a in ARMS} | {"ensemble_B_errors.npz"}
+ALLOWED_PREDICTIONS = {f"ensemble_{a}.npz" for a in ARMS} | {f"ensemble_{ERRORS_ARM}_errors.npz"}
 
 
 def forbidden(path: str, mode: str) -> bool:
     if path.endswith("configs/splits/test.csv") or "/data_set/unified/test/" in path:
         return True
     if "/artifacts/stage0/rebuild/" in path:
+        return True
+    if path.endswith("configs/splits/fresh_holdout.csv") or "/data_set/fresh_holdout/" in path:
+        return True
+    if "/artifacts/stage5/predictions_fresh/" in path:
         return True
     if "/artifacts/stage5/predictions/" in path and path.rsplit("/", 1)[1] not in ALLOWED_PREDICTIONS:
         return True
@@ -50,12 +54,12 @@ opened.clear()
 client = TestClient(create_app(), base_url="http://127.0.0.1:8765")
 page = client.get
 for name in ("home", "business", "stage0", "stage1", "stage2", "stage3", "stage4", "stage5",
-             "stage6", "live"):
+             "stage6", "live", "iteration1"):
     page(f"/api/page/{name}")
 stage2 = page("/api/page/stage2").json()["defaults"]
 stage3 = page("/api/page/stage3").json()["defaults"]
 for label in range(10):
-    for split in ("train", "val", "test"):
+    for split in ("train", "val", "test", "fresh_holdout"):
         page(f"/api/samples?label={label}&split={split}&n=4")
         page(f"/api/class-stats?label={label}&split={split}")
     client.post("/api/augment", json={"label": label, "index": 0, "seed": 0, "n": 2, "values": stage2})
@@ -63,6 +67,7 @@ for label in range(10):
 for arm in ARMS:
     page(f"/api/stage5/confusion/{arm}")
     page(f"/img/confusion_{arm}")
+    page(f"/img/iter1_confusion_{arm}")
 for true in range(10):
     for pred in range(10):
         page(f"/api/stage5/errors?true={true}&pred={pred}")

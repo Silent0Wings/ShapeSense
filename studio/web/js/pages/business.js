@@ -11,16 +11,17 @@ boot('business', (main, data) => {
   const c = data.criterion;
   main.append(pageHead({
     eyebrow: 'CRISP-DM step 1', title: 'Business understanding',
-    lede: 'Does adding procedurally generated shapes to training improve a small CNN on real images? The answer had to be fixed before anyone saw test data.',
+    lede: 'Does adding procedurally generated shapes to training improve a small CNN on real images? The rule for success was fixed before anyone saw test data, in both iterations.',
   }));
   main.append(el('div', { class: 'grid two' },
-    card('The question and its three arms', table([
+    card('The question and its four arms', table([
       { arm: 'A0', data: 'Real images only', role: 'Control' },
       { arm: 'A1', data: 'Real images plus class-safe augmentation', role: 'Isolates augmentation' },
-      { arm: 'B', data: 'A1 plus 30% synthetic images in every batch', role: 'Primary hypothesis: B beats A1' },
+      { arm: 'B', data: 'A1 plus synthetic images in every batch', role: 'Iteration 1 primary hypothesis: B beats A1' },
+      { arm: 'A2', data: 'Clean real, augmented real and synthetic images in each batch', role: 'Iteration 2 primary hypothesis: A2 beats A0' },
     ], [{ key: 'arm', label: 'Arm' }, { key: 'data', label: 'Training data' }, { key: 'role', label: 'Purpose' }])),
     card('The locked success rule', table([
-      { rule: 'Macro-F1 gain, B over A1', value: `at least ${c.macro_f1_min_gain_points} point` },
+      { rule: 'Macro-F1 gain (iteration 2: A2 over A0)', value: `at least ${c.macro_f1_min_gain_points} point` },
       { rule: 'Paired bootstrap confidence level', value: `${c.ci_level * 100}%, interval must exclude 0` },
       { rule: 'Largest allowed class drop', value: `${c.max_class_f1_drop_points} points, or the noise band if wider` },
     ], [{ key: 'rule', label: 'Rule' }, { key: 'value', label: 'Value' }]),

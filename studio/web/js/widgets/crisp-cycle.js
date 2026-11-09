@@ -56,7 +56,7 @@ export function crispCycle({ phases, verdict }) {
   root.append(arrow(at[3], at[2], -30, 'back', 'backward'));   // iteration 1: Modeling to Data Preparation
   root.append(arrow(at[4], at[2], -44, 'back', 'backward'));   // iteration 2: Evaluation to Data Preparation
   root.append(text(W / 2, H / 2 + 92, 'iteration 2', { class: 'center', 'text-anchor': 'middle' }));
-  root.append(text(W / 2, H / 2 - 22, 'B vs A1 verdict', { class: 'center', 'text-anchor': 'middle' }));
+  root.append(text(W / 2, H / 2 - 22, `${verdict ? verdict.label : 'Primary'} verdict`, { class: 'center', 'text-anchor': 'middle' }));
   root.append(text(W / 2, H / 2 + 12, verdict ? verdict.verdict.toUpperCase() : 'pending', { class: 'center-big', 'text-anchor': 'middle' }));
   root.append(text(W / 2, H / 2 + 34, 'Dashed: feedback arrows, including iteration 1', { class: 'center', 'text-anchor': 'middle' }));
   phases.forEach((phase, i) => root.append(node(phase, at[i], i + 1)));
