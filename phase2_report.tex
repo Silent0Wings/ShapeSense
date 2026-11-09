@@ -357,7 +357,7 @@ force. Throughput: \ThroughputSynth{} images per second against a target of
 \caption{Realized generator parameter ranges per class and the margins in
 force (generated from \texttt{artifacts/stage3/param\_ranges.json}).}
 \label{tab:paramranges}
-\footnotesize
+\scriptsize
 \InputIfFileExists{artifacts/stage6/generated/param_ranges.tex}{}{--}
 \end{table}
 
@@ -371,8 +371,8 @@ force (generated from \texttt{artifacts/stage3/param\_ranges.json}).}
 \subsection*{C.3 Training (Stage 4)}
 
 \textbf{Model (Decision 8).} A small CNN: input
-$1{\times}\ImageSize{\times}\ImageSize$, three blocks of
-[Conv $3{\times}3$ $\to$ BatchNorm $\to$ ReLU $\to$ MaxPool] with 32, 64 and
+$1{\times}\ImageSize{\times}\ImageSize$, four blocks of
+[Conv $3{\times}3$ $\to$ BatchNorm $\to$ ReLU $\to$ MaxPool] with 32, 64, 128 and
 128 channels, global average pooling, dropout and a linear layer to
 \NumClasses{} logits. Training uses AdamW with a cosine schedule, batch size
 \BatchSize, at most \MaxEpochs{} epochs and early stopping with patience
@@ -456,7 +456,8 @@ comparison is equal-compute, and the number answers ``does swapping in
 synthetic data help?'', not ``does adding it help?''. The latter is the
 deferred \texttt{B\_equalreal} ablation (Section H).
 
-\textbf{Verdict.} \InputIfFileExists{artifacts/stage5/tables/verdict.tex}{}{--}
+\textbf{Verdict.} \begingroup\catcode`\<=\active\def<{\textless{}}%
+\InputIfFileExists{artifacts/stage5/tables/verdict.tex}{}{--}\endgroup
 \par\noindent Stage 5 status verdict: \textbf{\Verdict}. A failed verdict
 with honest confidence intervals is a valid, reportable result: in CRISP-DM
 terms the loop goes back to business understanding, and the likely levers are
@@ -496,6 +497,9 @@ same four sources as the training images, held out by pHash group. Rows
 labelled ``unseen-source generalization'' in Table~\ref{tab:persource}, if
 present, come from the leave-one-source-out runs (A1 and B retrained without
 the Hand-Drawn source and tested on Hand-Drawn only; required: \LosoRequired).
+Hand-Drawn is the only source of ellipses, so these runs train on nine classes
+and are scored on Hand-Drawn triangles and rectangles only, the two other
+classes that source contains; they say nothing about unseen-source ellipses.
 Neither number is universal sketch generalization: the same-source result
 says how the model does on more drawings from the sources it saw, the
 unseen-source result says how it does on one specific source it never saw.
@@ -543,9 +547,9 @@ A0 (left), A1 (middle), B (right).}
 
 \begin{figure}[H]
 \centering
-\GuardedGraphic{0.9\linewidth}{artifacts/stage5/figures/errors_square_diamond.png}\\[4pt]
-\GuardedGraphic{0.9\linewidth}{artifacts/stage5/figures/errors_square_rectangle.png}\\[4pt]
-\GuardedGraphic{0.9\linewidth}{artifacts/stage5/figures/errors_circle_ellipse.png}
+\GuardedGraphic{0.68\linewidth}{artifacts/stage5/figures/errors_square_diamond.png}\\[4pt]
+\GuardedGraphic{0.68\linewidth}{artifacts/stage5/figures/errors_square_rectangle.png}\\[4pt]
+\GuardedGraphic{0.68\linewidth}{artifacts/stage5/figures/errors_circle_ellipse.png}
 \caption{Error galleries for the three ambiguous pairs (square/diamond,
 square/rectangle, circle/ellipse), rendered by Stage 5. Stage 6 may not read
 test images, so these are shown exactly as written.}
@@ -580,12 +584,13 @@ test images, so these are shown exactly as written.}
         check (shortcut detected: \ShortcutDetected) says how strong the source
         cue is in the shared classes; when it fired, the per-class table stars
         both classes and the leave-one-source-out result is the honest
-        complement.
+        complement. Because Hand-Drawn owns the ellipse class, that complement
+        covers nine trained classes and two scored ones, not the full task.
   \item \textbf{Equal-compute framing.} The primary number compares
         substitution, not addition, of synthetic data (Section D). A
         different framing (\texttt{B\_equalreal}) could give a different
         answer and was deferred (Section H).
-  \item \textbf{Compute budget.} Training ran on CPU with \SeedsPerArm{} seeds
+  \item \textbf{Compute budget.} Training ran on one GPU with \SeedsPerArm{} seeds
         per arm and a small CNN. The seed-robustness numbers above bound how
         much the per-seed results move; more seeds would narrow them but not
         the primary CI, which is driven by the test-set size.
@@ -637,6 +642,13 @@ and is skipped when they match. To rebuild everything from the frozen split:
 report and its traceability check only. The report is compiled with
 \texttt{.\textbackslash build.ps1 -File phase2\_report.tex}; the dashboard
 (\texttt{--dashboard}) shows every stage's status.
+
+\textbf{Reproducibility of training.} Every CNN, including the tuning grid, was
+trained on one GPU with one software build. The device, GPU model and torch
+build are part of each run's recipe fingerprint, so a run is reused only on
+identical hardware. Retraining the whole sweep after an unrelated code fix gave
+validation probabilities identical to the bit for every run, so training is
+deterministic on this setup; other hardware can give different numbers.
 
 % =====================================================================
 \section*{H. Ablations (deferred)}
