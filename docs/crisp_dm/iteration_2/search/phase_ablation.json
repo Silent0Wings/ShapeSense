@@ -1,0 +1,884 @@
+[
+  {
+    "name": "ablation_rot0_s0",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 89.29831622008575,
+    "best_epoch": 7,
+    "epochs_run": 12,
+    "per_class": {
+      "circle": 91.49232914923292,
+      "ellipse": 69.12928759894459,
+      "triangle": 93.85574354407836,
+      "square": 92.9113924050633,
+      "rectangle": 81.60919540229885,
+      "pentagon": 98.125,
+      "hexagon": 89.19540229885058,
+      "octagon": 85.42094455852155,
+      "star": 98.54545454545455,
+      "diamond": 92.6984126984127
+    }
+  },
+  {
+    "name": "ablation_rot0_s1",
+    "settings": {
+      "arm": "A1",
+      "seed": 1,
+      "overrides": {
+        "augment.rotate_deg": 0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 90.79530048662065,
+    "best_epoch": 8,
+    "epochs_run": 13,
+    "per_class": {
+      "circle": 94.40654843110505,
+      "ellipse": 69.43765281173594,
+      "triangle": 91.72093023255815,
+      "square": 95.77080491132332,
+      "rectangle": 87.76508972267537,
+      "pentagon": 100.0,
+      "hexagon": 89.03803131991052,
+      "octagon": 89.28571428571429,
+      "star": 98.72495446265938,
+      "diamond": 91.80327868852459
+    }
+  },
+  {
+    "name": "ablation_rot0_s2",
+    "settings": {
+      "arm": "A1",
+      "seed": 2,
+      "overrides": {
+        "augment.rotate_deg": 0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 88.06004335046114,
+    "best_epoch": 6,
+    "epochs_run": 11,
+    "per_class": {
+      "circle": 86.97788697788698,
+      "ellipse": 73.82920110192838,
+      "triangle": 91.44434222631095,
+      "square": 93.45549738219896,
+      "rectangle": 84.36482084690553,
+      "pentagon": 97.60479041916167,
+      "hexagon": 87.07482993197279,
+      "octagon": 74.68030690537084,
+      "star": 98.16176470588235,
+      "diamond": 93.00699300699301
+    }
+  },
+  {
+    "name": "ablation_rot15_s0",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 15
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 93.41799254837736,
+    "best_epoch": 27,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 95.06849315068493,
+      "ellipse": 87.14733542319749,
+      "triangle": 96.55781112091792,
+      "square": 93.5361216730038,
+      "rectangle": 87.04663212435233,
+      "pentagon": 100.0,
+      "hexagon": 90.23861171366595,
+      "octagon": 89.23766816143498,
+      "star": 99.6376811594203,
+      "diamond": 95.7095709570957
+    }
+  },
+  {
+    "name": "ablation_rot15_s1",
+    "settings": {
+      "arm": "A1",
+      "seed": 1,
+      "overrides": {
+        "augment.rotate_deg": 15
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 93.72715218404076,
+    "best_epoch": 25,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 94.96598639455782,
+      "ellipse": 88.32807570977918,
+      "triangle": 96.53948535936114,
+      "square": 94.58762886597938,
+      "rectangle": 89.14858096828047,
+      "pentagon": 100.0,
+      "hexagon": 89.31623931623932,
+      "octagon": 88.58447488584476,
+      "star": 99.45553539019964,
+      "diamond": 96.34551495016612
+    }
+  },
+  {
+    "name": "ablation_rot15_s2",
+    "settings": {
+      "arm": "A1",
+      "seed": 2,
+      "overrides": {
+        "augment.rotate_deg": 15
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 93.70326888853245,
+    "best_epoch": 26,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 95.36784741144415,
+      "ellipse": 88.25396825396825,
+      "triangle": 96.58194566170026,
+      "square": 93.63867684478372,
+      "rectangle": 87.09122203098107,
+      "pentagon": 100.0,
+      "hexagon": 90.43478260869566,
+      "octagon": 89.88764044943821,
+      "star": 99.45553539019964,
+      "diamond": 96.32107023411372
+    }
+  },
+  {
+    "name": "ablation_rot45_s0",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 45
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.46018589519252,
+    "best_epoch": 27,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 94.99323410013533,
+      "ellipse": 85.98130841121495,
+      "triangle": 95.15260323159785,
+      "square": 90.8641975308642,
+      "rectangle": 82.53968253968254,
+      "pentagon": 99.69418960244649,
+      "hexagon": 88.74172185430463,
+      "octagon": 89.57871396895787,
+      "star": 99.63898916967509,
+      "diamond": 87.41721854304636
+    }
+  },
+  {
+    "name": "ablation_rot45_s1",
+    "settings": {
+      "arm": "A1",
+      "seed": 1,
+      "overrides": {
+        "augment.rotate_deg": 45
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 88.44608403432255,
+    "best_epoch": 9,
+    "epochs_run": 14,
+    "per_class": {
+      "circle": 89.20863309352518,
+      "ellipse": 72.63157894736842,
+      "triangle": 92.47675401521555,
+      "square": 92.34629861982434,
+      "rectangle": 81.203007518797,
+      "pentagon": 99.08814589665654,
+      "hexagon": 88.14317673378076,
+      "octagon": 88.63636363636364,
+      "star": 96.8342644320298,
+      "diamond": 83.89261744966443
+    }
+  },
+  {
+    "name": "ablation_rot45_s2",
+    "settings": {
+      "arm": "A1",
+      "seed": 2,
+      "overrides": {
+        "augment.rotate_deg": 45
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 89.83850744075303,
+    "best_epoch": 14,
+    "epochs_run": 19,
+    "per_class": {
+      "circle": 92.63456090651557,
+      "ellipse": 75.88075880758808,
+      "triangle": 94.21915444348576,
+      "square": 91.6030534351145,
+      "rectangle": 81.76795580110497,
+      "pentagon": 100.0,
+      "hexagon": 89.13525498891353,
+      "octagon": 89.84198645598194,
+      "star": 98.91696750902527,
+      "diamond": 84.38538205980066
+    }
+  },
+  {
+    "name": "ablation_rot90_s0",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 90
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 90.85820506200592,
+    "best_epoch": 19,
+    "epochs_run": 24,
+    "per_class": {
+      "circle": 94.421768707483,
+      "ellipse": 81.73374613003097,
+      "triangle": 94.58041958041959,
+      "square": 90.35409035409036,
+      "rectangle": 81.10091743119266,
+      "pentagon": 97.48427672955975,
+      "hexagon": 90.17857142857143,
+      "octagon": 91.11111111111111,
+      "star": 99.09255898366607,
+      "diamond": 88.52459016393442
+    }
+  },
+  {
+    "name": "ablation_rot90_s1",
+    "settings": {
+      "arm": "A1",
+      "seed": 1,
+      "overrides": {
+        "augment.rotate_deg": 90
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.5839234294402,
+    "best_epoch": 29,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 94.87870619946092,
+      "ellipse": 83.28075709779179,
+      "triangle": 94.6236559139785,
+      "square": 90.9541511771995,
+      "rectangle": 82.83185840707965,
+      "pentagon": 99.69418960244649,
+      "hexagon": 89.56521739130434,
+      "octagon": 90.29345372460497,
+      "star": 99.45750452079567,
+      "diamond": 90.25974025974025
+    }
+  },
+  {
+    "name": "ablation_rot90_s2",
+    "settings": {
+      "arm": "A1",
+      "seed": 2,
+      "overrides": {
+        "augment.rotate_deg": 90
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 89.29406602783298,
+    "best_epoch": 14,
+    "epochs_run": 19,
+    "per_class": {
+      "circle": 93.97260273972603,
+      "ellipse": 79.11392405063292,
+      "triangle": 93.41421143847487,
+      "square": 90.60913705583756,
+      "rectangle": 77.40667976424362,
+      "pentagon": 99.6923076923077,
+      "hexagon": 89.28571428571429,
+      "octagon": 90.26548672566372,
+      "star": 97.69911504424779,
+      "diamond": 81.48148148148148
+    }
+  },
+  {
+    "name": "ablation_rot180_s0",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.rotate_deg": 180
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.49735453670198,
+    "best_epoch": 26,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 94.24657534246575,
+      "ellipse": 83.48348348348348,
+      "triangle": 94.36363636363636,
+      "square": 91.42857142857143,
+      "rectangle": 82.41379310344827,
+      "pentagon": 100.0,
+      "hexagon": 89.760348583878,
+      "octagon": 89.68609865470852,
+      "star": 99.45945945945945,
+      "diamond": 90.13157894736842
+    }
+  },
+  {
+    "name": "ablation_rot180_s1",
+    "settings": {
+      "arm": "A1",
+      "seed": 1,
+      "overrides": {
+        "augment.rotate_deg": 180
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 88.96388591151046,
+    "best_epoch": 13,
+    "epochs_run": 18,
+    "per_class": {
+      "circle": 93.06122448979592,
+      "ellipse": 80.76923076923077,
+      "triangle": 92.58589511754069,
+      "square": 88.0952380952381,
+      "rectangle": 81.20567375886525,
+      "pentagon": 98.48942598187311,
+      "hexagon": 88.79310344827586,
+      "octagon": 86.60714285714286,
+      "star": 98.91304347826087,
+      "diamond": 81.11888111888112
+    }
+  },
+  {
+    "name": "ablation_rot180_s2",
+    "settings": {
+      "arm": "A1",
+      "seed": 2,
+      "overrides": {
+        "augment.rotate_deg": 180
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.47027980387638,
+    "best_epoch": 27,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 93.98907103825137,
+      "ellipse": 84.21052631578948,
+      "triangle": 94.4043321299639,
+      "square": 91.29353233830845,
+      "rectangle": 83.21678321678321,
+      "pentagon": 100.0,
+      "hexagon": 89.8488120950324,
+      "octagon": 88.74172185430463,
+      "star": 99.45553539019964,
+      "diamond": 89.54248366013071
+    }
+  },
+  {
+    "name": "ablation_scale_off_s0",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.scale": [
+          1.0,
+          1.0
+        ]
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.40980638994583,
+    "best_epoch": 25,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 94.70827679782904,
+      "ellipse": 82.53012048192771,
+      "triangle": 93.30922242314648,
+      "square": 93.54413702239789,
+      "rectangle": 85.46409807355516,
+      "pentagon": 100.0,
+      "hexagon": 89.91228070175438,
+      "octagon": 90.46563192904657,
+      "star": 99.28057553956835,
+      "diamond": 84.88372093023256
+    }
+  },
+  {
+    "name": "ablation_scale_off_s1",
+    "settings": {
+      "arm": "A1",
+      "seed": 1,
+      "overrides": {
+        "augment.scale": [
+          1.0,
+          1.0
+        ]
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 89.76140058823934,
+    "best_epoch": 13,
+    "epochs_run": 18,
+    "per_class": {
+      "circle": 94.13333333333334,
+      "ellipse": 76.92307692307692,
+      "triangle": 90.77490774907749,
+      "square": 93.95109395109395,
+      "rectangle": 83.92282958199357,
+      "pentagon": 99.38650306748467,
+      "hexagon": 88.28828828828829,
+      "octagon": 89.7025171624714,
+      "star": 98.73873873873873,
+      "diamond": 81.79271708683473
+    }
+  },
+  {
+    "name": "ablation_scale_off_s2",
+    "settings": {
+      "arm": "A1",
+      "seed": 2,
+      "overrides": {
+        "augment.scale": [
+          1.0,
+          1.0
+        ]
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 89.44048995277028,
+    "best_epoch": 12,
+    "epochs_run": 17,
+    "per_class": {
+      "circle": 88.51063829787235,
+      "ellipse": 79.86577181208054,
+      "triangle": 93.26599326599326,
+      "square": 92.67015706806282,
+      "rectangle": 81.81818181818181,
+      "pentagon": 100.0,
+      "hexagon": 89.93288590604027,
+      "octagon": 85.30020703933748,
+      "star": 98.73873873873873,
+      "diamond": 84.30232558139535
+    }
+  },
+  {
+    "name": "ablation_translate_off_s0",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.translate_px": 0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 89.68349907081475,
+    "best_epoch": 15,
+    "epochs_run": 20,
+    "per_class": {
+      "circle": 93.22268326417704,
+      "ellipse": 79.62962962962963,
+      "triangle": 91.43897996357013,
+      "square": 92.14092140921409,
+      "rectangle": 80.49155145929339,
+      "pentagon": 100.0,
+      "hexagon": 88.79120879120879,
+      "octagon": 88.44444444444444,
+      "star": 98.72495446265938,
+      "diamond": 83.95061728395062
+    }
+  },
+  {
+    "name": "ablation_translate_off_s1",
+    "settings": {
+      "arm": "A1",
+      "seed": 1,
+      "overrides": {
+        "augment.translate_px": 0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 90.39035683752512,
+    "best_epoch": 13,
+    "epochs_run": 18,
+    "per_class": {
+      "circle": 94.5945945945946,
+      "ellipse": 79.36507936507937,
+      "triangle": 93.18377911993097,
+      "square": 89.73105134474328,
+      "rectangle": 81.75182481751825,
+      "pentagon": 98.78787878787878,
+      "hexagon": 89.38053097345133,
+      "octagon": 90.99307159353349,
+      "star": 98.36065573770492,
+      "diamond": 87.75510204081633
+    }
+  },
+  {
+    "name": "ablation_translate_off_s2",
+    "settings": {
+      "arm": "A1",
+      "seed": 2,
+      "overrides": {
+        "augment.translate_px": 0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.18370156362106,
+    "best_epoch": 30,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 93.68131868131869,
+      "ellipse": 81.48148148148148,
+      "triangle": 93.5395814376706,
+      "square": 92.90322580645162,
+      "rectangle": 85.2892561983471,
+      "pentagon": 100.0,
+      "hexagon": 89.65517241379311,
+      "octagon": 88.19599109131403,
+      "star": 98.55595667870035,
+      "diamond": 88.53503184713375
+    }
+  },
+  {
+    "name": "ablation_noise_off_s0",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.noise_p": 0.0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.40991294944826,
+    "best_epoch": 23,
+    "epochs_run": 28,
+    "per_class": {
+      "circle": 94.26229508196721,
+      "ellipse": 82.77945619335347,
+      "triangle": 95.17857142857143,
+      "square": 92.3076923076923,
+      "rectangle": 85.04504504504504,
+      "pentagon": 100.0,
+      "hexagon": 88.49557522123894,
+      "octagon": 88.69565217391305,
+      "star": 99.6376811594203,
+      "diamond": 87.69716088328076
+    }
+  },
+  {
+    "name": "ablation_noise_off_s1",
+    "settings": {
+      "arm": "A1",
+      "seed": 1,
+      "overrides": {
+        "augment.noise_p": 0.0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 90.86893722649056,
+    "best_epoch": 18,
+    "epochs_run": 23,
+    "per_class": {
+      "circle": 93.46049046321527,
+      "ellipse": 82.71186440677967,
+      "triangle": 93.92070484581498,
+      "square": 91.56327543424318,
+      "rectangle": 81.53310104529616,
+      "pentagon": 100.0,
+      "hexagon": 88.88888888888889,
+      "octagon": 88.63636363636364,
+      "star": 98.73417721518987,
+      "diamond": 89.24050632911393
+    }
+  },
+  {
+    "name": "ablation_noise_off_s2",
+    "settings": {
+      "arm": "A1",
+      "seed": 2,
+      "overrides": {
+        "augment.noise_p": 0.0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.21952992736307,
+    "best_epoch": 22,
+    "epochs_run": 27,
+    "per_class": {
+      "circle": 94.56521739130434,
+      "ellipse": 82.183908045977,
+      "triangle": 94.46428571428571,
+      "square": 90.6367041198502,
+      "rectangle": 82.86713286713287,
+      "pentagon": 99.69418960244649,
+      "hexagon": 89.08685968819599,
+      "octagon": 89.60739030023095,
+      "star": 99.45750452079567,
+      "diamond": 89.63210702341136
+    }
+  },
+  {
+    "name": "ablation_blur_off_s0",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.blur_p": 0.0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.44123296888536,
+    "best_epoch": 26,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 94.50549450549451,
+      "ellipse": 84.40366972477064,
+      "triangle": 93.92565729827743,
+      "square": 91.29353233830845,
+      "rectangle": 83.97976391231029,
+      "pentagon": 100.0,
+      "hexagon": 88.93709327548807,
+      "octagon": 88.68778280542986,
+      "star": 99.27536231884058,
+      "diamond": 89.40397350993378
+    }
+  },
+  {
+    "name": "ablation_blur_off_s1",
+    "settings": {
+      "arm": "A1",
+      "seed": 1,
+      "overrides": {
+        "augment.blur_p": 0.0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.53987961668595,
+    "best_epoch": 21,
+    "epochs_run": 26,
+    "per_class": {
+      "circle": 95.09536784741144,
+      "ellipse": 82.03592814371258,
+      "triangle": 94.88536155202821,
+      "square": 92.0754716981132,
+      "rectangle": 84.41330998248687,
+      "pentagon": 99.6923076923077,
+      "hexagon": 88.34080717488789,
+      "octagon": 90.54054054054055,
+      "star": 98.55072463768116,
+      "diamond": 89.76897689768977
+    }
+  },
+  {
+    "name": "ablation_blur_off_s2",
+    "settings": {
+      "arm": "A1",
+      "seed": 2,
+      "overrides": {
+        "augment.blur_p": 0.0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.201447043531,
+    "best_epoch": 28,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 94.80874316939891,
+      "ellipse": 84.21052631578948,
+      "triangle": 93.73297002724796,
+      "square": 91.75,
+      "rectangle": 81.97278911564626,
+      "pentagon": 99.69418960244649,
+      "hexagon": 88.35164835164835,
+      "octagon": 89.03803131991052,
+      "star": 99.6376811594203,
+      "diamond": 88.81789137380191
+    }
+  },
+  {
+    "name": "ablation_shear_off_s0",
+    "settings": {
+      "arm": "A1",
+      "seed": 0,
+      "overrides": {
+        "augment.shear_deg": 0,
+        "augment.nonuniform_scale": 0.0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.01231122287338,
+    "best_epoch": 19,
+    "epochs_run": 24,
+    "per_class": {
+      "circle": 94.24657534246575,
+      "ellipse": 79.04191616766467,
+      "triangle": 94.57092819614711,
+      "square": 92.23057644110276,
+      "rectangle": 82.56880733944953,
+      "pentagon": 100.0,
+      "hexagon": 90.28077753779698,
+      "octagon": 90.24943310657596,
+      "star": 99.6376811594203,
+      "diamond": 87.29641693811075
+    }
+  },
+  {
+    "name": "ablation_shear_off_s1",
+    "settings": {
+      "arm": "A1",
+      "seed": 1,
+      "overrides": {
+        "augment.shear_deg": 0,
+        "augment.nonuniform_scale": 0.0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 88.48514213042358,
+    "best_epoch": 13,
+    "epochs_run": 18,
+    "per_class": {
+      "circle": 93.52708058124175,
+      "ellipse": 73.52941176470588,
+      "triangle": 92.11618257261411,
+      "square": 90.5521472392638,
+      "rectangle": 70.51282051282051,
+      "pentagon": 99.69418960244649,
+      "hexagon": 88.34080717488789,
+      "octagon": 90.13452914798206,
+      "star": 98.72495446265938,
+      "diamond": 87.71929824561404
+    }
+  },
+  {
+    "name": "ablation_shear_off_s2",
+    "settings": {
+      "arm": "A1",
+      "seed": 2,
+      "overrides": {
+        "augment.shear_deg": 0,
+        "augment.nonuniform_scale": 0.0
+      },
+      "hparams": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "val_macro_f1": 91.18670385992772,
+    "best_epoch": 26,
+    "epochs_run": 30,
+    "per_class": {
+      "circle": 94.26229508196721,
+      "ellipse": 84.01253918495298,
+      "triangle": 94.74621549421194,
+      "square": 91.22373300370828,
+      "rectangle": 82.16783216783217,
+      "pentagon": 100.0,
+      "hexagon": 88.14317673378076,
+      "octagon": 88.74172185430463,
+      "star": 99.09584086799276,
+      "diamond": 89.47368421052632
+    }
+  }
+]
