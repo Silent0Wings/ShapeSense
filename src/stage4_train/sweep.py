@@ -30,7 +30,7 @@ import numpy as np
 from threadpoolctl import threadpool_limits
 
 from src.common.catalog import load_split_rows
-from src.common.config import DEFAULT_CONFIG, LOSO_ARMS, load_config, resolve
+from src.common.config import DEFAULT_CONFIG, LOSO_ARMS, arm_config, load_config, resolve
 from src.stage2_augment import build_transform
 from src.stage3_synth import build_generator
 from src.stage4_train.data import ImageStore
@@ -98,8 +98,11 @@ def run_name(arm: str, seed: int, holdout_source: str | None = None) -> str:
 
 def job_specs(config: dict, steps_per_epoch: int, hparams: dict, loso: bool,
               config_path: str | Path, out_dir: Path) -> list[dict]:
-    """One picklable job dict per run; identical budget and hparams everywhere."""
-    hp = {"lr": float(hparams["lr"]), "dropout": float(hparams["dropout"])}
+    """One picklable job dict per run; the budget is identical everywhere."""
+    def hp_for(arm: str) -> dict:
+        tuned = config["arms"][arm].get("hparams") or hparams
+        return {"lr": float(tuned["lr"]), "dropout": float(tuned["dropout"])}
+
     out_dir = Path(out_dir)
     jobs: list[dict] = []
 
@@ -110,7 +113,7 @@ def job_specs(config: dict, steps_per_epoch: int, hparams: dict, loso: bool,
             "arm": str(arm),
             "seed": int(seed),
             "holdout_source": holdout,
-            "hparams": hp,
+            "hparams": hp_for(arm),
             "steps_per_epoch": int(steps_per_epoch),
             "config_path": str(config_path),
             "out_dir": str(out_dir / name),
@@ -119,9 +122,10 @@ def job_specs(config: dict, steps_per_epoch: int, hparams: dict, loso: bool,
     for run in config["runs"]:
         add(run["arm"], run["seed"], run.get("holdout_source") or None, run.get("name"))
     if loso:
-        seed0 = int(config["seed_set"][0])
-        for arm in LOSO_ARMS:
-            add(arm, seed0, LOSO_HOLDOUT_SOURCE)
+        for seed in config["seed_set"][:int(config["evaluation"].get("loso_seeds", 1))]:
+            for arm in LOSO_ARMS:
+                if arm in config["arms"]:
+                    add(arm, int(seed), LOSO_HOLDOUT_SOURCE)
     return jobs
 
 
@@ -141,7 +145,7 @@ def run_job(spec: dict) -> dict:
     Rebuilds everything from ``spec["config_path"]``, skips a finished run
     with identical settings, otherwise trains it and returns ``run.json``.
     """
-    config = load_config(spec["config_path"])
+    config = arm_config(load_config(spec["config_path"]), spec["arm"])
     # One pool per worker process, sized like torch's (see run.py).
     threadpool_limits(int(config["train"]["num_threads"]))
     run_dir = Path(spec["out_dir"])
@@ -177,7 +181,7 @@ def run_sweep(config: dict, steps_per_epoch: int, hparams: dict, loso: bool, *,
     pending: list[dict] = []
     for spec in jobs:
         done = completed_run(Path(spec["out_dir"]), spec["hparams"], spec["steps_per_epoch"],
-                             recipe_fingerprint(config))
+                             recipe_fingerprint(arm_config(config, spec["arm"])))
         if done is not None:
             results[spec["run_name"]] = done
         else:

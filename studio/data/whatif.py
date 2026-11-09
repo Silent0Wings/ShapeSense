@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from studio.data.tables import read_csv, read_json
 
+DROP_COLUMN = "drop_candidate_minus_reference"
+
 
 def _class_rows() -> list[dict] | None:
     per_class = read_csv("per_class")
@@ -20,7 +22,7 @@ def _class_rows() -> list[dict] | None:
     rows = []
     for r in per_class:
         name = r["class"].rstrip("*")
-        rows.append({"class": name, "drop": -float(r["drop_B_minus_A1"]),
+        rows.append({"class": name, "drop": -float(r[DROP_COLUMN]),
                      "drop_ci_lo": float(r["drop_ci_lo"]), "noise_band": band_of[name]})
     return rows
 

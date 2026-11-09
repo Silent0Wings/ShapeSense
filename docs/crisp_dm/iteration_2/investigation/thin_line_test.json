@@ -1,0 +1,64 @@
+{
+ "square_outline_1px_rot_only": {
+  "n_comp_mean": 1.0,
+  "frac_fragmented": 0.0,
+  "bbox_in": 48,
+  "bbox_out_mean": 55.56
+ },
+ "square_outline_2px_rot_only": {
+  "n_comp_mean": 1.0,
+  "frac_fragmented": 0.0,
+  "bbox_in": 48,
+  "bbox_out_mean": 55.56
+ },
+ "square_outline_3px_rot_only": {
+  "n_comp_mean": 1.0,
+  "frac_fragmented": 0.0,
+  "bbox_in": 48,
+  "bbox_out_mean": 55.56
+ },
+ "github_handdrawn": {
+  "frac_more_components_full": 0.0,
+  "frac_more_components_rot_only": 0.0,
+  "frac_more_components_no_rotation": 0.0,
+  "comp_mean_in": 1.08,
+  "comp_mean_full": 1.07,
+  "comp_mean_rot_only": 1.07,
+  "bbox_in_mean": 56.00666666666667,
+  "bbox_out_mean": 51.11,
+  "bbox_out_lt_in_frac": 0.96
+ },
+ "kaggle_reevald": {
+  "frac_more_components_full": 0.03,
+  "frac_more_components_rot_only": 0.05,
+  "frac_more_components_no_rotation": 0.016666666666666666,
+  "comp_mean_in": 7.006666666666667,
+  "comp_mean_full": 6.173333333333333,
+  "comp_mean_rot_only": 6.693333333333333,
+  "bbox_in_mean": 56.836666666666666,
+  "bbox_out_mean": 51.04,
+  "bbox_out_lt_in_frac": 0.9933333333333333
+ },
+ "mendeley_elkorchi": {
+  "frac_more_components_full": 0.0,
+  "frac_more_components_rot_only": 0.0,
+  "frac_more_components_no_rotation": 0.0,
+  "comp_mean_in": 1.0,
+  "comp_mean_full": 1.0,
+  "comp_mean_rot_only": 1.0,
+  "bbox_in_mean": 57.79666666666667,
+  "bbox_out_mean": 51.16,
+  "bbox_out_lt_in_frac": 1.0
+ },
+ "quickdraw": {
+  "frac_more_components_full": 0.6866666666666666,
+  "frac_more_components_rot_only": 0.67,
+  "frac_more_components_no_rotation": 0.6,
+  "comp_mean_in": 1.7233333333333334,
+  "comp_mean_full": 5.866666666666666,
+  "comp_mean_rot_only": 6.526666666666666,
+  "bbox_in_mean": 56.50666666666667,
+  "bbox_out_mean": 51.026666666666664,
+  "bbox_out_lt_in_frac": 0.9866666666666667
+ }
+}

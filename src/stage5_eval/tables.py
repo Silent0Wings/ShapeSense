@@ -163,7 +163,8 @@ def metrics_rows(
     return METRICS_COLUMNS, rows
 
 
-PER_CLASS_COLUMNS = ("class", "n_test", "f1_A0", "f1_A1", "f1_B", "drop_B_minus_A1",
+DROP_COLUMN = "drop_candidate_minus_reference"
+PER_CLASS_COLUMNS = ("class", "n_test", "f1_A0", "f1_A1", "f1_B", DROP_COLUMN,
                      "drop_ci_lo", "threshold", "flag")
 
 
@@ -191,7 +192,7 @@ def per_class_rows(
     reported = set(int(c) for c in reported_drops)
     single = set(single_source_classes)
     columns = ("class", "n_test") + tuple(f"f1_{a}" for a in arm_order) + (
-        "drop_B_minus_A1", "drop_ci_lo", "threshold", "flag")
+        DROP_COLUMN, "drop_ci_lo", "threshold", "flag")
     rows: list[list[str]] = []
     for c, name in enumerate(class_names):
         label = str(name)
@@ -311,11 +312,12 @@ def verdict_paragraph(
     ci_level: float,
     gap_closed: float | None,
     shortcut_detected: bool,
+    primary_label: str = "B vs A1",
 ) -> str:
     """One LaTeX paragraph stating the verdict, the numbers and the reasons."""
     ci_pct = int(round(ci_level * PCT_SCALE))
     parts = [
-        f"Primary comparison (B vs A1 soft-vote ensembles, {SAME_SOURCE_LABEL} on the locked "
+        f"Primary comparison ({primary_label} soft-vote ensembles, {SAME_SOURCE_LABEL} on the locked "
         f"test split): macro-F1 change {fmt_signed(verdict['delta'])} points, {ci_pct}% paired "
         f"bootstrap CI {fmt_ci(verdict['ci'])}. Verdict: {str(verdict['verdict']).upper()} "
         f"against the locked criterion (gain of at least {fmt_points(min_gain_points)} points, "

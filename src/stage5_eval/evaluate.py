@@ -22,7 +22,8 @@ from typing import Any
 
 import numpy as np
 
-from src.common.catalog import connect_readonly, load_split_images, load_split_rows
+from src.common.catalog import (connect_readonly, load_fresh_images, load_split_images,
+                                load_split_rows)
 from src.common.config import resolve
 from src.common.features import PIXEL_SCALE, hog_features, pixel_features
 from src.common.hashing import sha256_path
@@ -156,6 +157,15 @@ def default_test_reader(config: dict) -> TestReader:
     def _read() -> tuple[list[dict], np.ndarray, np.ndarray]:
         rows = load_split_rows(config, "test")
         images, labels = load_split_images(config, "test", rows=rows)
+        return rows, images, labels
+    return _read
+
+
+def fresh_holdout_reader(config: dict) -> TestReader:
+    """One logged read of the fresh holdout per call, like ``default_test_reader``."""
+    def _read() -> tuple[list[dict], np.ndarray, np.ndarray]:
+        rows = load_split_rows(config, "fresh_holdout")
+        images, labels = load_fresh_images(config, rows)
         return rows, images, labels
     return _read
 

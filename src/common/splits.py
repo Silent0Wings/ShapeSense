@@ -20,7 +20,9 @@ from pathlib import Path
 from src.common.status import current_run_id, now_iso
 
 SPLITS = ("train", "val", "test")
+FRESH_SPLIT = "fresh_holdout"   # iteration 2 holdout, written by src/stage1_freeze/fresh_holdout.py
 TEST_SPLIT = "test"
+SEALED_SPLITS = (TEST_SPLIT, FRESH_SPLIT)  # only Stage 5 reads these, and every read is logged
 ALLOWED_TEST_READER = "src.stage5_eval"
 DEFAULT_SPLITS_DIR = Path("configs/splits")
 DEFAULT_LOG = Path("artifacts/test_access.log")
@@ -63,10 +65,10 @@ def _allowed_test_reader(module: str, module_file: str | None = None) -> bool:
 def load_split(name: str, *, splits_dir: str | Path | None = None,
                log_path: str | Path | None = None) -> list[dict]:
     """Return the manifest rows of one split as dicts (columns as strings)."""
-    if name not in SPLITS:
-        raise ValueError(f"unknown split {name!r}; expected one of {SPLITS}")
+    if name not in SPLITS + (FRESH_SPLIT,):
+        raise ValueError(f"unknown split {name!r}; expected one of {SPLITS + (FRESH_SPLIT,)}")
     caller, caller_file = _caller()
-    if name == TEST_SPLIT and not _allowed_test_reader(caller, caller_file):
+    if name in SEALED_SPLITS and not _allowed_test_reader(caller, caller_file):
         raise TestSplitAccessError(
             f"{caller} may not read the test split; only {ALLOWED_TEST_READER} may "
             "(implementation.md § Separation of concerns 2)")
@@ -76,7 +78,7 @@ def load_split(name: str, *, splits_dir: str | Path | None = None,
                                 "(python run_pipeline.py --stages 1) to write the manifests")
     with open(path, encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
-    if name == TEST_SPLIT:
+    if name in SEALED_SPLITS:
         log = Path(log_path or DEFAULT_LOG)
         log.parent.mkdir(parents=True, exist_ok=True)
         with open(log, "a", encoding="utf-8", newline="") as f:
