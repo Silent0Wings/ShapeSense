@@ -26,20 +26,24 @@ fresh copy of the repository to a running pipeline.
 - Python **3.12** (see `.python-version`), on `PATH`.
 - A LaTeX distribution for the report: MiKTeX (preferred; installs missing
   packages on demand) or TeX Live. `build.ps1` finds either.
-- About 2 GB of disk for the raw data and artifacts. A GPU is optional; the
-  whole pipeline runs on CPU.
+- About 2 GB of disk for the raw data and artifacts, plus about 6 GB for a
+  CUDA PyTorch install.
+- A CUDA GPU with about 8 GB of memory. The committed `configs/pipeline.yaml`
+  sets `train.device: cuda` and fails if none is visible, so a run can never
+  move to the CPU by accident. Set it to `cpu` or `auto` to run without one;
+  CPU results are not numerically identical to the published GPU results.
 
 ## 2. Environment
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu130
+pip install "torch==2.14.1+cu130" --index-url https://download.pytorch.org/whl/cu130
 ```
 
 Every dependency is pinned to an exact version in `requirements.txt`. For a
-GPU build of PyTorch, install the matching CUDA wheel first; nothing else
-changes.
+CPU-only run, use the `whl/cpu` index and set `train.device: cpu`.
 
 Pre-commit hooks (import boundaries + contract tests) are optional and local: `.pre-commit-config.yaml` is not tracked, so only a machine that has a copy can install them. `python run_pipeline.py --check` runs the same guards everywhere:
 
