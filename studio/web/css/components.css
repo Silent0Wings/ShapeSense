@@ -95,5 +95,10 @@ tr:last-child td { border-bottom: 0; }
 .prob b { display: block; height: 7px; border-radius: 0 4px 4px 0; }
 .prob-track { background: var(--surface-1); border-radius: 0 4px 4px 0; }
 .prob span:last-child { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+.predict-compact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.predict-compact .pad { max-width: none; }
+.panel-msg { min-height: 42px; margin-top: 6px; }
+.result strong { line-height: 1.25; }
+@media (max-width: 620px) { .predict-compact { grid-template-columns: minmax(0, 1fr); } }
 .hero { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
 .hero .big { font-size: 44px; font-weight: 720; line-height: 1; font-variant-numeric: tabular-nums; }
