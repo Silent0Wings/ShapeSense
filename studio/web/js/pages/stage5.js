@@ -1,6 +1,6 @@
 import { get } from '../api.js';
 import { badge, card, el, errorBox, fmt, note, pageHead, pixImg, signed, stat, stats, table, tableView } from '../ui.js';
-import { ciChart, dots, heatmap } from '../svg/charts.js';
+import { ciChart, heatmap, scoreRows } from '../svg/charts.js';
 import { classPicker } from '../widgets/controls.js';
 import { ARM_SERIES, boot } from './boot.js';
 
@@ -42,10 +42,12 @@ function confusionCard(names, pairs) {
 
 function perClass(rows) {
   const data = rows.map((r) => ({ label: r.class, values: { A0: Number(r.f1_A0), A1: Number(r.f1_A1), B: Number(r.f1_B) }, n: r.n_test, flag: r.flag || '–' }));
+  const spread = (d) => Math.max(...Object.values(d.values)) - Math.min(...Object.values(d.values));
+  data.sort((a, b) => spread(b) - spread(a));
   const lo = Math.min(...data.flatMap((d) => Object.values(d.values)));
-  return card('F1 per class', dots({ rows: data, series: ARM_SERIES, label: 'Per-class F1 by arm', domain: [Math.floor(lo / 5) * 5, 100] }),
+  return card('F1 per class', scoreRows({ rows: data, series: ARM_SERIES, label: 'Per-class F1 by arm', domain: [Math.floor(lo / 5) * 5, 100] }),
     tableView(data, [{ key: 'label', label: 'Class' }, { key: 'n', label: 'Test images', num: true }, ...ARM_SERIES.map((s) => ({ label: s.label, num: true, render: (r) => fmt(r.values[s.key], 1) })), { key: 'flag', label: 'Guardrail' }]),
-    note('An asterisk marks a single-source class. The axis starts above zero to separate the dots.'));
+    note('Sorted by the biggest gap between arms. Bold is the best score in each row. An asterisk marks a single-source class. The axis starts above zero to separate the dots.'));
 }
 
 boot('stage5', (main, d, meta) => {

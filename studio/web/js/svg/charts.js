@@ -108,6 +108,40 @@ export function dots({ rows, series, label, domain }) {
   return wrap;
 }
 
+// One row per item: dots joined by a range bar, with each exact value in its own column.
+export function scoreRows({ rows, series, label, domain }) {
+  const width = 780; const rowH = 38; const left = 104; const plotEnd = 556; const top = 30;
+  const columns = series.map((_, i) => 610 + i * 64);
+  const bottom = top + rows.length * rowH;
+  const scale = linear(domain, [left, plotEnd]);
+  const root = svgRoot(width, bottom + 34, label);
+  valueAxis(root, scale, ticks(domain[0], domain[1], 5), top, bottom);
+  series.forEach((item, i) => {
+    root.append(s('circle', { cx: columns[i] - 22, cy: 13, r: 5, fill: item.color }),
+      text(columns[i], 18, item.key, { 'text-anchor': 'end', class: 'title' }));
+  });
+  rows.forEach((row, i) => {
+    const y = top + i * rowH + rowH / 2;
+    const values = series.map((item) => row.values[item.key]);
+    const best = Math.max(...values);
+    if (i) root.append(s('line', { class: 'grid-line', x1: 0, x2: width, y1: y - rowH / 2, y2: y - rowH / 2 }));
+    root.append(text(left - 12, y + 5, row.label, { 'text-anchor': 'end', style: 'font-size:14px;fill:var(--text-primary)' }));
+    root.append(s('line', { x1: scale(Math.min(...values)), x2: scale(best), y1: y, y2: y, stroke: 'var(--text-muted)', 'stroke-width': 3, 'stroke-linecap': 'round' }));
+    series.forEach((item, k) => {
+      root.append(s('circle', { cx: scale(values[k]), cy: y, r: 7.5, fill: item.color, stroke: 'var(--surface-1)', 'stroke-width': 2 }));
+      const isBest = values[k] === best;
+      root.append(text(columns[k], y + 5, values[k].toFixed(1), { 'text-anchor': 'end',
+        style: `font-size:14px;font-variant-numeric:tabular-nums;${isBest ? 'font-weight:700;fill:var(--text-primary)' : ''}` }));
+    });
+    const band = s('rect', { x: 0, y: y - rowH / 2, width, height: rowH, fill: 'transparent' });
+    hover(band, `${row.label}: ${series.map((item, k) => `${item.key} ${values[k].toFixed(1)}`).join(', ')}`);
+    root.append(band);
+  });
+  const wrap = document.createElement('div');
+  wrap.append(legend(series), root);
+  return wrap;
+}
+
 // Effect estimates with confidence intervals, a zero line and a required-gain line.
 export function ciChart({ rows, label, required }) {
   const width = 620; const rowH = 44; const left = 112; const top = 18;
