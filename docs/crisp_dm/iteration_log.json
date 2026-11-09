@@ -1,0 +1,35 @@
+{
+  "note": "One entry per trip round the CRISP-DM cycle. Findings go under the step where they were found. Never rewrite a closed iteration.",
+  "iterations": [
+    {
+      "id": 1,
+      "title": "Quick, Draw! diamonds are mostly not rhombi",
+      "status": "closed",
+      "trigger": "A modeling result on validation sent the project back to Data Preparation.",
+      "route": "Modeling → Data Preparation",
+      "decision": "All Quick, Draw! diamonds excluded by rule before the split; every model retrained.",
+      "findings": {
+        "data": "Review sheets showed most Quick, Draw! diamonds are gems, cones, shields or scribbles, which contradicts the class definition.",
+        "prep": "500 drawings removed by rule. The split was re-frozen at 12,405 / 2,819 / 2,776.",
+        "model": "On validation, augmented models rejected those drawings (A1 recall 51 to 59%) while A0 memorized their style (86 to 93%).",
+        "eval": "Left in, this label noise would have penalized the arms that learn the real shape. Removed before any test read."
+      }
+    },
+    {
+      "id": 2,
+      "title": "Augmentation lost to no augmentation",
+      "status": "open",
+      "trigger": "The Stage 5 verdict was fail, and A0, with no augmentation, scored highest. An investigation on train and validation data is running.",
+      "route": "Evaluation → Data Preparation",
+      "decision": "Planned: tune the augmentation and generator on validation, add arm A2 (clean real + augmented real + synthetic), retrain and re-evaluate as a separately reported experiment. The iteration 1 verdict stands.",
+      "findings": {
+        "business": "The locked question was B vs A1. The result raises a different question: whether this augmentation design suits these classes at all.",
+        "data": "A shape's source can be guessed from its pixels (91.7% against 46.7% for the majority guess), so an unaugmented model may lean on dataset style. Whether orientation carries class information is being measured.",
+        "prep": "Every augmentation and generator range was set by hand and never tested, including rotation of ±180°. A1 and B also never train on an unaugmented image. Measured on validation, three seeds, not on test: with rotation off, A1 reached a mean macro-F1 of 93.15 (92.76, 93.19, 93.49), against 91.69 for A0 and 90.03 for A1 with rotation on. Diamond F1 rose from 83.2 to 96.2.",
+        "model": "Tuning covered only learning rate and dropout, on A1, and A0 reused A1's winner. A0 stopped at 16 to 24 epochs, while A1 and B mostly ran close to the 30-epoch cap.",
+        "eval": "Test macro-F1: A0 93.88, A1 90.86, B 90.50. B vs A1 was -0.36, 95% CI [-1.17, 0.41]: fail. Augmentation hurt rectangle, diamond and square, and helped octagon and hexagon. Reading those classes as separated by orientation or proportions versus corner count is a hypothesis under test.",
+        "deploy": "On drawn shapes, A1 and B can call a square a rectangle while A0 is right. That matches the test pattern but is informal evidence only."
+      }
+    }
+  ]
+}

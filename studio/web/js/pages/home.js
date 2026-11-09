@@ -1,4 +1,5 @@
 import { crispCycle } from '../widgets/crisp-cycle.js';
+import { iterationLog } from '../widgets/findings.js';
 import { predictPanel } from '../widgets/predict-panel.js';
 import { badge, card, el, note, pageHead } from '../ui.js';
 import { boot } from './boot.js';
@@ -10,7 +11,8 @@ boot('home', (main, data, meta) => {
     lede: 'Ten shape classes, four public datasets and one question: does synthetic training data help a small CNN? Follow the CRISP-DM steps below, or draw a shape and see the models answer.',
   }));
   main.append(card('The CRISP-DM cycle', crispCycle({ phases: data.phases, verdict: data.verdict }),
-    note('Select a step to open it. The dashed Modeling arrow is iteration 1: a modeling finding sent the project back to Data Preparation.')));
+    note('Select a step to open it. Dashed arrows are the trips back round the loop: iteration 1 went from Modeling to Data Preparation, and iteration 2 from Evaluation to Data Preparation.')));
+  main.append(iterationLog(meta.iterations));
   main.append(el('div', { class: 'grid two' },
     data.arms.length
       ? card('Try it now', predictPanel({ arms: ['A0'], compact: true, labels: meta.classes }))

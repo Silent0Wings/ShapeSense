@@ -29,6 +29,7 @@ DOCS: dict[str, str] = {
     "fd_check": f"{_A}/stage1/fd_check.json",
     "shortcut_notice": f"{_A}/stage1/NOTICE_shortcut.md",
     "iteration1": "docs/crisp_dm/iteration_1_quickdraw_diamonds.json",
+    "iteration_log": "docs/crisp_dm/iteration_log.json",
     "param_ranges": f"{_A}/stage3/param_ranges.json",
     "qa_review2": f"{_A}/stage2/qa/qa_review.md",
     "qa_review3": f"{_A}/stage3/qa/qa_review.md",

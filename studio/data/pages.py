@@ -88,5 +88,6 @@ def build(name: str) -> dict | None:
 
 
 def meta() -> dict:
+    log = read_json("iteration_log") or {"iterations": []}
     return {"classes": list(classes()), "phases": phases(), "stage_phase": STAGE_PHASE,
-            "arms": arms.available()}
+            "arms": arms.available(), "iterations": log["iterations"]}

@@ -108,6 +108,9 @@ const HELP = {
   'what if the rule had been different?': 'Re-applies the rule to stored results. Changes nothing.',
   'what the model saw (64×64)': 'Your drawing after the same standardization as the training images.',
   'drawn parameters of the selected shape': 'The random values used to draw the outlined shape.',
+  'what each trip round the cycle found': 'Each time a finding sent the project back, what was learned at each step.',
+  'findings recorded at this step': 'What the CRISP-DM iterations learned at this step.',
+  closed: 'This iteration is finished.', 'in progress': 'Still being investigated. Findings may change.',
   'report built': 'The PDF compiled.', traceable: 'Every number traces to a stored result.', 'no placeholders': 'No empty tables remain.',
   'export smoke test': 'The bundle predicted a drawn hexagon on its own.', 'attribution present': 'Dataset credits are in the report.',
 };

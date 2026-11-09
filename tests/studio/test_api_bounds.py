@@ -61,6 +61,12 @@ def test_static_mount_cannot_escape_web_folder(client):
         assert response.status_code == 404 or b"image_id" not in response.content
 
 
+def test_meta_carries_the_crisp_dm_iterations(client):
+    log = client.get("/api/meta").json()["iterations"]
+    assert [it["id"] for it in log][:2] == [1, 2]
+    assert all(it["findings"] and it["status"] in ("open", "closed") for it in log)
+
+
 def test_allowlist_has_no_test_derived_source_paths():
     every = list(allowlist.DOCS.values()) + list(allowlist.IMAGES.values())
     assert not [p for p in every if "splits" in p or p.startswith("data_set") or "rebuild" in p]
