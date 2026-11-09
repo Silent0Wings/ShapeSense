@@ -124,3 +124,9 @@ def test_test_reads_and_power_rows(tmp_path):
     csv_path, tex_path = tables.write_table(tmp_path, "test_reads", cols, rows)
     assert _read_csv(csv_path)[1] == rows[0]
     assert "11 & 11 & yes" in tex_path.read_text(encoding="utf-8")
+
+
+def test_ablation_rows_rendered():
+    ablation = {"name": "B_equalreal_0", "arm": "B", "accuracy": 0.9, "macro_f1": 88.5}
+    cols, rows = tables.metrics_rows([], [], [], [], [ablation])
+    assert rows == [["B_equalreal_0", "B", "ablation", "90.0", "88.5"]]

@@ -609,7 +609,7 @@ def run(config: dict) -> dict:
         outputs.extend(tables.write_table(t, "metrics", *tables.metrics_rows(
             seed_models, arm_summaries,
             [{"arm": a, "accuracy": ens[a]["accuracy"], "macro_f1": ens[a]["macro_f1"]} for a in arms],
-            baselines)))
+            baselines, ablations)))
         outputs.extend(tables.write_table(t, "per_class", *tables.per_class_rows(
             names, bands["n_test"], {a: ens[a]["per_class_f1"] for a in arms},
             primary["boot"]["drop_observed"], primary["boot"]["drop_ci_lo"], thresholds,

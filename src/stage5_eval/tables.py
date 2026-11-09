@@ -139,6 +139,7 @@ def metrics_rows(
     arm_summaries: Sequence[Mapping],
     ensembles: Sequence[Mapping],
     baselines: Sequence[Mapping],
+    ablations: Sequence[Mapping] = (),
 ) -> tuple[tuple[str, ...], list[list[str]]]:
     """Metrics table.
 
@@ -160,6 +161,9 @@ def metrics_rows(
     for b in baselines:
         rows.append([str(b["name"]), "--", "baseline", fmt_pct(b["accuracy"]),
                      fmt_points(b["macro_f1"])])
+    for a in ablations:
+        rows.append([str(a["name"]), str(a["arm"]), "ablation", fmt_pct(a["accuracy"]),
+                     fmt_points(a["macro_f1"])])
     return METRICS_COLUMNS, rows
 
 
