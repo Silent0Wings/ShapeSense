@@ -1,0 +1,18 @@
+model,arm,kind,accuracy_pct,macro_f1_points
+A0_0,A0,seed model,94.4,93.8
+A0_1,A0,seed model,89.3,89.6
+A0_2,A0,seed model,92.2,91.2
+A1_0,A1,seed model,90.7,90.0
+A1_1,A1,seed model,91.7,91.0
+A1_2,A1,seed model,89.5,88.6
+B_0,B,seed model,90.5,89.8
+B_1,B,seed model,90.7,90.3
+B_2,B,seed model,90.7,89.9
+A0 per-seed mean ± std,A0,seed summary,92.0 ± 2.6,91.5 ± 2.1
+A1 per-seed mean ± std,A1,seed summary,90.6 ± 1.1,89.9 ± 1.2
+B per-seed mean ± std,B,seed summary,90.6 ± 0.1,90.0 ± 0.3
+A0 ensemble (soft vote),A0,ensemble,94.4,93.9
+A1 ensemble (soft vote),A1,ensemble,91.5,90.9
+B ensemble (soft vote),B,ensemble,91.2,90.5
+baseline_logreg_pixels,--,baseline,78.5,77.9
+baseline_svm_hog,--,baseline,84.4,84.3
