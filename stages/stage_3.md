@@ -1,5 +1,10 @@
 # Stage 3 — Synthetic generator
 
+> **Current state (2026-11-09).** The synthetic stroke is 3 px, against about 3.1 px in real images.
+> Generator ranges are searched on validation for each arm that uses them.
+> The rest of this brief is the original design. The record of what changed is
+> [`docs/crisp_dm/README.md`](../docs/crisp_dm/README.md).
+
 > Owner brief. Everything here is about Stage 3 only. The full project
 > plan is `../implementation.md`; shared rules live there under
 > *Stage 0* and *Shared conventions*.

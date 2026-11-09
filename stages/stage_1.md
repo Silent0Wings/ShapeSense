@@ -1,5 +1,12 @@
 # Stage 1 — Data freeze and splits
 
+> **Current state (2026-11-09).** All Quick, Draw! diamonds are excluded by rule (500 drawings), and
+> the split is 12,405 / 2,819 / 2,776. Two fresh holdouts of 4,500 images are
+> sealed like the test split. They use sources seen in training and contain no
+> Quick, Draw! images.
+> The rest of this brief is the original design. The record of what changed is
+> [`docs/crisp_dm/README.md`](../docs/crisp_dm/README.md).
+
 > Owner brief. Everything here is about Stage 1 only. The full project
 > plan is `../implementation.md`; shared rules (configs, `status.json`,
 > guards) live there under *Stage 0* and *Shared conventions*.

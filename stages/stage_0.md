@@ -1,5 +1,11 @@
 # Stage 0 — Infrastructure and reproducibility
 
+> **Current state (2026-11-09).** Three sets are now sealed: the test split, the first fresh holdout
+> and fresh holdout 2. A full pipeline run needs iteration 3's frozen search
+> winners, so it fails until they exist. `--check` is unaffected.
+> The rest of this brief is the original design. The record of what changed is
+> [`docs/crisp_dm/README.md`](../docs/crisp_dm/README.md).
+
 > Owner brief. Everything here is about Stage 0 only. The full project
 > plan is `../implementation.md`; the issue review is `../plan_issues.md`.
 

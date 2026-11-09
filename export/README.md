@@ -99,8 +99,9 @@ Dataset preparation:
 
 - **Standardization:** all images are converted to 64 x 64, single channel,
   uint8, with a 2-px black outline on white (see Preprocessing above).
-- **Filtering:** the gemstone filter (Decision 1) is pending review. Its
-  effect is reported from the Stage 1 status artifact, not restated here.
+- **Filtering:** all Quick, Draw! diamonds are excluded by rule, because most
+  are not rhombi (CRISP-DM iteration 1). The count is in the Stage 1 status
+  artifact and is not restated here.
 - **Splitting:** images are split 70 / 15 / 15 into train, validation and
   test. Near-duplicate groups (perceptual hash, Hamming distance at most 2)
   never straddle two splits.

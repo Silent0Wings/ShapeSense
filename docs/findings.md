@@ -1,5 +1,10 @@
 # Phase 1 findings
 
+> Historical Phase 1 record. Later work changed some of it: the split is now
+> 12,405 / 2,819 / 2,776, Quick, Draw! diamonds are excluded, and the scripts
+> moved to `src/stage1_freeze/`. Current state:
+> [`crisp_dm/README.md`](crisp_dm/README.md).
+
 All numbers are from the build of 2026-10-19
 (`python scripts/build_unified_dataset.py`). Sources and licenses:
 [source.md](source.md).
