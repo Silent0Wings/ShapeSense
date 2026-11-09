@@ -33,9 +33,11 @@ def forbidden(path: str, mode: str) -> bool:
         return True
     if "/artifacts/stage0/rebuild/" in path:
         return True
-    if path.endswith("configs/splits/fresh_holdout.csv") or "/data_set/fresh_holdout/" in path:
+    if path.endswith(("configs/splits/fresh_holdout.csv", "configs/splits/fresh_holdout_2.csv")):
         return True
-    if "/artifacts/stage5/predictions_fresh/" in path:
+    if "/data_set/fresh_holdout/" in path or "/data_set/fresh_holdout_2/" in path:
+        return True
+    if any(f"/artifacts/stage5/{folder}/" in path for folder in ("predictions_fresh", "predictions_fresh2", "predictions_robust", "perturbed_fresh2")):
         return True
     if "/artifacts/stage5/predictions/" in path and path.rsplit("/", 1)[1] not in ALLOWED_PREDICTIONS:
         return True
@@ -59,7 +61,7 @@ for name in ("home", "business", "stage0", "stage1", "stage2", "stage3", "stage4
 stage2 = page("/api/page/stage2").json()["defaults"]
 stage3 = page("/api/page/stage3").json()["defaults"]
 for label in range(10):
-    for split in ("train", "val", "test", "fresh_holdout"):
+    for split in ("train", "val", "test", "fresh_holdout", "fresh_holdout_2"):
         page(f"/api/samples?label={label}&split={split}&n=4")
         page(f"/api/class-stats?label={label}&split={split}")
     client.post("/api/augment", json={"label": label, "index": 0, "seed": 0, "n": 2, "values": stage2})
