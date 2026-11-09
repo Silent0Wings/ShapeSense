@@ -123,6 +123,7 @@ placeholders.
 | 4 Training | `src/stage4_train/` | `artifacts/stage4/<arm>_<seed>/`, baselines, tuning, benchmark | ______ |
 | 5 Evaluation | `src/stage5_eval/` | `artifacts/stage5/` tables, figures, verdict | ______ |
 | 6 Report | `src/stage6_report/`, `dashboard/`, `demo/`, `export/` | Phase 2 report PDF, `export/` bundle | ______ |
+| 7 Frozen public dashboard | `deployment/` (not created yet) | Static Vercel site with live ONNX models, built only after every gate in `stages/stage_7.md`, including user approval | ______ |
 
 Rules every stage follows (enforced, not by convention):
 

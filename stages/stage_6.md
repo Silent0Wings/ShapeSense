@@ -7,7 +7,7 @@
 - **Owner:** ______
 - **Pipeline stage:** `--stages 6` · **Code folders:** `src/stage6_report/`, `dashboard/`
 - **Depends on:** Stage 5 for results tables; everything else starts day 1
-- **Blocks:** nothing — this is the finish line
+- **Blocks:** Stage 7, the frozen public dashboard (`stage_7.md`)
 - **Effort:** 1–2 days for the report + 0.5–1 day for the dashboard
 
 ## Focus
@@ -161,7 +161,8 @@ never typed by hand.**
 ## Interfaces you use
 
 Read-only: every `artifacts/sN/` folder. You provide nothing to other
-stages — Stage 6 is the end of the pipeline.
+stages — Stage 6 is the end of the pipeline. Stage 7 runs outside the
+pipeline, after approval.
 
 ## Pitfalls
 
