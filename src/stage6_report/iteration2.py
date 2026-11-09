@@ -93,7 +93,7 @@ def log_table(repo_root: Path = REPO_ROOT, iteration: int = 2) -> str:
         return ""
     rows = [f"{name} & {latex_escape(entry['findings'][key])} \\\\"
             for key, name in STEP_NAMES if key in entry["findings"]]
-    return "\\begin{tabular}{p{0.2\\linewidth}p{0.76\\linewidth}}\n\\toprule\nStep & Finding \\\\\n\\midrule\n" \
+    return "\\begin{tabular}{p{0.18\\linewidth}p{0.74\\linewidth}}\n\\toprule\nStep & Finding \\\\\n\\midrule\n" \
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
 
 
