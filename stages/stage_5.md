@@ -1,5 +1,12 @@
 # Stage 5 — Evaluation and statistics
 
+> **Current state (2026-11-09).** The primary test has moved from B vs A1 to A2 vs A0, and in
+> iteration 3 is scored over 23 damage levels on fresh holdout 2. Bootstraps
+> resample near-duplicate groups, and the harm rule and secondary tests are
+> corrected for multiple comparisons. Perturbed copies are built inside this stage.
+> The rest of this brief is the original design. The record of what changed is
+> [`docs/crisp_dm/README.md`](../docs/crisp_dm/README.md).
+
 > Owner brief. Everything here is about Stage 5 only. The full project
 > plan is `../implementation.md`; shared rules live there under
 > *Stage 0* and *Shared conventions*.

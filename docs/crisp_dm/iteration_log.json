@@ -45,7 +45,7 @@
       }
     }
   ],
-  "failures_note": "Every significant failure and how it was handled, in the order it happened, starting from dropping the Quick, Draw! diamonds. The one earlier fix is listed last. Kept apart from the closed iterations above. Smaller build issues are in plan_issues.md.",
+  "failures_note": "Every significant failure and how it was handled, in the order it happened, starting from dropping the Quick, Draw! diamonds. F17 is the one earlier fix, and iteration 3 follows it. Kept apart from the closed iterations above. Smaller build issues are in plan_issues.md.",
   "failures": [
     {
       "id": "F01",
@@ -633,6 +633,94 @@
           "caption": "The outline is a typical 55-px shape. The filled square is the receptive field. Three blocks see 22 px and four blocks see 46 px."
         }
       ]
+    },
+    {
+      "id": "F18",
+      "group": "6. Iteration 3 so far",
+      "iteration": "Iteration 3",
+      "step": "data",
+      "pipeline_stages": [
+        1
+      ],
+      "failure": "A time limit killed the second holdout build.",
+      "cause": "A 500-second limit on the command stopped the builder and left a partial folder with no manifest.",
+      "handled": "Deleted the partial folder and rebuilt with no limit. The build then reproduced the first holdout's manifest before continuing.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Building fresh holdout 2",
+          "before": [
+            "500-second limit",
+            "builder stopped",
+            "partial folder, no manifest"
+          ],
+          "after": [
+            "partial folder deleted",
+            "no time limit",
+            "manifest check passed",
+            "4,500 images sealed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F19",
+      "group": "6. Iteration 3 so far",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The first launch of the validation experiments crashed.",
+      "cause": "The training code was being edited while the workers started, and the worker pool broke with an invalid-handle error.",
+      "handled": "Relaunched with no edits during start-up. Training code is left alone while workers start.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Starting the experiment workers",
+          "before": [
+            "workers starting",
+            "training code edited",
+            "worker pool broke"
+          ],
+          "after": [
+            "no edits during start-up",
+            "workers started",
+            "trials finished normally"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F20",
+      "group": "6. Iteration 3 so far",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The 108-trial experiment run hung silently after 6 trials.",
+      "cause": "Not established. The workers waited for work while the parent waited for results, with no error in the log, and nothing was watching for a stall.",
+      "handled": "Found about 2 hours 17 minutes later, on a status request. Stopped that job and relaunched it with the finished trials reused. Long jobs now run with a stall watcher checked every 5 minutes.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Noticing a stalled run",
+          "before": [
+            "6 trials done at 12:11",
+            "no error and no alert",
+            "found at 14:28"
+          ],
+          "after": [
+            "relaunched at 14:31",
+            "finished trials reused",
+            "checked every 5 minutes"
+          ]
+        }
+      ]
     }
   ],
   "changes_note": "Every change to data, training or evaluation, filed under its CRISP-DM step.",
@@ -804,6 +892,34 @@
       "before": "None",
       "after": "4,500 never-read images, sealed",
       "why": "The test split and the first holdout had both been read."
+    },
+    {
+      "step": "model",
+      "what": "Training arms",
+      "before": "A0, A1, B, A2",
+      "after": "Arm P added: pretrained on synthetic images, then fine-tuned on real images. Reported descriptively",
+      "why": "To test whether pretraining recovers a synthetic-to-real gap."
+    },
+    {
+      "step": "model",
+      "what": "Choosing the search winner",
+      "before": "Scored on the single validation split",
+      "after": "Top 5 settings per arm re-scored by grouped 3-fold CV over train and validation at 15 epochs, winner by clean CV macro-F1, confirmed on three seeds",
+      "why": "One validation split can favour a setting by chance."
+    },
+    {
+      "step": "model",
+      "what": "Training options",
+      "before": "One fixed real-image share and training length",
+      "after": "Equal-real, real-fraction and training-length options, used in validation experiments. A longer budget is adopted only under the pre-registered rule",
+      "why": "To measure scarcity, equal real images and training length."
+    },
+    {
+      "step": "eval",
+      "what": "Robustness check location",
+      "before": "A separate script on validation only",
+      "after": "Moved into Stage 5, with perturbed copies built once and hashed",
+      "why": "So sealed perturbed sets are created and read in only one place."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",

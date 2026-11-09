@@ -1,5 +1,12 @@
 # Stage 6 — Report, figures, dashboard and packaging
 
+> **Current state (2026-11-09).** The interactive dashboard is now `studio/`, beside the original
+> `dashboard/`. It serves every exported arm live. The exported model is A2_2
+> until iteration 3 re-exports. Report Section K is frozen, and an iteration 3
+> section is planned.
+> The rest of this brief is the original design. The record of what changed is
+> [`docs/crisp_dm/README.md`](../docs/crisp_dm/README.md).
+
 > Owner brief. Everything here is about Stage 6 only. The full project
 > plan is `../implementation.md`; shared rules live there under
 > *Stage 0* and *Shared conventions*.

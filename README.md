@@ -6,9 +6,9 @@
 
 ShapeSense trains a small CNN to classify ten 2D shapes (circle, ellipse,
 triangle, square, rectangle, pentagon, hexagon, octagon, star, diamond) and
-tests one question: **does adding procedurally generated (synthetic) shapes
-to training help?** Four arms are trained on the same network and step budget,
-each with its own settings tuned on validation only:
+first asked: **does adding procedurally generated (synthetic) shapes to
+training help?** Arms are trained on the same network and step budget, each
+with its own settings tuned on validation only:
 
 | Arm | Training data |
 |---|---|
@@ -16,12 +16,22 @@ each with its own settings tuned on validation only:
 | A1 | real images + class-safe augmentation |
 | B  | real and synthetic images per batch, all augmented |
 | A2 | clean real, augmented real and synthetic images per batch |
+| P  | pretrained on synthetic images, then fine-tuned on real images (iteration 3) |
 
 Iteration 1 tested B against A1 and failed. Iteration 2 fixed what that result
 exposed and tested A2 against A0 on the test split and on a fresh holdout. It
-failed too. The findings per CRISP-DM step are in
+failed too. Iteration 3 is in progress: it asks which training mix survives
+damaged images, and when synthetic data helps, on a new sealed holdout. It has
+no results yet.
+
+After iteration 3, the plan is an equal-weight "All models vote" option, then a
+frozen public dashboard if every gate in [`stages/stage_7.md`](stages/stage_7.md)
+is met.
+
+**Start with [`docs/crisp_dm/README.md`](docs/crisp_dm/README.md)**, the record
+of each iteration and every decision. The detailed findings are in
 [`docs/crisp_dm/iteration_log.json`](docs/crisp_dm/iteration_log.json), and the
-iteration 1 report inputs are frozen in `docs/crisp_dm/iteration_1/`.
+report inputs of closed iterations are frozen under `docs/crisp_dm/iteration_N/`.
 
 The full plan is [`implementation.md`](implementation.md); each stage owner
 has a brief in [`stages/`](stages/). This README takes a new teammate from a
@@ -91,7 +101,7 @@ pre-commit install
 | `python run_pipeline.py --dashboard` | read-only progress dashboard (Streamlit) |
 | `python run_pipeline.py --demo` | draw a shape and see the model's prediction |
 | `python -m studio.tools.export_arms` | export all four arms for the studio, after Stage 4 |
-| `python -m uvicorn studio.server.app:create_app --factory --port 8765` | the interactive studio, both iterations |
+| `.\scripts\run_studio.bat` or `python -m studio` | the interactive studio on port 8765, every iteration |
 | `python -m pytest tests -q` | the full test suite (no data needed) |
 | `.\build.ps1 -File phase2_report.tex` | compile the Phase 2 report by hand |
 
@@ -130,9 +140,9 @@ Rules every stage follows (enforced, not by convention):
 - **Stages do not import each other.** The only exception: Stage 4 uses
   `stage2_augment.build_transform` and `stage3_synth.build_generator`.
   `dashboard/` may import `src.common.status` only; `demo/` only `export/`.
-- **The test split is sealed.** `common.load_split("test")` raises unless the
-  caller is in `src.stage5_eval`, and every read is appended to
-  `artifacts/test_access.log` (never truncate it).
+- **Sealed data stays sealed.** The test split and both fresh holdouts raise
+  on `common.load_split` unless the caller is in `src.stage5_eval`, and every
+  read is appended to `artifacts/test_access.log` (never truncate it).
 - **Every number lives in `configs/`.** `configs/pipeline.yaml` holds the
   experimental settings; `configs/taxonomy.yaml` holds the class definitions.
   Both are frozen after Stage 1; changing them needs a reviewed PR.
@@ -147,6 +157,10 @@ src/stage1_freeze/  Phase 1 build + Stage 1 freeze (moved from scripts/)
 src/stage2..6_*/    one package per stage, entry point run.py
 tests/              pytest: contracts/ (public interfaces) and one folder per stage
 dashboard/ demo/ export/   presentation layer and the exported model bundle
+studio/             the interactive dashboard (FastAPI and static pages)
+stages/             one brief per stage, including Stage 7
+docs/crisp_dm/      CRISP-DM record, iteration log, frozen iteration records
+scripts/            run_studio.bat launcher
 artifacts/          stage outputs (gitignored except .gitkeep)
 ignore/             tracker (todo.md) and implementation plans (plan/)
 ```

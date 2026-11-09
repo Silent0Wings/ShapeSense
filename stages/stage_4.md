@@ -1,5 +1,12 @@
 # Stage 4 — Training (baselines + A0 / A1 / B)
 
+> **Current state (2026-11-09).** There are five arms: A0, A1, B, A2 and P. The CNN has four blocks,
+> every arm is tuned on validation, and each trains on five seeds. Iteration 3
+> adds grouped 3-fold CV inside the search. At most two runs share the GPU, and
+> long jobs run with a stall watcher.
+> The rest of this brief is the original design. The record of what changed is
+> [`docs/crisp_dm/README.md`](../docs/crisp_dm/README.md).
+
 > Owner brief. Everything here is about Stage 4 only. The full project
 > plan is `../implementation.md`; shared rules live there under
 > *Stage 0* and *Shared conventions*.

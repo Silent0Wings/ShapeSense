@@ -1,5 +1,11 @@
 # Stage 2 — Augmentation pipeline
 
+> **Current state (2026-11-09).** Rotation is ±20°, capped at ±10° for square, rectangle and diamond,
+> rather than ±180°. Shape framing and thin-stroke handling were fixed, and the
+> ranges come from a validation search that iteration 3 repeats.
+> The rest of this brief is the original design. The record of what changed is
+> [`docs/crisp_dm/README.md`](../docs/crisp_dm/README.md).
+
 > Owner brief. Everything here is about Stage 2 only. The full project
 > plan is `../implementation.md`; shared rules live there under
 > *Stage 0* and *Shared conventions*.

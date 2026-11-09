@@ -1,5 +1,11 @@
 # Plan: Model A vs Model B evaluation — 7 stages, 6 owners
 
+> **Current direction (2026-11-09).** This is the original v4 plan, kept as
+> written. The project has since run two failed experiments, added arms A2 and
+> P, and moved to a third iteration on robustness. Stage 7 (`stages/stage_7.md`)
+> is new. Where this plan disagrees with the record, follow
+> [`docs/crisp_dm/README.md`](docs/crisp_dm/README.md).
+
 > **v4.** Reconciles the plan with the code that is actually committed and
 > fixes the defects found in the v3 audit (`plan_issues.md`, P-20–P-38).
 >

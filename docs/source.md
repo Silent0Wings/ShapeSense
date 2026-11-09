@@ -48,8 +48,10 @@ renaming it to `mendeley_elkorchi`. The build script uses the current name.
 
 | Path | Built by |
 |---|---|
-| `data_set/unified/` (images, `metadata.csv`, `rejects.csv`, `catalog.sqlite`, `summary.json`) | `scripts/build_unified_dataset.py` |
-| `figures/unified_class_source_counts.png`, `figures/standardization_before_after.png`, `figures/outlier_examples.png` | `scripts/audit_dataset.py` |
+| `data_set/unified/` (images, `metadata.csv`, `rejects.csv`, `catalog.sqlite`, `summary.json`) | `src/stage1_freeze/build_unified_dataset.py` |
+| `data_set/fresh_holdout/` (sealed) | `src/stage1_freeze/fresh_holdout.py` |
+| `data_set/fresh_holdout_2/` (sealed) | `src/stage1_freeze/fresh_holdout_2.py` |
+| `figures/unified_class_source_counts.png`, `figures/standardization_before_after.png`, `figures/outlier_examples.png` | `src/stage1_freeze/audit_dataset.py` |
 
 ## Removed duplicates (2026-10-19)
 
