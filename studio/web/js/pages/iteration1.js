@@ -2,7 +2,7 @@ import { badge, card, el, fmt, note, pageHead, signed, stat, stats, table } from
 import { scoreRows } from '../svg/charts.js';
 import { ARM_SERIES, boot } from './boot.js';
 
-const SERIES = ARM_SERIES.filter((s) => s.key !== 'A2');
+const SERIES = ARM_SERIES.filter((s) => ['A0', 'A1', 'B'].includes(s.key));
 
 boot('iteration1', (main, d) => {
   const m = d.metrics;

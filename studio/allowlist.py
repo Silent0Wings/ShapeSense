@@ -34,6 +34,10 @@ DOCS: dict[str, str] = {
     "winners": f"{_A}/stage4/tuning_iter2/winners.json",
     "fresh_metrics": f"{_A}/stage5/tables/fresh_metrics.csv",
     "fresh_per_class": f"{_A}/stage5/tables/fresh_per_class.csv",
+    "iter2_status": "docs/crisp_dm/iteration_2/data/stage5_status.json",
+    "iter2_per_class": "docs/crisp_dm/iteration_2/data/per_class.csv",
+    "iter2_comparisons": "docs/crisp_dm/iteration_2/data/comparisons.csv",
+    "iter2_fresh_per_class": "docs/crisp_dm/iteration_2/data/fresh_per_class.csv",
     "iter1_status": "docs/crisp_dm/iteration_1/data/stage5_status.json",
     "iter1_metrics": "docs/crisp_dm/iteration_1/data/metrics.csv",
     "iter1_per_class": "docs/crisp_dm/iteration_1/data/per_class.csv",
@@ -63,6 +67,7 @@ IMAGES: dict[str, str] = {
     "qa3": f"{_A}/stage3/qa/qa_sheet.png",
     "smoke_hexagon": f"{_A}/stage6/smoke_hexagon.png",
     **{f"confusion_{arm}": f"{_A}/stage5/figures/confusion_{arm}.png" for arm in ("A0", "A1", "B", "A2")},
+    **{f"iter2_confusion_{arm}": f"docs/crisp_dm/iteration_2/figures/confusion_{arm}.png" for arm in ("A0", "A1", "B", "A2")},
     **{f"iter1_confusion_{arm}": f"docs/crisp_dm/iteration_1/figures/confusion_{arm}.png" for arm in ("A0", "A1", "B")},
 }
 
