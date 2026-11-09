@@ -20,6 +20,7 @@ import argparse
 import importlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -37,6 +38,9 @@ STAGES = {
     5: "src.stage5_eval.run",
     6: "src.stage6_report.run",
 }
+
+
+FROZEN_WINNERS = "docs/crisp_dm/iteration_2/search/winners.json"
 
 
 def stage_number(name: str) -> int:
@@ -57,6 +61,16 @@ def dependency_closure(requested: list[int], depends: dict[int, list[int]]) -> l
     for n in requested:
         visit(n)
     return sorted(seen)
+
+
+def restore_frozen_winners(artifacts: Path, source: Path) -> bool:
+    """Copy the committed search result to where Stages 4 and 6 read it, if absent."""
+    target = artifacts / "stage4" / "tuning_iter2" / "winners.json"
+    if target.is_file():
+        return False
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, target)
+    return True
 
 
 def _scripts_dir() -> Path:
@@ -142,6 +156,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.check:
         return 0
 
+    restore_frozen_winners(resolve(config["paths"]["artifacts_dir"]), resolve(FROZEN_WINNERS))
     depends = {n: [stage_number(d) for d in getattr(importlib.import_module(m), "DEPENDS", [])]
                for n, m in STAGES.items()}
     numbers = dependency_closure(args.stages or list(STAGES), depends)

@@ -7,14 +7,21 @@
 ShapeSense trains a small CNN to classify ten 2D shapes (circle, ellipse,
 triangle, square, rectangle, pentagon, hexagon, octagon, star, diamond) and
 tests one question: **does adding procedurally generated (synthetic) shapes
-to training help?** Three arms are trained with identical settings and only
-the data stream differs:
+to training help?** Four arms are trained on the same network and step budget,
+each with its own settings tuned on validation only:
 
 | Arm | Training data |
 |---|---|
 | A0 | real images only |
 | A1 | real images + class-safe augmentation |
-| B  | 70 % real + 30 % synthetic per batch, all augmented |
+| B  | real and synthetic images per batch, all augmented |
+| A2 | clean real, augmented real and synthetic images per batch |
+
+Iteration 1 tested B against A1 and failed. Iteration 2 fixed what that result
+exposed and tested A2 against A0 on the test split and on a fresh holdout. It
+failed too. The findings per CRISP-DM step are in
+[`docs/crisp_dm/iteration_log.json`](docs/crisp_dm/iteration_log.json), and the
+iteration 1 report inputs are frozen in `docs/crisp_dm/iteration_1/`.
 
 The full plan is [`implementation.md`](implementation.md); each stage owner
 has a brief in [`stages/`](stages/). This README takes a new teammate from a
@@ -83,6 +90,8 @@ pre-commit install
 | `python run_pipeline.py --force` | ignore the cache and rerun everything |
 | `python run_pipeline.py --dashboard` | read-only progress dashboard (Streamlit) |
 | `python run_pipeline.py --demo` | draw a shape and see the model's prediction |
+| `python -m studio.tools.export_arms` | export all four arms for the studio, after Stage 4 |
+| `python -m uvicorn studio.server.app:create_app --factory --port 8765` | the interactive studio, both iterations |
 | `python -m pytest tests -q` | the full test suite (no data needed) |
 | `.\build.ps1 -File phase2_report.tex` | compile the Phase 2 report by hand |
 
