@@ -40,7 +40,7 @@ STAGES = {
 }
 
 
-FROZEN_WINNERS = "docs/crisp_dm/iteration_2/search/winners.json"
+FROZEN_WINNERS = "docs/crisp_dm/iteration_3/search/winners.json"
 
 
 def stage_number(name: str) -> int:
@@ -65,7 +65,7 @@ def dependency_closure(requested: list[int], depends: dict[int, list[int]]) -> l
 
 def restore_frozen_winners(artifacts: Path, source: Path) -> bool:
     """Copy the committed search result to where Stages 4 and 6 read it, if absent."""
-    target = artifacts / "stage4" / "tuning_iter2" / "winners.json"
+    target = artifacts / "stage4" / "tuning_iter3" / "winners.json"
     if target.is_file():
         return False
     target.parent.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,33 @@
+"""The iteration 3 search: arm P, generator search per arm and grouped CV."""
+
+import random
+
+import pytest
+
+from src.common.config import load_config
+from src.stage4_train import search
+
+
+def test_generator_search_targets_the_arm_it_is_given():
+    drawn = search.sample_synth(random.Random(0), "A2")
+    assert "arms.A2.synthetic_fraction" in drawn and "arms.B.synthetic_fraction" not in drawn
+
+
+def test_pretrain_search_keeps_fine_tuning_on_real_images():
+    drawn = search.sample_pretrain(random.Random(0))
+    assert 0.1 <= drawn["arms.P.pretrain_fraction"] <= 0.6
+    assert not any(k.endswith("synthetic_fraction") for k in drawn)
+
+
+def test_cv_covers_every_fold_of_every_setting_at_the_short_budget():
+    settings = [{"settings": {"overrides": {"a": i}, "hparams": {"lr": 0.1, "dropout": 0.2}}} for i in range(2)]
+    specs = search.cv_specs(load_config(), "c", "A1", settings)
+    assert len(specs) == 2 * search.N_FOLDS
+    assert [s["fold"][1] for s in specs] == [0, 1, 2, 0, 1, 2]
+    assert all(s["overrides"]["train.max_epochs"] == search.CV_EPOCHS for s in specs)
+
+
+def test_search_refuses_to_start_before_the_budget_rule_has_run(tmp_path, monkeypatch):
+    monkeypatch.setattr(search, "BUDGET_RESULT", tmp_path / "missing.json")
+    with pytest.raises(FileNotFoundError, match="budget rule"):
+        search.adopted_budget()
