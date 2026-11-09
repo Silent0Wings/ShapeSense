@@ -76,7 +76,9 @@ All four must hold before any file in `deployment/` is written.
 
 **Must — live models**
 - R10. Models run in the browser through ONNX Runtime Web. The site offers
-  every arm in the export bundle.
+  every arm in the export bundle, plus the equal-weight "All models vote"
+  answer if that goal was finished first. The vote is labelled as having no
+  measured score.
 - R11. Drawings never leave the visitor's browser, and the page says so.
 - R12. Blank or rejected drawings, low confidence and a model that fails to
   load behave as in `stages/stage_6.md` R16.
