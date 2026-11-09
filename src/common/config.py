@@ -12,6 +12,7 @@ Configs are frozen after Stage 1; changing them needs team agreement.
 
 from __future__ import annotations
 
+import copy
 import math
 from pathlib import Path
 from typing import Any
@@ -19,7 +20,7 @@ from typing import Any
 import yaml
 
 RATIO_TOLERANCE = 1e-9  # split ratios must sum to 1 within this
-LOSO_ARMS = ("A1", "B")  # Decision 12: "retrain A1 and B without Hand-Drawn"
+LOSO_ARMS = ("A0", "A1", "B", "A2")  # iteration 2 holds the source out for every arm
 
 
 class ConfigError(ValueError):
@@ -83,6 +84,20 @@ def validate_taxonomy(tax: dict) -> None:
         raise ConfigError(f"no_shear_no_nonuniform_scale: unknown classes {unknown}")
 
 
+def _check_arm_extras(arm: str, spec: dict, default_share: float) -> None:
+    """Batch shares and per-arm settings (CRISP-DM iteration 2)."""
+    clean = float(spec.get("clean_fraction", 0.0))
+    share = float(spec.get("synthetic_fraction", default_share))
+    if not (0.0 <= clean < 1.0 and 0.0 <= share < 1.0) or clean + share >= 1.0:
+        raise ConfigError(f"arms.{arm}: clean_fraction and synthetic_fraction must be in [0, 1) "
+                          "and sum to less than 1")
+    if clean and not spec["augment"]:
+        raise ConfigError(f"arms.{arm}.clean_fraction: only an augmenting arm can keep clean images")
+    hparams = spec.get("hparams")
+    if hparams is not None and not (float(hparams["lr"]) > 0 and 0 <= float(hparams["dropout"]) < 1):
+        raise ConfigError(f"arms.{arm}.hparams: expected a positive lr and a dropout in [0, 1)")
+
+
 def validate_pipeline(cfg: dict) -> None:
     """Check every key the stages read. Raises ConfigError on the first problem."""
     seeds = _get(cfg, "seed_set")
@@ -127,6 +142,7 @@ def validate_pipeline(cfg: dict) -> None:
         for flag in ("augment", "synthetic"):
             if not isinstance(_get(cfg, f"arms.{arm}.{flag}"), bool):
                 raise ConfigError(f"arms.{arm}.{flag}: expected true or false")
+        _check_arm_extras(arm, spec, float(cfg["synthetic_fraction"]))
     runs = _get(cfg, "runs")
     if not isinstance(runs, list) or not runs:
         raise ConfigError("runs: expected a non-empty list of {arm, seed}")
@@ -205,6 +221,12 @@ def validate_pipeline(cfg: dict) -> None:
         unknown = sorted({c for p in pairs for c in p} - known)
         if unknown:
             raise ConfigError(f"evaluation.confusion_pairs: unknown classes {unknown}")
+    primary = cfg["evaluation"].get("primary")
+    if primary is not None and not {primary.get("reference"), primary.get("candidate")} <= set(arms):
+        raise ConfigError("evaluation.primary: reference and candidate must name arms")
+    for pair in cfg["evaluation"].get("secondary", []):
+        if len(pair) != 2 or not set(pair) <= set(arms):
+            raise ConfigError(f"evaluation.secondary: {pair!r} must be two arms")
     _require_number(cfg, "evaluation.alpha", lo=0, hi=1)
     _require_number(cfg, "evaluation.n_boot", lo=100)
     _require_number(cfg, "evaluation.shortcut_trigger_points", lo=0)
@@ -241,6 +263,24 @@ def resolve(path: str | Path) -> Path:
     """Resolve a config path (relative to the repo root) to an absolute Path."""
     p = Path(path)
     return p if p.is_absolute() else REPO_ROOT / p
+
+
+def set_dotted(cfg: dict, dotted: str, value: Any) -> None:
+    """Set ``cfg["a"]["b"] = value`` from the key ``"a.b"``."""
+    node = cfg
+    *parents, last = dotted.split(".")
+    for key in parents:
+        node = node[key]
+    node[last] = value
+
+
+def arm_config(config: dict, arm: str) -> dict:
+    """A private copy of the config with this arm's tuned overrides applied."""
+    out = copy.deepcopy(config)
+    for dotted, value in config["arms"][arm].get("overrides", {}).items():
+        set_dotted(out, dotted, value)
+    validate_pipeline(out)
+    return out
 
 
 def load_config(path: str | Path = DEFAULT_CONFIG) -> dict:

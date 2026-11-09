@@ -26,11 +26,11 @@ from pathlib import Path
 
 import numpy as np
 
-from src.common.config import class_names, load_config, resolve
+from src.common.config import LOSO_ARMS, class_names, load_config, resolve
 from src.common.hashing import config_subtree_hash, sha256_path
 from src.common.splits import count_test_reads
 from src.common.status import StageNotReady, current_run_id
-from src.stage5_eval import criterion, evaluate, figures, tables
+from src.stage5_eval import criterion, evaluate, figures, fresh, tables
 from src.stage5_eval.metrics import (accuracy, confusion, group_accuracy, macro_f1,
                                      per_class_f1)
 from src.stage5_eval.placeholders import write_placeholders
@@ -57,7 +57,7 @@ VAL_PROBS_FILE = "val_probs.npz"
 NOISE_BANDS_FILE = "noise_bands.csv"
 SOURCE_CLASSIFIER_FILE = "source_classifier.json"
 POWER_FILE = "power_check.json"
-ERRORS_CACHE = "ensemble_B_errors.npz"  # misclassified B-ensemble images for the galleries
+ERRORS_CACHE = "ensemble_B_errors.npz"  # default name of the misclassified-images cache
 UNKNOWN_DOMAIN = "unknown"
 MISSING_HASH = "missing"  # what src.common.hashing.sha256_path returns for an absent path
 GALLERIES_SKIPPED = "skipped (cache)"  # metrics.galleries when no images are available
@@ -68,6 +68,21 @@ KIND_ABLATION = "ablation"  # metrics row kind for named / held-out runs
 # --------------------------------------------------------------------------- #
 # Paths and upstream artifacts
 # --------------------------------------------------------------------------- #
+
+
+def primary_roles(config: dict) -> tuple[str, str]:
+    """(reference, candidate) arms of the primary comparison."""
+    primary = config["evaluation"].get("primary") or {"reference": ARM_AUG, "candidate": ARM_SYNTH}
+    return primary["reference"], primary["candidate"]
+
+
+def secondary_pairs(config: dict) -> tuple[tuple[str, str], ...]:
+    """(reference, candidate) pairs compared with a Holm correction."""
+    return tuple(tuple(p) for p in config["evaluation"].get("secondary", SECONDARY_PAIRS))
+
+
+def errors_cache(candidate: str) -> str:
+    return f"ensemble_{candidate}_errors.npz"
 
 
 def run_name(run: dict) -> str:
@@ -111,6 +126,8 @@ def _dirs(config: dict) -> dict[str, Path]:
         "figures": art / STAGE / "figures",
         "log": resolve(config["paths"]["test_access_log"]),
         "test_manifest": resolve(config["paths"]["splits_dir"]) / "test.csv",
+        "fresh_manifest": resolve(config["paths"]["splits_dir"]) / "fresh_holdout.csv",
+        "predictions_fresh": art / STAGE / "predictions_fresh",
     }
 
 
@@ -131,6 +148,7 @@ def inputs(config: dict) -> dict[str, str]:
         "noise_bands": sha256_path(d["stage1"] / NOISE_BANDS_FILE),
         "source_classifier": sha256_path(d["stage1"] / SOURCE_CLASSIFIER_FILE),
         "test_manifest": sha256_path(d["test_manifest"]),
+        "fresh_manifest": sha256_path(d["fresh_manifest"]),
         "baselines": sha256_path(d["stage4"] / "baselines"),
     }
     for run in config["runs"]:
@@ -174,9 +192,15 @@ def read_shortcut_detected(path: Path) -> bool:
     return bool(json.loads(path.read_text(encoding="utf-8")).get("shortcut_detected", False))
 
 
+def loso_runs(config: dict) -> list[tuple[str, int, str]]:
+    """(arm, seed, run name) of every leave-one-source-out model."""
+    seeds = config["seed_set"][:int(config["evaluation"].get("loso_seeds", 1))]
+    arms = [a for a in LOSO_ARMS if a in config["arms"]]
+    return [(arm, int(seed), f"{arm}_{LOSO_TAG}_{seed}") for seed in seeds for arm in arms]
+
+
 def loso_run_names(config: dict) -> list[str]:
-    seed0 = config["seed_set"][0]
-    return [f"{arm}_{LOSO_TAG}_{seed0}" for arm in (ARM_AUG, ARM_SYNTH)]
+    return [name for _, _, name in loso_runs(config)]
 
 
 def missing_upstream(config: dict, shortcut_detected: bool) -> list[Path]:
@@ -220,13 +244,13 @@ def build_specs(config: dict, shortcut_detected: bool) -> list[evaluate.ModelSpe
             hog_pixels_per_cell=info.get("hog_pixels_per_cell"),
             extra={"baseline": kind}))
     if shortcut_detected:
-        for arm, name in zip((ARM_AUG, ARM_SYNTH), loso_run_names(config)):
+        for arm, seed, name in loso_runs(config):
             path = d["stage4"] / name / MODEL_FILE
             specs.append(evaluate.ModelSpec(
                 name=name, kind=evaluate.KIND_CNN, path=path,
                 fingerprint=evaluate.model_fingerprint(path), source_filter=LOSO_SOURCE,
                 excluded_labels=loso_excluded_classes(d["stage4"], name),
-                extra={"arm": arm, "loso": True}))
+                extra={"arm": arm, "seed": seed, "loso": True}))
     return specs
 
 
@@ -289,7 +313,8 @@ def is_full_split_spec(spec: evaluate.ModelSpec) -> bool:
     return spec.source_filter is None
 
 
-def gallery_refresh_name(specs: Sequence[evaluate.ModelSpec], err_path: Path) -> str | None:
+def gallery_refresh_name(specs: Sequence[evaluate.ModelSpec], err_path: Path,
+                         candidate: str = ARM_SYNTH) -> str | None:
     """Which model's prediction cache to invalidate so the galleries get images.
 
     The error galleries need test images. When every model is served from
@@ -300,7 +325,7 @@ def gallery_refresh_name(specs: Sequence[evaluate.ModelSpec], err_path: Path) ->
     if Path(err_path).is_file():
         return None
     for spec in specs:
-        if _arm_of(spec) == ARM_SYNTH:
+        if _arm_of(spec) == candidate:
             return spec.name
     return None
 
@@ -394,7 +419,7 @@ def run(config: dict) -> dict:
     report still compiles.
     """
     d = _dirs(config)
-    for key in ("stage5", "predictions", "tables", "figures"):
+    for key in ("stage5", "predictions", "predictions_fresh", "tables", "figures"):
         d[key].mkdir(parents=True, exist_ok=True)
 
     sc_path = d["stage1"] / SOURCE_CLASSIFIER_FILE
@@ -408,6 +433,9 @@ def run(config: dict) -> dict:
 
     names = class_names(config)
     k = len(names)
+    reference, candidate = primary_roles(config)
+    primary_label = f"{candidate} vs {reference}"
+    pairs_secondary = secondary_pairs(config)
     ev_cfg = config["evaluation"]
     crit = config["success_criterion"]
     n_boot = int(ev_cfg["n_boot"])
@@ -421,16 +449,16 @@ def run(config: dict) -> dict:
     specs = build_specs(config, shortcut_detected)
     pairs = [tuple(p) for p in ev_cfg["confusion_pairs"]]
     manifest_hash = sha256_path(d["test_manifest"])  # file bytes, not a split read
-    err_path = d["predictions"] / ERRORS_CACHE
+    err_path = d["predictions"] / errors_cache(candidate)
     outputs: list[Path] = []
 
     # ---- (a) power check on validation probabilities, before any test read
     def power_fn() -> dict:
-        names_by_arm = arm_run_names(config, (ARM_AUG, ARM_SYNTH))
+        names_by_arm = arm_run_names(config, (reference, candidate))
         y_val, probs_a1, ids_a1 = align_validation_probs(
-            load_val_records(d["stage4"], names_by_arm[ARM_AUG]))
+            load_val_records(d["stage4"], names_by_arm[reference]))
         y_val_b, probs_b, ids_b = align_validation_probs(
-            load_val_records(d["stage4"], names_by_arm[ARM_SYNTH]))
+            load_val_records(d["stage4"], names_by_arm[candidate]))
         check_arm_alignment(y_val, ids_a1, y_val_b, ids_b)
         power = power_check(y_val, probs_a1, probs_b, n_test_published, k, n_boot, rng,
                             ci_level, float(ev_cfg["power_halfwidth_limit_points"]))
@@ -445,11 +473,18 @@ def run(config: dict) -> dict:
 
     # ---- (b) one test read per model (every read is tied to an evaluated model)
     def evaluate_fn(_power: dict) -> dict:
-        refresh = gallery_refresh_name(specs, err_path)
+        refresh = gallery_refresh_name(specs, err_path, candidate)
         if refresh is not None:
             evaluate.cache_path(d["predictions"], refresh).unlink(missing_ok=True)
-        return evaluate.evaluate_models(config, specs, evaluate.default_test_reader(config),
-                                        d["predictions"], manifest_hash=manifest_hash)
+        ev = evaluate.evaluate_models(config, specs, evaluate.default_test_reader(config),
+                                      d["predictions"], manifest_hash=manifest_hash)
+        ev["fresh"] = None
+        if d["fresh_manifest"].is_file():
+            ev["fresh"] = evaluate.evaluate_models(
+                config, [s for s in specs if _arm_of(s) is not None],
+                evaluate.fresh_holdout_reader(config), d["predictions_fresh"],
+                manifest_hash=sha256_path(d["fresh_manifest"]))
+        return ev
 
     # ---- (c)-(e) analysis on cached predictions
     def analyse_fn(power: dict, ev: dict) -> dict:
@@ -511,11 +546,11 @@ def run(config: dict) -> dict:
             rec["per_class_f1"] = per_class_f1(rec["labels"], rec["preds"], k)
             rec["confusion"] = confusion(rec["labels"], rec["preds"], k)
             ens[arm] = rec
-        for needed in (ARM_AUG, ARM_SYNTH):
+        for needed in (reference, candidate):
             if needed not in ens:
                 raise ValueError(f"arm {needed} has no runs; the primary comparison needs it")
-        y = ens[ARM_SYNTH]["labels"]
-        source_ids = ens[ARM_SYNTH]["source_ids"]
+        y = ens[candidate]["labels"]
+        source_ids = ens[candidate]["source_ids"]
 
         baselines = []
         for spec in specs:
@@ -526,11 +561,11 @@ def run(config: dict) -> dict:
                                   "macro_f1": macro_f1(rec["labels"], rec["preds"], k)})
 
         # primary (B vs A1), secondaries with Holm, per-seed robustness
-        primary = _compare(y, ens[ARM_AUG]["preds"], ens[ARM_SYNTH]["preds"], k, n_boot, rng,
+        primary = _compare(y, ens[reference]["preds"], ens[candidate]["preds"], k, n_boot, rng,
                            ci_level)
-        primary["label"] = PRIMARY_LABEL
+        primary["label"] = primary_label
         secondary: dict[str, dict] = {}
-        for ref, cand in SECONDARY_PAIRS:
+        for ref, cand in pairs_secondary:
             if ref in ens and cand in ens:
                 secondary[f"{cand} vs {ref}"] = _compare(y, ens[ref]["preds"], ens[cand]["preds"],
                                                          k, n_boot, rng, ci_level)
@@ -538,7 +573,7 @@ def run(config: dict) -> dict:
         for lbl, p_adj in adjusted.items():
             secondary[lbl]["p_holm"] = p_adj
         per_seed: dict[str, dict] = {}
-        for ref, cand in ((ARM_AUG, ARM_SYNTH), *SECONDARY_PAIRS):
+        for ref, cand in ((reference, candidate), *pairs_secondary):
             if ref in scores_by_arm and cand in scores_by_arm:
                 per_seed[f"{cand} vs {ref}"] = per_seed_differences(scores_by_arm[ref],
                                                                     scores_by_arm[cand])
@@ -546,7 +581,7 @@ def run(config: dict) -> dict:
         verdict = criterion.verdict(primary["boot"], thresholds, min_gain,
                                     report_drop_points=float(crit["max_class_f1_drop_points"]))
         gap_closed = None
-        if ARM_CONTROL in ens:
+        if ARM_CONTROL in ens and ARM_AUG in ens and ARM_SYNTH in ens:
             gap_closed = tables.gap_closure(ens[ARM_CONTROL]["macro_f1"], ens[ARM_AUG]["macro_f1"],
                                             ens[ARM_SYNTH]["macro_f1"])
 
@@ -564,6 +599,7 @@ def run(config: dict) -> dict:
                 loso.append({"name": spec.name, "arm": spec.extra["arm"], "source": LOSO_SOURCE,
                              "n": int(rec["labels"].size),
                              "accuracy": accuracy(rec["labels"], rec["preds"], k),
+                             "seed": spec.extra.get("seed"),
                              "macro_f1": scored_macro_f1(rec["labels"], rec["preds"], k),
                              "label": tables.LOSO_LABEL})
         single = single_source_classes(y, source_ids, names)
@@ -585,7 +621,7 @@ def run(config: dict) -> dict:
             per_source, per_domain, src_counts, dom_counts, loso)))
         outputs.extend(tables.write_table(t, "power", *tables.power_rows(power)))
         paragraph = tables.verdict_paragraph(verdict, names, power, min_gain, ci_level, gap_closed,
-                                             shortcut_detected)
+                                             shortcut_detected, primary_label=primary_label)
         outputs.extend(tables.write_paragraph(t, "verdict", paragraph,
                                               tables.verdict_kv_rows(verdict, power, gap_closed)))
 
@@ -597,8 +633,8 @@ def run(config: dict) -> dict:
         # No read happens here: images come from the fresh read of an evaluated
         # model (evaluate_fn invalidates one B cache when the error cache is
         # missing) or from the error cache; otherwise the galleries are skipped.
-        errors = gallery_errors(ev["images"], err_path, y, ens[ARM_SYNTH]["preds"],
-                                ens[ARM_SYNTH]["image_ids"])
+        errors = gallery_errors(ev["images"], err_path, y, ens[candidate]["preds"],
+                                ens[candidate]["image_ids"])
         galleries = GALLERIES_SKIPPED
         if errors is not None:
             err_images, err_y, err_pred = errors
@@ -607,11 +643,20 @@ def run(config: dict) -> dict:
             idx = {n: i for i, n in enumerate(names)}
             for a, b in pairs:
                 outputs.append(figures.error_gallery(err_images, err_y, err_pred, idx[a], idx[b],
-                                                     names, d["figures"] / f"errors_{a}_{b}.png"))
+                                                     names, d["figures"] / f"errors_{a}_{b}.png",
+                                                     arm=candidate))
 
         # ---- (e) test-read accounting
         test_reads = count_test_reads(run_id, log_path=d["log"])
-        expected = int(ev["n_reads"])
+        fresh_result = None
+        fresh_reads = 0
+        if ev["fresh"] is not None:
+            fresh_reads = int(ev["fresh"]["n_reads"])
+            fresh_result, fresh_outputs = fresh.analyse(
+                ev["fresh"]["models"], specs, arms, _arm_of, names, reference, candidate, min_gain,
+                float(crit["max_class_f1_drop_points"]), n_boot, rng, ci_level, ev_cfg, t)
+            outputs.extend(fresh_outputs)
+        expected = int(ev["n_reads"]) + fresh_reads
         reads_ok = test_reads_ok(test_reads, expected, extra_reads)
         outputs.extend(tables.write_table(t, "test_reads",
                                           *tables.test_reads_rows(run_id, test_reads, expected)))
@@ -625,7 +670,8 @@ def run(config: dict) -> dict:
                 "reasons": verdict["reasons"],
                 "harmful_classes": verdict["harmful_classes"],
                 "reported_drops": verdict["reported_drops"],
-                "primary": {"label": PRIMARY_LABEL, "mcnemar": primary["mcnemar"]},
+                "primary": {"label": primary_label, "mcnemar": primary["mcnemar"]},
+                "fresh_holdout": fresh_result,
                 "ensembles": {a: {"accuracy": ens[a]["accuracy"], "macro_f1": ens[a]["macro_f1"]}
                               for a in arms},
                 "baselines": baselines,

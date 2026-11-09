@@ -34,6 +34,7 @@ FRAME_MARGIN_PX = 1        # pixels kept white between the ink and the frame edg
 FIT_SHRINK_FACTOR = 0.97   # multiplicative scale step when the ink does not fit, unitless
 MAX_FIT_STEPS = 100        # bound on shrink iterations (0.97**100 is about 0.05)
 NOISE_KERNEL = (3, 3)      # 1-px dilation neighbourhood around the outline, pixels
+THIN_LINE_LEVEL = 0.2      # share of the warped peak kept for 1-px strokes, so they stay joined
 
 
 @dataclass(frozen=True)
@@ -62,7 +63,7 @@ def _outer_ring(size: int, width: int) -> np.ndarray:
 
 
 def _render(ink: np.ndarray, matrix: np.ndarray, center: np.ndarray,
-            shift: np.ndarray, size: int, sigma: float | None) -> np.ndarray:
+            shift: np.ndarray, size: int, sigma: float | None, thin: bool = False) -> np.ndarray:
     """Warp the float ink map about the centroid, optionally blur, then binarise.
 
     ink: (S, S) float64 in {0, INK_VALUE}. matrix: (2, 2) forward linear map.
@@ -84,6 +85,9 @@ def _render(ink: np.ndarray, matrix: np.ndarray, center: np.ndarray,
         # A blurred 1-px sketch line peaks below 0.5; cut relative to the
         # blurred peak so blur softens the outline but never erases it.
         level = min(level, BINARY_LEVEL * float(warped.max()))
+    if thin:
+        # A warped 1-px line spreads over two pixels and dips between them.
+        level = min(level, THIN_LINE_LEVEL * float(warped.max()))
     return warped >= level
 
 
@@ -109,7 +113,7 @@ def _flip_near_outline(binary: np.ndarray, ring: np.ndarray, fraction: float,
 
 
 def _augment(img: np.ndarray, shear_allowed: bool, r: _Ranges,
-             rng: np.random.Generator) -> np.ndarray:
+             rng: np.random.Generator, rotate_cap: float | None = None) -> np.ndarray:
     """One augmented sample. img: (S, S) uint8. Returns (S, S) uint8 in {0, 255}."""
     if img.shape != (r.size, r.size) or img.dtype != np.uint8:
         raise ValueError(f"expected uint8 ({r.size}, {r.size}), got {img.dtype} {img.shape}")
@@ -120,12 +124,13 @@ def _augment(img: np.ndarray, shear_allowed: bool, r: _Ranges,
     center = pts.mean(axis=0)
 
     # Fixed draw order, so a seed alone determines the output.
-    rot = np.deg2rad(rng.uniform(-r.rotate_deg, r.rotate_deg))
+    rotate_deg = r.rotate_deg if rotate_cap is None else min(r.rotate_deg, rotate_cap)
+    rot = np.deg2rad(rng.uniform(-rotate_deg, rotate_deg))
     scale = rng.uniform(*r.scale)
     shear_max = r.shear_deg if shear_allowed else 0.0
     stretch = r.nonuniform_scale if shear_allowed else 0.0
     shear = np.deg2rad(rng.uniform(-shear_max, shear_max))
-    axis_factors = 1.0 + stretch * rng.choice(np.array([-1.0, 1.0]), size=2)
+    axis_factors = 1.0 + rng.uniform(-stretch, stretch, size=2)
     orient = rng.uniform(0.0, np.pi)
     shift = rng.uniform(-r.translate_px, r.translate_px, size=2)
     do_blur = rng.random() < r.blur_p
@@ -146,6 +151,7 @@ def _augment(img: np.ndarray, shear_allowed: bool, r: _Ranges,
     frame_center = np.full(2, (r.size - 1) / 2.0)
     shift = frame_center - center - mid + shift
     ring = _outer_ring(r.size, FRAME_MARGIN_PX)
+    thin = not ndimage.binary_erosion(ink > 0, structure=np.ones((2, 2), dtype=bool)).any()
     binary = None
     # Cheap analytic fit first (ink pixel centres), then render; re-render
     # only if interpolation/blur still reaches the frame margin.
@@ -156,7 +162,7 @@ def _augment(img: np.ndarray, shear_allowed: bool, r: _Ranges,
         steps += 1
     for _ in range(max(1, MAX_FIT_STEPS - steps)):  # always render at least once
         matrix = scale * linear
-        binary = _render(ink, matrix, center, shift, r.size, sigma if do_blur else None)
+        binary = _render(ink, matrix, center, shift, r.size, sigma if do_blur else None, thin)
         if not binary[ring].any():
             break
         scale *= FIT_SHRINK_FACTOR
@@ -194,12 +200,14 @@ def build_transform(config: dict) -> Callable[[np.ndarray, int, np.random.Genera
     label_of = {name: int(idx) for idx, name in tax["classes"].items()}
     known_labels = frozenset(label_of.values())
     no_shear = frozenset(label_of[name] for name in tax["no_shear_no_nonuniform_scale"])
+    # Optional rotation cap per class, for classes that orientation helps separate.
+    rotate_caps = {label_of[name]: float(deg) for name, deg in tax.get("rotate_limit_deg", {}).items()}
 
     def _transform(img: np.ndarray, label: int, rng: np.random.Generator) -> np.ndarray:
         label = int(label)
         if label not in known_labels:
             raise ValueError(f"unknown label {label}; taxonomy has {sorted(known_labels)}")
-        return _augment(np.asarray(img), label not in no_shear, ranges, rng)
+        return _augment(np.asarray(img), label not in no_shear, ranges, rng, rotate_caps.get(label))
 
     return _transform
 

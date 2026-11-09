@@ -87,10 +87,16 @@ def batch_composition(arm_cfg: dict, batch_size: int,
     """
     if batch_size < 1:
         raise ValueError(f"batch_size must be >= 1, got {batch_size}")
-    if not 0.0 <= synthetic_fraction <= 1.0:
-        raise ValueError(f"synthetic_fraction must be in [0, 1], got {synthetic_fraction}")
-    n_syn = int(round(batch_size * synthetic_fraction)) if arm_cfg["synthetic"] else 0
+    share = float(arm_cfg.get("synthetic_fraction", synthetic_fraction))
+    if not 0.0 <= share <= 1.0:
+        raise ValueError(f"synthetic_fraction must be in [0, 1], got {share}")
+    n_syn = int(round(batch_size * share)) if arm_cfg["synthetic"] else 0
     return batch_size - n_syn, n_syn
+
+
+def clean_count(arm_cfg: dict, batch_size: int) -> int:
+    """Real images in a batch that stay unaugmented (arm A2, iteration 2)."""
+    return int(round(batch_size * float(arm_cfg.get("clean_fraction", 0.0))))
 
 
 def class_index(labels: np.ndarray, n_classes: int) -> list[np.ndarray]:
@@ -176,7 +182,11 @@ def make_batch(images_u8: np.ndarray, labels: np.ndarray, class_idx: list[np.nda
     n_real, n_syn = batch_composition(arm_cfg, batch_size, synthetic_fraction)
 
     excluded = tuple(int(c) for c in excluded_classes)
-    real_labels = _labels_for_batch(n_real, n_classes, excluded, rng)
+    n_clean = clean_count(arm_cfg, batch_size)
+    if n_clean > n_real:
+        raise ValueError(f"clean images ({n_clean}) cannot exceed real images ({n_real})")
+    real_labels = np.concatenate([_labels_for_batch(n_clean, n_classes, excluded, rng),
+                                  _labels_for_batch(n_real - n_clean, n_classes, excluded, rng)])
     real_idx = sample_real_indices(class_idx, real_labels, rng)
     real_imgs = np.asarray(images_u8)[real_idx]
 
@@ -192,8 +202,9 @@ def make_batch(images_u8: np.ndarray, labels: np.ndarray, class_idx: list[np.nda
     is_syn = np.concatenate([np.zeros(n_real, bool), np.ones(n_syn, bool)])
 
     if arm_cfg["augment"]:
-        imgs = np.stack([np.asarray(transform(img, int(lbl), rng), dtype=np.uint8)
-                         for img, lbl in zip(imgs, lbls)])
+        # The first n_clean images are the clean real ones.
+        imgs = np.stack([img if i < n_clean else np.asarray(transform(img, int(lbl), rng), dtype=np.uint8)
+                         for i, (img, lbl) in enumerate(zip(imgs, lbls))])
 
     perm = rng.permutation(batch_size)
     return Batch(images=to_float(imgs[perm]), labels=lbls[perm], is_synthetic=is_syn[perm])

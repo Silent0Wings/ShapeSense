@@ -272,7 +272,9 @@ def test_sweep_results_mark_held_out_runs_so_disagreement_skips_them(tmp_path):
     cfg = _config("cpu")
     cfg["train"]["parallel_runs"] = 1
     cfg["runs"] = [{"arm": "A1", "seed": 0}, {"arm": "A1", "seed": 1}]
-    sizes = {"A1_0": 20, "A1_1": 20, "A1_loso_handdrawn_0": 7, "B_loso_handdrawn_0": 7}
+    cfg["evaluation"]["loso_seeds"] = 1
+    held_out = ("A0", "A1", "B", "A2")
+    sizes = {"A1_0": 20, "A1_1": 20, **{f"{a}_loso_handdrawn_0": 7 for a in held_out}}
 
     def fake_job(spec):
         out = tmp_path / spec["run_name"]
@@ -283,10 +285,9 @@ def test_sweep_results_mark_held_out_runs_so_disagreement_skips_them(tmp_path):
 
     results = sweep.run_sweep(cfg, 1, {"lr": 0.001, "dropout": 0.2}, True, out_dir=tmp_path,
                               job_runner=fake_job)
-    held_out = {r["run_name"]: r["holdout_source"] for r in results}
-    assert held_out == {"A1_0": None, "A1_1": None,
-                        "A1_loso_handdrawn_0": "github_handdrawn",
-                        "B_loso_handdrawn_0": "github_handdrawn"}
+    marked = {r["run_name"]: r["holdout_source"] for r in results}
+    assert marked == {"A1_0": None, "A1_1": None,
+                      **{f"{a}_loso_handdrawn_0": "github_handdrawn" for a in held_out}}
     out = sweep.seed_disagreement(tmp_path, results)
     assert out["per_arm"]["A1"]["runs"] == ["A1_0", "A1_1"]
     assert "B" not in out["per_arm"]

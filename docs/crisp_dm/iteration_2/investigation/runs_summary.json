@@ -1,0 +1,317 @@
+{
+ "baselines": {
+  "A0": [
+   93.90861301954807,
+   89.60639301203983,
+   91.56113732001869
+  ],
+  "A1": [
+   90.4377784784522,
+   90.70960881004503,
+   88.94731774532984
+  ],
+  "B": [
+   90.75817961286636,
+   90.37424315511797,
+   90.27045046344226
+  ]
+ },
+ "conditions": {
+  "A0_loso": {
+   "seeds": [
+    0,
+    1,
+    2
+   ],
+   "val_macro_f1": [
+    91.20475641047834,
+    96.76651415117738,
+    80.99324654985757
+   ],
+   "mean": 89.6548390371711,
+   "per_class_f1_mean": {
+    "circle": 92.5,
+    "ellipse": 0.0,
+    "triangle": 96.3,
+    "square": 94.5,
+    "rectangle": 97.4,
+    "pentagon": 88.8,
+    "hexagon": 63.2,
+    "octagon": 83.9,
+    "star": 96.1,
+    "diamond": 94.3
+   },
+   "per_source_acc_mean": {
+    "kaggle_reevald": 93.4,
+    "mendeley_elkorchi": 94.9,
+    "quickdraw": 78.7
+   },
+   "heldout_handdrawn": [
+    {
+     "n": 298,
+     "acc": 46.98,
+     "triangle_recall": 62.8,
+     "rectangle_recall": 31.3,
+     "rect_pred_hist": {
+      "circle": 1,
+      "triangle": 53,
+      "square": 4,
+      "rectangle": 47,
+      "hexagon": 1,
+      "octagon": 2,
+      "star": 25,
+      "diamond": 17
+     },
+     "tri_pred_hist": {
+      "triangle": 93,
+      "octagon": 2,
+      "star": 34,
+      "diamond": 19
+     }
+    },
+    {
+     "n": 298,
+     "acc": 64.09,
+     "triangle_recall": 91.9,
+     "rectangle_recall": 36.7,
+     "rect_pred_hist": {
+      "circle": 1,
+      "triangle": 52,
+      "square": 22,
+      "rectangle": 55,
+      "hexagon": 5,
+      "octagon": 1,
+      "diamond": 14
+     },
+     "tri_pred_hist": {
+      "triangle": 136,
+      "square": 1,
+      "rectangle": 1,
+      "hexagon": 2,
+      "star": 6,
+      "diamond": 2
+     }
+    },
+    {
+     "n": 298,
+     "acc": 49.33,
+     "triangle_recall": 73.6,
+     "rectangle_recall": 25.3,
+     "rect_pred_hist": {
+      "triangle": 35,
+      "square": 57,
+      "rectangle": 38,
+      "hexagon": 3,
+      "star": 4,
+      "diamond": 13
+     },
+     "tri_pred_hist": {
+      "triangle": 109,
+      "square": 16,
+      "pentagon": 1,
+      "hexagon": 2,
+      "star": 3,
+      "diamond": 17
+     }
+    }
+   ]
+  },
+  "A1_geom_only": {
+   "seeds": [
+    0,
+    1
+   ],
+   "val_macro_f1": [
+    79.29922332841002,
+    84.01074077313638
+   ],
+   "mean": 81.6549820507732,
+   "per_class_f1_mean": {
+    "circle": 88.4,
+    "ellipse": 66.2,
+    "triangle": 85.2,
+    "square": 84.5,
+    "rectangle": 66.0,
+    "pentagon": 96.6,
+    "hexagon": 83.7,
+    "octagon": 80.8,
+    "star": 98.3,
+    "diamond": 66.8
+   },
+   "per_source_acc_mean": {
+    "github_handdrawn": 65.1,
+    "kaggle_reevald": 77.1,
+    "mendeley_elkorchi": 95.0,
+    "quickdraw": 77.2
+   }
+  },
+  "A1_long60": {
+   "seeds": [
+    0,
+    1
+   ],
+   "val_macro_f1": [
+    92.1092681065766,
+    92.37728966506162
+   ],
+   "mean": 92.24327888581911,
+   "per_class_f1_mean": {
+    "circle": 95.2,
+    "ellipse": 86.5,
+    "triangle": 96.2,
+    "square": 91.0,
+    "rectangle": 85.0,
+    "pentagon": 99.8,
+    "hexagon": 89.9,
+    "octagon": 90.5,
+    "star": 99.2,
+    "diamond": 89.3
+   },
+   "per_source_acc_mean": {
+    "github_handdrawn": 86.8,
+    "kaggle_reevald": 90.5,
+    "mendeley_elkorchi": 99.9,
+    "quickdraw": 84.2
+   }
+  },
+  "A1_rot0": {
+   "seeds": [
+    0,
+    1,
+    2
+   ],
+   "val_macro_f1": [
+    92.76057324175204,
+    93.19048582279189,
+    93.48757384004058
+   ],
+   "mean": 93.14621096819484,
+   "per_class_f1_mean": {
+    "circle": 95.8,
+    "ellipse": 87.1,
+    "triangle": 95.9,
+    "square": 93.5,
+    "rectangle": 85.5,
+    "pentagon": 100.0,
+    "hexagon": 89.5,
+    "octagon": 89.0,
+    "star": 99.0,
+    "diamond": 96.2
+   },
+   "per_source_acc_mean": {
+    "github_handdrawn": 86.6,
+    "kaggle_reevald": 93.8,
+    "mendeley_elkorchi": 99.8,
+    "quickdraw": 83.3
+   }
+  },
+  "A1_rot0_loso": {
+   "seeds": [
+    0
+   ],
+   "val_macro_f1": [
+    95.97220723037371
+   ],
+   "mean": 95.97220723037371,
+   "per_class_f1_mean": {
+    "circle": 99.3,
+    "ellipse": 0.0,
+    "triangle": 99.2,
+    "square": 96.5,
+    "rectangle": 93.0,
+    "pentagon": 100.0,
+    "hexagon": 89.8,
+    "octagon": 90.1,
+    "star": 99.3,
+    "diamond": 96.6
+   },
+   "per_source_acc_mean": {
+    "kaggle_reevald": 96.3,
+    "mendeley_elkorchi": 100.0,
+    "quickdraw": 88.0
+   },
+   "heldout_handdrawn": [
+    {
+     "n": 298,
+     "acc": 73.15,
+     "triangle_recall": 93.9,
+     "rectangle_recall": 52.7,
+     "rect_pred_hist": {
+      "triangle": 38,
+      "square": 23,
+      "rectangle": 79,
+      "star": 1,
+      "diamond": 9
+     },
+     "tri_pred_hist": {
+      "triangle": 139,
+      "square": 3,
+      "rectangle": 1,
+      "star": 2,
+      "diamond": 3
+     }
+    }
+   ]
+  },
+  "A1_rot15": {
+   "seeds": [
+    0,
+    1,
+    2
+   ],
+   "val_macro_f1": [
+    93.09259557274088,
+    93.12132438952503,
+    93.29023538423726
+   ],
+   "mean": 93.16805178216771,
+   "per_class_f1_mean": {
+    "circle": 95.6,
+    "ellipse": 86.8,
+    "triangle": 96.9,
+    "square": 92.7,
+    "rectangle": 86.2,
+    "pentagon": 100.0,
+    "hexagon": 89.4,
+    "octagon": 89.3,
+    "star": 99.4,
+    "diamond": 95.5
+   },
+   "per_source_acc_mean": {
+    "github_handdrawn": 88.7,
+    "kaggle_reevald": 93.1,
+    "mendeley_elkorchi": 99.5,
+    "quickdraw": 83.8
+   }
+  },
+  "A1_scale_match": {
+   "seeds": [
+    0,
+    1
+   ],
+   "val_macro_f1": [
+    91.98667401075711,
+    92.14540568534423
+   ],
+   "mean": 92.06603984805068,
+   "per_class_f1_mean": {
+    "circle": 94.3,
+    "ellipse": 81.7,
+    "triangle": 94.5,
+    "square": 94.7,
+    "rectangle": 86.2,
+    "pentagon": 99.8,
+    "hexagon": 89.5,
+    "octagon": 90.0,
+    "star": 99.2,
+    "diamond": 90.8
+   },
+   "per_source_acc_mean": {
+    "github_handdrawn": 83.3,
+    "kaggle_reevald": 93.2,
+    "mendeley_elkorchi": 100.0,
+    "quickdraw": 82.3
+   }
+  }
+ }
+}

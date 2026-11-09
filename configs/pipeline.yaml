@@ -2,7 +2,7 @@
 # require team agreement (a PR the other owners review).
 # Every experimental number lives here; no stage hard-codes one.
 
-seed_set: [0, 1, 2]        # 3-5 seeds; the SAME set is used for every arm
+seed_set: [0, 1, 2, 3, 4]  # 3-5 seeds; the SAME set is used for every arm
 image_size: 64             # square, pixels
 image_channels: 1          # grayscale, black outline on white
 synthetic_fraction: 0.3    # share of each Stage 4 training batch from Stage 3
@@ -44,6 +44,8 @@ arms:
   A0: { augment: false, synthetic: false }   # report's "Model A" (control)
   A1: { augment: true,  synthetic: false }   # isolates augmentation effect
   B:  { augment: true,  synthetic: true }    # report's "Model B"
+  A2: { augment: true,  synthetic: true, clean_fraction: 0.3, synthetic_fraction: 0.2 }
+                                             # clean real + augmented real + synthetic
 
 # One entry per trained CNN (arm x seed). Only arm and seed may vary;
 # every training setting comes from `train`. Ablations are new entries.
@@ -57,17 +59,29 @@ runs:
   - { arm: B,  seed: 0 }
   - { arm: B,  seed: 1 }
   - { arm: B,  seed: 2 }
+  - { arm: A0, seed: 3 }
+  - { arm: A0, seed: 4 }
+  - { arm: A1, seed: 3 }
+  - { arm: A1, seed: 4 }
+  - { arm: B,  seed: 3 }
+  - { arm: B,  seed: 4 }
+  - { arm: A2, seed: 0 }
+  - { arm: A2, seed: 1 }
+  - { arm: A2, seed: 2 }
+  - { arm: A2, seed: 3 }
+  - { arm: A2, seed: 4 }
 
 # Stage 2 augmentation ranges (train side only). Shear and non-uniform
 # scale are skipped for taxonomy.no_shear_no_nonuniform_scale classes.
 augment:
   rotate_deg: 180            # +/- degrees; any rotation is label-safe
   scale: [0.85, 1.0]         # uniform scale jitter relative to the standardized size
-  frame_margin: 0.08         # = standardize.MARGIN: output is re-framed like Stage 1 (P-55)
+  frame_margin: 0.06         # re-frames to about 57 px, the size Stage 1 really produces
+                             # (0.08 ignored the 2 px its outline dilation adds; iteration 2)
   nonuniform_scale: 0.10     # +/- extra per-axis factor (allowed classes only)
   shear_deg: 12              # +/- degrees (allowed classes only)
   translate_px: 3            # +/- pixels, kept inside the frame
-  noise_p: 0.3               # probability of salt noise
+  noise_p: 0.3               # probability of adding ink next to the outline
   noise_fraction: 0.004      # share of pixels flipped when noise applies
   blur_p: 0.3                # probability of Gaussian blur
   blur_sigma: [0.4, 0.8]     # pixels; output is re-thresholded to 0/255
@@ -76,7 +90,7 @@ augment:
 # Stage 3 synthetic generator parameter ranges (margins live in taxonomy).
 synth:
   radius_px: [16, 28]        # half the shape's extent before rotation
-  stroke_px: 2               # matches the standardized 2-px outline
+  stroke_px: 3               # real standardized outlines measure about 3.1 px (iteration 2)
   center_jitter_px: 4        # +/- pixels
   ellipse_max_axis_ratio: 2.5
   rectangle_max_side_ratio: 3.0
@@ -122,6 +136,9 @@ train:
 
 # Stage 5 evaluation (Decisions 9, 10, 12, 14).
 evaluation:
+  primary: { reference: A0, candidate: A2 }   # CRISP-DM iteration 2 pre-registration
+  secondary: [[A0, A1], [A0, B], [B, A2]]
+  loso_seeds: 3                               # hold-out runs per arm
   alpha: 0.05
   n_boot: 2000
   bootstrap_seed: 0

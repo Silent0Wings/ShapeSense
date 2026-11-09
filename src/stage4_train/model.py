@@ -1,9 +1,9 @@
 """The Stage 4 CNN (implementation.md Decision 8).
 
-``SmallCNN``: three blocks of [Conv2d 3x3 (pad 1) -> BatchNorm2d -> ReLU ->
-MaxPool2d 2] with 32 / 64 / 128 channels, global average pooling, Dropout
-and one Linear layer to the classes. About 94k parameters at 10 classes,
-which trains comfortably on CPU.
+``SmallCNN``: one block of [Conv2d 3x3 (pad 1) -> BatchNorm2d -> ReLU ->
+MaxPool2d 2] per entry of ``train.channels`` (four: 32 / 64 / 128 / 128),
+global average pooling, Dropout and one Linear layer to the classes. About
+242k parameters at 10 classes.
 
 Input contract: float32 (N, 1, 64, 64) in [0, 1], white background = 1.0,
 ink = 0.0 (``sampling.to_float`` = uint8 / 255). Output: logits (N, k).

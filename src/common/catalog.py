@@ -54,6 +54,16 @@ def load_images(config: dict, image_ids: list[str]) -> np.ndarray:
     return out
 
 
+def load_fresh_images(config: dict, rows: list[dict]) -> tuple[np.ndarray, np.ndarray]:
+    """Images + labels of the fresh holdout, from the PNGs named in its manifest rows."""
+    root = resolve(config["paths"]["raw_dir"]) / "fresh_holdout"
+    size = config["image_size"]
+    images = np.empty((len(rows), size, size), dtype=np.uint8)
+    for i, row in enumerate(rows):
+        images[i] = read_png(root / row["path"])
+    return images, np.array([int(r["label_id"]) for r in rows], dtype=np.int64)
+
+
 def load_split_images(config: dict, split: str, per_class: int | None = None,
                       seed: int = 0, rows: list[dict] | None = None
                       ) -> tuple[np.ndarray, np.ndarray]:

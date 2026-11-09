@@ -81,7 +81,7 @@ def test_asterisk_on_single_source_classes_when_shortcut():
     assert "circle" in by_name and "square" in by_name
     assert {r[0] for r in rows_plain} == set(NAMES)
     assert by_name["ellipse*"][-1] == "reported"
-    assert by_name["ellipse*"][cols.index("drop_B_minus_A1")] == "-3.0"
+    assert by_name["ellipse*"][cols.index(tables.DROP_COLUMN)] == "-3.0"
     assert by_name["ellipse*"][cols.index("threshold")] == "2.4"
     assert cols == cols2
 

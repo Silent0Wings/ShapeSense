@@ -73,6 +73,7 @@ def error_gallery(
     class_names: Sequence[str],
     path: str | Path,
     max_per_direction: int = MAX_PER_DIRECTION,
+    arm: str = "B",
 ) -> Path:
     """Misclassified test images a→b and b→a, black on white, captioned true→pred.
 
@@ -106,9 +107,10 @@ def error_gallery(
         for j, i in enumerate(idx):
             ax = axes[r0 + j // GALLERY_COLS, j % GALLERY_COLS]
             ax.imshow(images_u8[i], cmap="gray", vmin=IMG_VMIN, vmax=IMG_VMAX)
-            ax.set_title(f"{class_names[int(y[i])]}→{class_names[int(pred[i])]}", fontsize=7)
+            # Two lines, so the outer columns are never clipped.
+            ax.set_title(f"{class_names[int(y[i])]}\n→ {class_names[int(pred[i])]}", fontsize=7)
         r0 += n_r
-    fig.suptitle(f"B ensemble errors: {name_a} / {name_b} "
+    fig.suptitle(f"{arm} ensemble errors: {name_a} / {name_b} "
                  f"({len(a_to_b)} {name_a}→{name_b}, {len(b_to_a)} {name_b}→{name_a})",
                  fontsize=9)
     fig.tight_layout()

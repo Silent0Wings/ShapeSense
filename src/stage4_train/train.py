@@ -46,7 +46,7 @@ from torch import nn
 from src.common.config import resolve
 from src.common.hashing import sha256_obj, sha256_path
 from src.stage4_train.model import build_model, count_params
-from src.stage4_train.sampling import (BatchStream, GenerateLike, TransformLike,
+from src.stage4_train.sampling import (BatchStream, clean_count, GenerateLike, TransformLike,
                                        batch_composition, to_float)
 
 PERCENT = 100.0            # macro-F1 and accuracy are reported in points (0-100)
@@ -56,7 +56,7 @@ TRAIN_LOG_CSV = "train_log.csv"
 MODEL_FILE = "model.pt"
 VAL_PROBS_FILE = "val_probs.npz"
 VAL_CURVE_FILE = "val_curve.png"
-LOG_COLUMNS = ["epoch", "train_loss", "train_acc", "val_loss", "val_acc",
+LOG_COLUMNS = ["epoch", "train_loss", "train_acc_trainmode", "val_loss", "val_acc",
                "val_macro_f1", "lr", "synthetic_share", "seconds"]
 FIG_SIZE_IN = (7.0, 4.0)   # inches, val_curve.png
 FIG_DPI = 120
@@ -423,7 +423,7 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
         log_rows.append({
             "epoch": epoch,
             "train_loss": loss_sum / seen if seen else float("nan"),
-            "train_acc": PERCENT * correct / seen if seen else float("nan"),
+            "train_acc_trainmode": PERCENT * correct / seen if seen else float("nan"),
             "val_loss": val_loss,
             "val_acc": val_acc,
             "val_macro_f1": val_f1,
@@ -473,6 +473,7 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
         "optimizer_steps": int(optimizer_steps),
         "realized_synthetic_share": syn_total / img_total if img_total else 0.0,
         "real_draws_per_step": int(n_real),
+        "clean_per_step": clean_count(arm_cfg, batch_size),
         "synthetic_per_step": int(n_syn),
         "n_train": int(len(train_store.labels)),
         "n_val": n_val,

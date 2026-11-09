@@ -21,6 +21,7 @@ Does not write status.json; the runner does that through common.status.
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 from pathlib import Path
 
@@ -110,6 +111,22 @@ def sgd_step_fn(config: dict, n_classes: int, hparams: dict):
     return step
 
 
+def release_gpu() -> None:
+    """Free the parent's GPU memory, so the training workers have the whole card."""
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+
+def tuned_hparams(config: dict, stage_dir: Path) -> tuple[dict, dict]:
+    """(A1's winner, a tuning.json-shaped record) from the iteration 2 search."""
+    winners = json.loads((stage_dir / "tuning_iter2" / "winners.json").read_text(encoding="utf-8"))
+    hparams = dict(config["arms"]["A1"]["hparams"])
+    return hparams, {"arm": "A1", "seed": int(config["seed_set"][0]), "grid": winners["grid"]["A1"],
+                     "winner": hparams, "grid_by_arm": winners["grid"],
+                     "trials_per_arm": winners["trials_per_arm"]}
+
+
 def _write_json(obj: dict, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
@@ -154,7 +171,8 @@ def run(config: dict, *, config_path: str | Path = DEFAULT_CONFIG) -> dict:
                       step_time_fn=sgd_step_fn(config, n_classes, default_hparams),
                       min_batches=n_bench)
     n_grid = len(grid_points(train_cfg["tuning"]))
-    n_runs_budget = len(config["runs"]) + n_grid + N_LOSO_RUNS
+    n_loso = N_LOSO_RUNS * int(config["evaluation"].get("loso_seeds", 1))
+    n_runs_budget = len(config["runs"]) + n_grid + n_loso
     max_epochs = int(train_cfg["max_epochs"])
     bench.update({
         "arm": BENCHMARK_ARM,
@@ -171,13 +189,18 @@ def run(config: dict, *, config_path: str | Path = DEFAULT_CONFIG) -> dict:
     })
     bench_path = stage_dir / LOADER_BENCHMARK_JSON
     _write_json(bench, bench_path)
+    release_gpu()
 
     # R4: Decision 7 grid on A1 validation, once.
-    tuning = run_tuning(config, train_store, val_store, transform, generate, steps_per_epoch,
-                        stage_dir, val_image_ids=val_ids,
-                        batch_runner=lambda specs: run_specs(config, specs),
-                        config_path=config_path)
-    hparams = dict(tuning["winner"])
+    if train_cfg.get("tuned"):   # iteration 2: chosen by src/stage4_train/search.py
+        hparams, tuning = tuned_hparams(config, stage_dir)
+        _write_json(tuning, stage_dir / TUNING_JSON)
+    else:
+        tuning = run_tuning(config, train_store, val_store, transform, generate, steps_per_epoch,
+                            stage_dir, val_image_ids=val_ids,
+                            batch_runner=lambda specs: run_specs(config, specs),
+                            config_path=config_path)
+        hparams = dict(tuning["winner"])
 
     # R14: leave-one-source-out runs only when Stage 1's trigger fired.
     loso = shortcut_detected(config)
@@ -211,6 +234,7 @@ def run(config: dict, *, config_path: str | Path = DEFAULT_CONFIG) -> dict:
         "metrics": {
             "steps_per_epoch": steps_per_epoch,
             "hparams": hparams,
+            "arm_hparams": {arm: spec.get("hparams", hparams) for arm, spec in config["arms"].items()},
             "tuning_grid": tuning["grid"],
             "runs": [{"name": r["run_name"], "arm": r["arm"], "seed": r["seed"],
                       "best_epoch": r["best_epoch"], "val_macro_f1": r["val_macro_f1"],
