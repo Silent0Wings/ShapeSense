@@ -30,6 +30,18 @@
         "eval": "Test macro-F1: A0 93.88, A1 90.86, B 90.50. B vs A1 was -0.36, 95% CI [-1.17, 0.41]: fail. Augmentation hurt rectangle, diamond and square and helped octagon and hexagon. On an unseen source the picture reverses: on held-out Hand-Drawn triangles and rectangles (validation) A0 averaged 53.5% accuracy, A1 66.4%, B 71.8%, so A0's lead is specific to sources it trained on. Iteration 2 result: A2 vs A0 is +0.06 points on the reused test split, CI [-0.69, 0.83], and +0.08 on the fresh 4,500-image holdout, CI [-0.41, 0.57]: fail on both. After fixing the transform, every arm reached about the same test macro-F1 (A0 95.3, A1 95.2, B 95.3, A2 95.4). On unseen Hand-Drawn triangles and rectangles, mean accuracy was A0 66.6, A1 74.5, B 72.6, A2 73.8.",
         "deploy": "On drawn shapes, A1 and B can call a square a rectangle while A0 is right. That matches the test pattern but is informal evidence only. Iteration 2 exported A2_2 by the validation selection rule (validation macro-F1 95.46), and the studio serves all four arms live. The 60-drawing check is still open."
       }
+    },
+    {
+      "id": 3,
+      "title": "Repair the evaluation and test robustness",
+      "status": "open",
+      "trigger": "Iteration 2 failed on both evaluation sets, and two outside code reviews left 13 points that could not be fixed without changing recorded code or a frozen analysis. The validation robustness check suggested augmented arms survive damage better.",
+      "route": "Evaluation → Business Understanding",
+      "decision": "Pre-registered in docs/crisp_dm/iteration_3/preregistration.md: A2 vs A0 on perturbed copies of a new, never-read 4,500-image holdout, with the evaluation repaired first.",
+      "findings": {
+        "business": "The question moves from clean accuracy on familiar sources to survival under damage, and to when synthetic data helps. Hypotheses, not results: A0 weakest under damage, A1 better, A2 best; B helps most when real data is scarce; synthetic pretraining recovers any domain gap.",
+        "data": "Built fresh holdout 2: 4,500 never-read images, ten classes, 300 per source and class. The build first reproduced the first holdout's manifest byte for byte, so its images could be excluded without opening them."
+      }
     }
   ],
   "failures_note": "Every significant failure and how it was handled, in the order it happened, starting from dropping the Quick, Draw! diamonds. The one earlier fix is listed last. Kept apart from the closed iterations above. Smaller build issues are in plan_issues.md.",

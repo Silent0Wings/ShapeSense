@@ -54,9 +54,9 @@ def load_images(config: dict, image_ids: list[str]) -> np.ndarray:
     return out
 
 
-def load_fresh_images(config: dict, rows: list[dict]) -> tuple[np.ndarray, np.ndarray]:
-    """Images + labels of the fresh holdout, from the PNGs named in its manifest rows."""
-    root = resolve(config["paths"]["raw_dir"]) / "fresh_holdout"
+def load_fresh_images(config: dict, rows: list[dict], folder: str = "fresh_holdout") -> tuple[np.ndarray, np.ndarray]:
+    """Images + labels of a fresh holdout, from the PNGs named in its manifest rows."""
+    root = resolve(config["paths"]["raw_dir"]) / folder
     size = config["image_size"]
     images = np.empty((len(rows), size, size), dtype=np.uint8)
     for i, row in enumerate(rows):
