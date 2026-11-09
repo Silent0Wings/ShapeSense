@@ -1,0 +1,31 @@
+model,arm,kind,accuracy_pct,macro_f1_points
+A0_0,A0,seed model,95.5,95.0
+A0_1,A0,seed model,90.2,89.5
+A0_2,A0,seed model,95.1,94.6
+A1_0,A1,seed model,95.8,95.6
+A1_1,A1,seed model,95.4,95.1
+A1_2,A1,seed model,95.4,95.0
+B_0,B,seed model,95.0,94.7
+B_1,B,seed model,95.0,94.7
+B_2,B,seed model,95.0,94.6
+A0_3,A0,seed model,94.9,94.4
+A0_4,A0,seed model,95.1,94.6
+A1_3,A1,seed model,95.6,95.3
+A1_4,A1,seed model,93.4,92.9
+B_3,B,seed model,95.1,94.8
+B_4,B,seed model,94.8,94.6
+A2_0,A2,seed model,95.7,95.3
+A2_1,A2,seed model,95.6,95.2
+A2_2,A2,seed model,95.5,95.1
+A2_3,A2,seed model,95.7,95.2
+A2_4,A2,seed model,95.2,94.8
+A0 per-seed mean ± std,A0,seed summary,94.2 ± 2.2,93.6 ± 2.3
+A1 per-seed mean ± std,A1,seed summary,95.1 ± 0.9,94.8 ± 1.1
+B per-seed mean ± std,B,seed summary,95.0 ± 0.1,94.7 ± 0.1
+A2 per-seed mean ± std,A2,seed summary,95.5 ± 0.2,95.1 ± 0.2
+A0 ensemble (soft vote),A0,ensemble,95.7,95.3
+A1 ensemble (soft vote),A1,ensemble,95.5,95.2
+B ensemble (soft vote),B,ensemble,95.6,95.3
+A2 ensemble (soft vote),A2,ensemble,95.8,95.4
+baseline_logreg_pixels,--,baseline,78.5,77.9
+baseline_svm_hog,--,baseline,84.4,84.3

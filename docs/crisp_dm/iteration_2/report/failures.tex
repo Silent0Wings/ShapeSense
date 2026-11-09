@@ -1,0 +1,80 @@
+\textit{1. Dropping the diamonds}
+
+\begin{tabular}{p{0.34\linewidth}p{0.46\linewidth}p{0.11\linewidth}}
+\toprule
+What failed, and why & How it was handled & State \\
+\midrule
+\textbf{Most Quick, Draw! diamonds were not rhombi.} They were gems, cones, shields or scribbles, which contradicts the class definition. & Excluded all of them by rule before any test read (500 drawings), re-froze the split and retrained every model. & Overcome \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{2. Training and the first evaluation}
+
+\begin{tabular}{p{0.34\linewidth}p{0.46\linewidth}p{0.11\linewidth}}
+\toprule
+What failed, and why & How it was handled & State \\
+\midrule
+\textbf{Leave-one-source-out training could not run on all ten classes.} Ellipses exist only in the Hand-Drawn source. & Runs use nine classes and are scored on Hand-Drawn triangles and rectangles only. & Partly \\
+\textbf{Stage 4 stalled on the GPU.} Too many training workers ran at once for 8 GB of memory. & Limited training to two parallel runs. & Overcome \\
+\textbf{B vs A1 failed: -0.36 points, CI [-1.17, 0.41], and A0 with no augmentation scored highest.} The rotation range and the transform defects found in the next part of this timeline. & Kept the verdict unchanged and investigated on validation only, which started iteration 2. & Verdict stands \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{3. Finding out why}
+
+\begin{tabular}{p{0.34\linewidth}p{0.46\linewidth}p{0.11\linewidth}}
+\toprule
+What failed, and why & How it was handled & State \\
+\midrule
+\textbf{The images reveal which source they came from.} A classifier told an image's source 91.7\% of the time, against 46.7\% for always guessing the largest source, so a model can lean on source style instead of shape. & Reported beside the results and checked with runs that hold out a whole source. It cannot be removed from these datasets. & Partly \\
+\textbf{Augmentation and generator ranges were set by hand, and only A1 was tuned.} Iteration 1 tuned learning rate and dropout on A1 alone and reused the result for every arm. & Searched augmentation, generator and hyperparameters per arm on validation: 166 trials. & Overcome \\
+\textbf{Rotation up to ±180° hurt the classes that depend on orientation.} In several sources squares and rectangles are nearly always upright, so full rotation removed a clue. A square turned 45° also looks like a diamond. & Searched the range on validation. The winner is ±20°, capped at ±10° for square, rectangle and diamond. & Overcome \\
+\textbf{Augmented shapes came out about 6 px too small.} The transform re-framed them to 51 px against 57 px in real images. & Corrected the framing margin (augment.frame\_margin). & Overcome \\
+\textbf{1-px strokes broke into pieces after warping.} The cut applied after warping was too strict for thin lines. & The first fix barely helped (17.2 down to 16.3 pieces). A separate thin-line path brought it to 1.0 piece. & Overcome \\
+\textbf{Synthetic strokes were thinner than real ones.} The generator drew 2 px against about 3.1 px in real images. & Set the generator stroke to 3 px. & Overcome \\
+\textbf{A1 was still improving when training ended, and early stopping is unstable.} The budget is 30 epochs, and at learning rate 0.003 validation scores can swing by 30 points between epochs. & Kept the same budget and early stopping for every arm so the comparison stays fair. Not fixed. & Still open \\
+\textbf{The first polarity experiment gave invalid results.} A patch leaked between reused worker processes. & Discarded it and reran with one task per worker. Polarity made no difference. & Overcome \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{4. The second evaluation}
+
+\begin{tabular}{p{0.34\linewidth}p{0.46\linewidth}p{0.11\linewidth}}
+\toprule
+What failed, and why & How it was handled & State \\
+\midrule
+\textbf{The test split had already been read in iteration 1.} No untouched test data remained after iteration 1. & Pre-registered the reuse and built a fresh 4,500-image holdout. It has no Quick, Draw! images and uses sources seen in training. & Partly \\
+\textbf{A2 vs A0 failed: +0.06 on test and +0.08 on the fresh holdout, both CIs include 0.} With the defects fixed, every arm reaches about the same score on images from sources it trained on. & Recorded as a failure. No change was made after the test read. A third iteration would need to target unseen sources. & Still open \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{5. Closing out}
+
+\begin{tabular}{p{0.34\linewidth}p{0.46\linewidth}p{0.11\linewidth}}
+\toprule
+What failed, and why & How it was handled & State \\
+\midrule
+\textbf{Drawing on the live page failed once the fourth arm was added.} The API still accepted at most three arms. & Tied the limit to the arm list and added a test. & Overcome \\
+\textbf{A clean clone could not find the tuning result.} artifacts/ is not in Git, and Stages 4 and 6 read the winners from there. & run\_pipeline.py restores the committed copy when it is absent. The rehearsal then reproduced every result. & Overcome \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{Before this timeline}
+
+\begin{tabular}{p{0.34\linewidth}p{0.46\linewidth}p{0.11\linewidth}}
+\toprule
+What failed, and why & How it was handled & State \\
+\midrule
+\textbf{The first CNN could not see a whole shape.} Three blocks gave a 22-px receptive field on 64-px images. & Moved to four convolution blocks. & Overcome \\
+\bottomrule
+\end{tabular}

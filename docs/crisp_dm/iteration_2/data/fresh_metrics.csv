@@ -1,0 +1,5 @@
+arm,accuracy_pct,macro_f1_points
+A0,97.2,97.5
+A1,97.1,97.4
+B,96.9,97.2
+A2,97.2,97.5

@@ -160,4 +160,4 @@ def test_report_has_fallback_for_every_macro():
     # Sections A to J read frozen iteration 1 copies; Section K reads generated files.
     assert "\\InputIfFileExists{docs/crisp_dm/iteration_1/pipeline_facts.tex}" in tex
     assert "\\InputIfFileExists{docs/crisp_dm/iteration_1/param_ranges.tex}" in tex
-    assert "\\InputIfFileExists{artifacts/stage6/generated/iteration2_facts.tex}" in tex
+    assert "\\InputIfFileExists{docs/crisp_dm/iteration_2/report/iteration2_facts.tex}" in tex
