@@ -1,0 +1,122 @@
+{
+  "rows": [
+    {
+      "arm": "A0",
+      "invert": false,
+      "seed": 0,
+      "val_macro_f1": 93.90861301954807,
+      "best_epoch": 19
+    },
+    {
+      "arm": "A0",
+      "invert": false,
+      "seed": 1,
+      "val_macro_f1": 89.60639301203983,
+      "best_epoch": 11
+    },
+    {
+      "arm": "A0",
+      "invert": false,
+      "seed": 2,
+      "val_macro_f1": 91.56113732001869,
+      "best_epoch": 11
+    },
+    {
+      "arm": "A0",
+      "invert": true,
+      "seed": 0,
+      "val_macro_f1": 94.46641162740657,
+      "best_epoch": 21
+    },
+    {
+      "arm": "A0",
+      "invert": true,
+      "seed": 1,
+      "val_macro_f1": 94.21914884779405,
+      "best_epoch": 26
+    },
+    {
+      "arm": "A0",
+      "invert": true,
+      "seed": 2,
+      "val_macro_f1": 87.11098404522535,
+      "best_epoch": 6
+    },
+    {
+      "arm": "A1",
+      "invert": false,
+      "seed": 0,
+      "val_macro_f1": 93.41799254837736,
+      "best_epoch": 27
+    },
+    {
+      "arm": "A1",
+      "invert": false,
+      "seed": 1,
+      "val_macro_f1": 93.72715218404076,
+      "best_epoch": 25
+    },
+    {
+      "arm": "A1",
+      "invert": false,
+      "seed": 2,
+      "val_macro_f1": 93.70326888853245,
+      "best_epoch": 26
+    },
+    {
+      "arm": "A1",
+      "invert": true,
+      "seed": 0,
+      "val_macro_f1": 93.54513084468383,
+      "best_epoch": 28
+    },
+    {
+      "arm": "A1",
+      "invert": true,
+      "seed": 1,
+      "val_macro_f1": 93.54085965147,
+      "best_epoch": 25
+    },
+    {
+      "arm": "A1",
+      "invert": true,
+      "seed": 2,
+      "val_macro_f1": 93.63895090968614,
+      "best_epoch": 28
+    }
+  ],
+  "summary": {
+    "A0_standard": {
+      "mean": 91.69204778386887,
+      "values": [
+        93.90861301954807,
+        89.60639301203983,
+        91.56113732001869
+      ]
+    },
+    "A0_inverted": {
+      "mean": 91.93218150680866,
+      "values": [
+        94.46641162740657,
+        94.21914884779405,
+        87.11098404522535
+      ]
+    },
+    "A1_standard": {
+      "mean": 93.61613787365019,
+      "values": [
+        93.41799254837736,
+        93.72715218404076,
+        93.70326888853245
+      ]
+    },
+    "A1_inverted": {
+      "mean": 93.57498046861333,
+      "values": [
+        93.54513084468383,
+        93.54085965147,
+        93.63895090968614
+      ]
+    }
+  }
+}
