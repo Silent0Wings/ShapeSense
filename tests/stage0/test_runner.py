@@ -118,7 +118,7 @@ def test_frozen_winners_restored_only_when_absent(tmp_path):
     source.write_text("committed", encoding="utf-8")
     artifacts = tmp_path / "artifacts"
     assert rp.restore_frozen_winners(artifacts, source) is True
-    target = artifacts / "stage4" / "tuning_iter2" / "winners.json"
+    target = artifacts / "stage4" / "tuning_iter3" / "winners.json"
     assert target.read_text(encoding="utf-8") == "committed"
     target.write_text("existing", encoding="utf-8")
     assert rp.restore_frozen_winners(artifacts, source) is False

@@ -1,6 +1,6 @@
 """Validation-only search and experiment runner (CRISP-DM iterations 2 and 3).
 
-    python -m src.stage4_train.search [--phase ablation|augment|synth|shares|grid|confirm|all]
+    python -m src.stage4_train.search
 
 Implements the budgets in the iteration pre-registrations. Each trial trains one
 run with dotted config overrides, under ``artifacts/stage4/tuning_iter3/<phase>/<trial>/``. A finished trial is
@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 from threadpoolctl import threadpool_limits
 
-from src.common.config import DEFAULT_CONFIG, class_names, load_config, resolve, set_dotted, validate_pipeline
+from src.common.config import DEFAULT_CONFIG, REPO_ROOT, class_names, load_config, resolve, set_dotted, validate_pipeline
 from src.stage2_augment import build_transform
 from src.stage3_synth import build_generator
 from src.stage4_train.folds import grouped_folds, pooled
@@ -35,13 +35,16 @@ START_HPARAMS = {"lr": 0.003, "dropout": 0.2}   # the iteration 1 winner
 ORIENTATION_CLASSES = ("square", "rectangle", "diamond")
 ROTATIONS = (0, 5, 10, 15, 20, 30, 45, 90, 180)
 ROTATION_CAPS = (None, 0, 5, 10, 15, 30)
-ABLATION_ROTATIONS = (0, 15, 45, 90, 180)
 SEEDS = (0, 1, 2)
-N_AUGMENT, N_SYNTH, N_SHARES = 24, 16, 12
+N_AUGMENT, N_SYNTH, N_SHARES, N_PRETRAIN = 24, 16, 12, 12
+N_FOLDS, CV_EPOCHS = 3, 15
+BUDGET_CHOICES = {"e60": {"train.max_epochs": 60}, "e30_nostop": {"train.early_stopping_patience": 999},
+                  "e60_nostop": {"train.max_epochs": 60, "train.early_stopping_patience": 999}}
 TOP_K = 5
 GRID_LR = (0.0003, 0.001, 0.003)
 GRID_DROPOUT = (0.2, 0.4)
-ARMS = ("A0", "A1", "B", "A2")
+ARMS = ("A0", "A1", "B", "A2", "P")
+BUDGET_RESULT = REPO_ROOT / "docs" / "crisp_dm" / "iteration_3" / "experiments" / "budget.json"
 
 _STORES: dict = {}
 
@@ -121,9 +124,16 @@ def sample_augment(rng: random.Random) -> dict:
     return overrides
 
 
-def sample_synth(rng: random.Random) -> dict:
+def sample_pretrain(rng: random.Random) -> dict:
+    return {"arms.P.pretrain_fraction": _uniform(rng, 0.1, 0.6), **sample_generator(rng)}
+
+
+def sample_synth(rng: random.Random, arm: str) -> dict:
+    return {f"arms.{arm}.synthetic_fraction": _uniform(rng, 0.1, 0.5), **sample_generator(rng)}
+
+
+def sample_generator(rng: random.Random) -> dict:
     return {
-        "arms.B.synthetic_fraction": _uniform(rng, 0.1, 0.5),
         "synth.radius_px": [_uniform(rng, 12.0, 20.0, 1), _uniform(rng, 22.0, 30.0, 1)],
         "synth.center_jitter_px": _uniform(rng, 0.0, 8.0, 1),
         "synth.vertex_jitter_px": _uniform(rng, 0.0, 2.0, 1),
@@ -139,17 +149,6 @@ def sample_shares(rng: random.Random) -> dict:
         clean, synthetic = _uniform(rng, 0.1, 0.6), _uniform(rng, 0.1, 0.4)
         if clean + synthetic <= 0.8:
             return {"arms.A2.clean_fraction": clean, "arms.A2.synthetic_fraction": synthetic}
-
-
-def ablation_specs(config: dict, path) -> list[dict]:
-    conditions = {f"rot{d}": {"augment.rotate_deg": d} for d in ABLATION_ROTATIONS}
-    conditions.update({
-        "scale_off": {"augment.scale": [1.0, 1.0]}, "translate_off": {"augment.translate_px": 0},
-        "noise_off": {"augment.noise_p": 0.0}, "blur_off": {"augment.blur_p": 0.0},
-        "shear_off": {"augment.shear_deg": 0, "augment.nonuniform_scale": 0.0},
-    })
-    return [_spec(config, path, "ablation", f"{name}_s{seed}", "A1", seed, overrides, START_HPARAMS)
-            for name, overrides in conditions.items() for seed in SEEDS]
 
 
 def random_specs(config: dict, path, phase: str, n: int, arm: str, sample, base: dict, offset: int) -> list[dict]:
@@ -192,43 +191,68 @@ def top_settings(results: list[dict]) -> list[dict]:
     return out
 
 
-def run_search(config_path=DEFAULT_CONFIG, phase: str = "all") -> dict | None:
+def adopted_budget() -> dict:
+    """The epoch-budget overrides chosen by the pre-registered budget rule, if any."""
+    path = BUDGET_RESULT
+    if not path.is_file():
+        raise FileNotFoundError("run the iteration 3 experiments first: the budget rule decides the search budget")
+    adopted = json.loads(path.read_text(encoding="utf-8"))["adopted"]
+    return dict(BUDGET_CHOICES[adopted]) if adopted else {}
+
+
+def cv_specs(config: dict, path, arm: str, settings: list[dict]) -> list[dict]:
+    """Each setting on every fold, at the short pre-registered budget."""
+    out = []
+    for i, r in enumerate(settings):
+        for fold in range(N_FOLDS):
+            spec = _spec(config, path, "cv", f"{arm}_c{i}_f{fold}", arm, SEEDS[0],
+                         {**r["settings"]["overrides"], "train.max_epochs": CV_EPOCHS}, r["settings"]["hparams"])
+            spec["fold"] = [N_FOLDS, fold, SEED]
+            out.append(spec)
+    return out
+
+
+def run_search(config_path=DEFAULT_CONFIG) -> dict:
     config = load_config(config_path)
     args = (config, config_path)
-    if phase in ("ablation", "all"):
-        save(config, "ablation", execute(config, ablation_specs(*args)))
-    if phase == "ablation":
-        return None
-    augment = execute(config, random_specs(*args, "augment", N_AUGMENT, "A1", sample_augment, {}, 1))
+    budget = adopted_budget()
+    augment = execute(config, random_specs(*args, "augment", N_AUGMENT, "A1", sample_augment, budget, 1))
     save(config, "augment", augment)
     best_aug = best(augment)["settings"]["overrides"]
-    synth = execute(config, random_specs(*args, "synth", N_SYNTH, "B", sample_synth, best_aug, 2))
-    save(config, "synth", synth)
-    best_synth = best(synth)["settings"]["overrides"]
-    shares = execute(config, random_specs(*args, "shares", N_SHARES, "A2", sample_shares, best_synth, 3))
+    synth_b = execute(config, random_specs(*args, "synth", N_SYNTH, "B", lambda r: sample_synth(r, "B"), best_aug, 2))
+    save(config, "synth", synth_b)
+    best_b = best(synth_b)["settings"]["overrides"]
+    synth_a2 = execute(config, random_specs(*args, "synth_a2", N_SYNTH, "A2", lambda r: sample_synth(r, "A2"), best_aug, 4))
+    save(config, "synth_a2", synth_a2)
+    best_a2 = best(synth_a2)["settings"]["overrides"]
+    shares = execute(config, random_specs(*args, "shares", N_SHARES, "A2", sample_shares, best_a2, 3))
     save(config, "shares", shares)
     best_shares = best(shares)["settings"]["overrides"]
-    bases = {"A0": {}, "A1": best_aug, "B": best_synth, "A2": best_shares}
+    pretrain = execute(config, random_specs(*args, "pretrain", N_PRETRAIN, "P", sample_pretrain, best_aug, 5))
+    save(config, "pretrain", pretrain)
+    best_p = best(pretrain)["settings"]["overrides"]
+    bases = {"A0": budget, "A1": best_aug, "B": best_b, "A2": best_shares, "P": best_p}
     grid = execute(config, grid_specs(*args, bases))
     save(config, "grid", grid)
-    pools = {"A0": [], "A1": augment, "B": synth, "A2": shares}
-    winners, counts = {}, {}
+    pools = {"A0": [], "A1": augment, "B": synth_b, "A2": synth_a2 + shares, "P": pretrain}
+    winners, counts, cv_scores = {}, {}, {}
     for arm in ARMS:
         candidates = pools[arm] + [r for r in grid if r["settings"]["arm"] == arm]
         counts[arm] = len(candidates)
-        specs = [_spec(config, config_path, "confirm", f"{arm}_c{i}_s{seed}", arm, seed,
-                       r["settings"]["overrides"], r["settings"]["hparams"])
-                 for i, r in enumerate(top_settings(candidates)) for seed in SEEDS]
+        top = top_settings(candidates)
+        folded = execute(config, cv_specs(*args, arm, top))
+        save(config, f"cv_{arm}", folded)
+        means = [float(np.mean([r["val_macro_f1"] for r in folded[i * N_FOLDS:(i + 1) * N_FOLDS]])) for i in range(len(top))]
+        chosen = top[int(np.argmax(means))]
+        cv_scores[arm] = means
+        specs = [_spec(config, config_path, "confirm", f"{arm}_s{seed}", arm, seed,
+                       chosen["settings"]["overrides"], chosen["settings"]["hparams"]) for seed in SEEDS]
         confirmed = execute(config, specs)
         save(config, f"confirm_{arm}", confirmed)
-        means = {}
-        for r in confirmed:
-            means.setdefault(r["name"].rsplit("_s", 1)[0], []).append(r)
-        name, rows = max(means.items(), key=lambda kv: np.mean([x["val_macro_f1"] for x in kv[1]]))
-        winners[arm] = {"overrides": rows[0]["settings"]["overrides"], "hparams": rows[0]["settings"]["hparams"],
-                        "mean_val_macro_f1": float(np.mean([x["val_macro_f1"] for x in rows])),
-                        "val_macro_f1_by_seed": [x["val_macro_f1"] for x in rows], "trial": name}
-    result = {"winners": winners, "trials_per_arm": counts,
+        winners[arm] = {"overrides": chosen["settings"]["overrides"], "hparams": chosen["settings"]["hparams"],
+                        "cv_macro_f1": max(means), "mean_val_macro_f1": float(np.mean([x["val_macro_f1"] for x in confirmed])),
+                        "val_macro_f1_by_seed": [x["val_macro_f1"] for x in confirmed], "trial": chosen["name"]}
+    result = {"winners": winners, "trials_per_arm": counts, "cv_macro_f1_top5": cv_scores, "budget": budget,
               "grid": {arm: [{"lr": r["settings"]["hparams"]["lr"], "dropout": r["settings"]["hparams"]["dropout"],
                               "val_macro_f1": r["val_macro_f1"], "best_epoch": r["best_epoch"]}
                              for r in grid if r["settings"]["arm"] == arm] for arm in ARMS}}
@@ -239,9 +263,8 @@ def run_search(config_path=DEFAULT_CONFIG, phase: str = "all") -> dict | None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default=str(DEFAULT_CONFIG))
-    parser.add_argument("--phase", default="all", choices=("ablation", "all"))
     args = parser.parse_args()
-    print(json.dumps(run_search(args.config, args.phase), indent=2))
+    print(json.dumps(run_search(args.config), indent=2))
 
 
 if __name__ == "__main__":

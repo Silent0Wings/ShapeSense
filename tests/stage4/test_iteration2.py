@@ -175,7 +175,7 @@ def test_search_samplers_stay_inside_the_preregistered_ranges():
         assert 0.75 <= a["augment.scale"][0] <= a["augment.scale"][1] <= 1.1
         assert a["augment.nonuniform_scale"] <= 0.2 and a["augment.shear_deg"] <= 20
         assert a["augment.noise_p"] <= 0.5 and a["augment.blur_p"] <= 0.5
-        s = search.sample_synth(rng)
+        s = search.sample_synth(rng, "B")
         assert 0.1 <= s["arms.B.synthetic_fraction"] <= 0.5
         assert s["synth.diamond_acute_angle_deg"][1] <= 80 and s["synth.star_inner_ratio"][1] <= 0.6
         shares = search.sample_shares(rng)
@@ -185,7 +185,6 @@ def test_search_samplers_stay_inside_the_preregistered_ranges():
 def test_search_trial_budget_matches_the_preregistration():
     assert (search.N_AUGMENT, search.N_SYNTH, search.N_SHARES, search.TOP_K) == (24, 16, 12, 5)
     assert len(search.GRID_LR) * len(search.GRID_DROPOUT) == 6
-    assert len(search.ablation_specs(load_config(), "c")) == 30
 
 
 def test_top_settings_keeps_distinct_settings_only():

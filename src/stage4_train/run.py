@@ -120,7 +120,7 @@ def release_gpu() -> None:
 
 def tuned_hparams(config: dict, stage_dir: Path) -> tuple[dict, dict]:
     """(A1's winner, a tuning.json-shaped record) from the iteration 2 search."""
-    winners = json.loads((stage_dir / "tuning_iter2" / "winners.json").read_text(encoding="utf-8"))
+    winners = json.loads((stage_dir / "tuning_iter3" / "winners.json").read_text(encoding="utf-8"))
     hparams = dict(config["arms"]["A1"]["hparams"])
     return hparams, {"arm": "A1", "seed": int(config["seed_set"][0]), "grid": winners["grid"]["A1"],
                      "winner": hparams, "grid_by_arm": winners["grid"],
