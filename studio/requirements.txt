@@ -1,0 +1,6 @@
+# Documentation only. The root requirements.txt is a hashed Stage 0 input, so the
+# studio does not add to it. These versions already arrive as Gradio dependencies.
+fastapi==0.162.2
+uvicorn==0.54.0
+# tests only
+httpx==0.28.1

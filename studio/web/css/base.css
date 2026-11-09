@@ -1,0 +1,75 @@
+/* Colour roles, type and page layout. Chart colours follow the validated palette. */
+:root {
+  color-scheme: light;
+  --surface-0: #f6f5f2; --surface-1: #fcfcfb; --surface-2: #efeeea; --line: #dddcd6;
+  --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #6f6e68;
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+  --accent: #256abf; --on-accent: #ffffff; --good: #0a7a4a; --bad: #c7322f; --warn: #a06400;
+  --seq-low: #e3eefb; --seq-high: #104281; --seq-ink-high: #ffffff; --pad-ink: #000000; --pad-paper: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --surface-0: #121211; --surface-1: #1a1a19; --surface-2: #262624; --line: #383835;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #9c9b91;
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+    --accent: #6da7ec; --on-accent: #0b0b0b; --good: #4cc38a; --bad: #f07a78; --warn: #e0a83c;
+    --seq-low: #1f2a38; --seq-high: #9ec5f4; --seq-ink-high: #0b0b0b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #121211; --surface-1: #1a1a19; --surface-2: #262624; --line: #383835;
+  --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #9c9b91;
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+  --accent: #6da7ec; --on-accent: #0b0b0b; --good: #4cc38a; --bad: #f07a78; --warn: #e0a83c;
+  --seq-low: #1f2a38; --seq-high: #9ec5f4; --seq-ink-high: #0b0b0b;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--surface-0); color: var(--text-primary);
+  font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100vh;
+}
+h1, h2, h3 { line-height: 1.2; margin: 0; font-weight: 650; }
+h1 { font-size: 30px; letter-spacing: -.02em; }
+h2 { font-size: 17px; margin-bottom: 12px; }
+h3 { font-size: 14px; margin: 14px 0 6px; }
+p { margin: 0 0 10px; }
+a { color: var(--accent); }
+code { font: 13px ui-monospace, Consolas, monospace; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+
+#nav {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 22px 16px;
+  background: var(--surface-1); border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 18px;
+}
+.brand { font-size: 18px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+.brand span { color: var(--text-muted); font-weight: 500; margin-left: 6px; }
+.nav-group { margin-bottom: 16px; }
+.nav-title { font-size: 11px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 6px; }
+#nav nav a { display: block; padding: 6px 10px; border-radius: 7px; color: var(--text-secondary); text-decoration: none; font-size: 14px; }
+#nav nav a:hover { background: var(--surface-2); }
+#nav nav a[aria-current="page"] { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.nav-foot { margin-top: auto; }
+
+main { padding: 34px clamp(16px, 4vw, 48px) 64px; max-width: 1240px; width: 100%; }
+.page-head { margin-bottom: 22px; }
+.eyebrow { font-size: 12px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+.lede { font-size: 16px; color: var(--text-secondary); max-width: 74ch; margin-top: 8px; }
+.grid { display: grid; gap: 16px; margin-bottom: 16px; }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+.grid.side { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); }
+
+@media (max-width: 860px) {
+  body { display: block; }
+  #nav { position: static; height: auto; padding: 12px 16px; border-right: 0; border-bottom: 1px solid var(--line); gap: 8px; }
+  #nav nav { display: flex; gap: 12px; overflow-x: auto; }
+  .nav-group { display: flex; gap: 4px; align-items: center; margin: 0; flex: none; }
+  .nav-title { display: none; }
+  #nav nav a { white-space: nowrap; }
+  .grid.side { grid-template-columns: minmax(0, 1fr); }
+  h1 { font-size: 25px; }
+}
