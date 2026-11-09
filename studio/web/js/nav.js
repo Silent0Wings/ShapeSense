@@ -38,7 +38,7 @@ export function mountNav() {
     el('p', { class: 'nav-title', text: group }),
     items.map(([href, text]) => el('a', { href, 'aria-current': href === here ? 'page' : null, text }))));
   document.querySelector('#nav').append(
-    el('a', { class: 'brand', href: 'index.html' }, 'ShapeSense', el('span', { text: 'Studio' })),
+    el('a', { class: 'brand', href: 'index.html' }, el('img', { class: 'brand-icon', src: 'icon.png', alt: '' }), 'ShapeSense', el('span', { text: 'Studio' })),
     el('nav', { 'aria-label': 'Pages' }, groups), el('div', { class: 'nav-foot' }, themeButton()));
   mountTips();
 }
