@@ -1,0 +1,8 @@
+quantity,value
+n_val,2819
+n_test,2776
+rescale factor sqrt(n_val / n_test),1.008
+validation CI half-width (points),0.8
+expected test CI half-width (points),0.8
+limit (points),1.0
+underpowered,no

@@ -1,0 +1,142 @@
+\textit{Data Understanding: changes}
+
+\begin{tabular}{p{0.20\linewidth}p{0.30\linewidth}p{0.41\linewidth}}
+\toprule
+What changed & Before & After \\
+\midrule
+Quick, Draw! diamonds & Included in the diamond class & All excluded by rule (500 drawings), split re-frozen at 12,405 / 2,819 / 2,776 \\
+Fresh holdout & None & 4,500 images that informed no choice, sealed like the test split \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{Data Understanding: outside review}
+
+\begin{tabular}{p{0.38\linewidth}p{0.11\linewidth}p{0.42\linewidth}}
+\toprule
+Point raised & Verdict & What was done \\
+\midrule
+Per-class test counts are never checked against noise\_bands.csv. & Stands & The recorded total does agree (2,776). Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration. \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{Data Preparation: changes}
+
+\begin{tabular}{p{0.20\linewidth}p{0.30\linewidth}p{0.41\linewidth}}
+\toprule
+What changed & Before & After \\
+\midrule
+Rotation range & ±180° for every class & ±20°, capped at ±10° for square, rectangle and diamond \\
+Other augmentation settings & Set by hand & Searched on validation: scale 0.904 to 1.076, shear 1.4°, translation 0, noise probability 0.385, blur probability 0.373 \\
+Shape framing after augmentation & About 51 px against 57 px real & Framing margin set by augment.frame\_margin \\
+1-px stroke handling & 17.2 pieces per stroke & Separate thin-line path, 1.0 piece \\
+Synthetic stroke width & 2 px & 3 px, against about 3.1 px real \\
+Synthetic generator ranges & Set by hand & Searched on validation for B and for A2 separately \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{Data Preparation: outside review}
+
+\begin{tabular}{p{0.38\linewidth}p{0.11\linewidth}p{0.42\linewidth}}
+\toprule
+Point raised & Verdict & What was done \\
+\midrule
+B and A2 inherit augmentation settings searched on A1. & Stands & Disclosed here. Only the generator and mix were searched for B and A2. \\
+Scaling is defined twice, in training and in evaluation. & Stands & Both are 255 today, so no result is affected. Editing this code would change Stage 4's recorded hash and force a retrain. Left for the next iteration. \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{Modeling: changes}
+
+\begin{tabular}{p{0.20\linewidth}p{0.30\linewidth}p{0.41\linewidth}}
+\toprule
+What changed & Before & After \\
+\midrule
+CNN depth & Three blocks, 22-px receptive field & Four blocks, 46-px receptive field \\
+Training arms & A0, A1, B & A0, A1, B, A2. A2 batches hold 105 clean, 100 augmented and 51 synthetic images \\
+Synthetic share of a batch & B 30\% & B 71 of 256 images (configured 27.8\%), A2 51 of 256 (configured 19.8\%) \\
+Hyperparameter tuning & Learning rate and dropout tuned on A1, shared by every arm & Tuned per arm: learning rate 0.003 for all, dropout 0.2, except A0 at 0.4 \\
+Training seeds & Three per arm & Five per arm, plus three hold-out-source runs per arm \\
+Parallel GPU runs & More workers than the GPU could hold & At most two (train.parallel\_runs: 2) \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{Modeling: outside review}
+
+\begin{tabular}{p{0.38\linewidth}p{0.11\linewidth}p{0.42\linewidth}}
+\toprule
+Point raised & Verdict & What was done \\
+\midrule
+Arms see different numbers of real images per step. & Stands & A0 and A1 256, A2 205, B 185. No equal-real run exists. Would need new training. \\
+BatchNorm statistics include synthetic images in B and A2. & Stands & No recalibration exists. Would need new runs, so it cannot be tested now. \\
+One learning rate and dropout were shared by every arm. & Does not stand & Each arm was tuned separately. They happen to share a learning rate, and A0's dropout differs. \\
+Early stopping can end runs before the schedule finishes. & Partly & 17 of 20 main runs used all 30 epochs. A0 seed 1 ran 10, A1 seed 4 ran 13, B seed 3 ran 29. \\
+Deterministic mode is overstated. & Partly & It is best-effort: non-deterministic operations only warn. In practice the clean-clone rehearsal reproduced all 32 validation scores exactly on this GPU. \\
+Batches are drawn with replacement, so an epoch does not cover every image. & Stands & Disclosed here. An epoch is a fixed 49 steps, by design. \\
+Synthetic shares are rounded differently from the real batch. & Stands & 27.8\% and 19.8\% are the configured values. Real batches hold 71 and 51 of 256 (27.7\% and 19.9\%), and the run logs average 27.73\% and 19.92\%. \\
+Validation is reused for tuning, epoch selection and the power check. & Stands & Validation scores are optimistic. The verdicts use the test split and the fresh holdout only. \\
+A1 and B train on no clean images. & Stands & Deliberate. A2 is the arm that adds them. \\
+Baselines train on 600 real images per class. & Stands & Every class has at least 680 training images. Baselines are reference points only. \\
+model.py still names three blocks as its default. & Stands & The config always passes four, so no run is affected. Editing this code would change Stage 4's recorded hash and force a retrain. Left for the next iteration. \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{Evaluation: changes}
+
+\begin{tabular}{p{0.20\linewidth}p{0.30\linewidth}p{0.41\linewidth}}
+\toprule
+What changed & Before & After \\
+\midrule
+Primary comparison & B vs A1 & A2 vs A0, pre-registered before tuning \\
+Evaluation data & Test split & Reused test split plus the fresh holdout \\
+Robustness check & None & Fixed perturbed copies of validation, scored by all 20 models \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{Evaluation: outside review}
+
+\begin{tabular}{p{0.38\linewidth}p{0.11\linewidth}p{0.42\linewidth}}
+\toprule
+Point raised & Verdict & What was done \\
+\midrule
+extra\_reads is a constant, so that check cannot fail. & Stands & The access log independently shows no unexpected reads. Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration. \\
+The stored error images have no hash check. & Stands & The current file was written by this run. Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration. \\
+The gallery refresh forces an extra test read. & Partly & It happens only if the error file is missing, and it is counted. \\
+Prediction cache keys miss preprocessing code. & Stands & Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration. \\
+The bootstrap treats images as independent. & Stands & Intervals may be too narrow. The preregistration says nothing changes after a test read. Left for the next iteration's preregistration. \\
+The interval covers test sampling, not seed variation. & Stands & Seed differences are reported separately. The preregistration says nothing changes after a test read. Left for the next iteration's preregistration. \\
+Nothing checks that ensembles have equal size. & Does not stand & The seed sets must match or the comparison raises an error. \\
+The per-class harm rule has no multiple-testing correction. & Stands & The preregistration says nothing changes after a test read. Left for the next iteration's preregistration. \\
+Rule 1 needs the interval above 0, not above the minimum gain. & Stands & This is the pre-registered rule, so it is intended. Iteration 2 fails either way. \\
+McNemar is not exact for small counts, and differs from the primary metric. & Stands & The preregistration says nothing changes after a test read. Left for the next iteration's preregistration. \\
+The power check is optimistic. & Stands & Treat it as a rough lower bound on the interval width. \\
+One random generator is shared across analyses. & Stands & Editing this code would change Stage 5's recorded hash and replace the recorded run. Left for the next iteration. \\
+A2 has no pairwise test against A1 or B. & Partly & A2 is tested against A0 and B. Only A2 vs A1 is missing. The preregistration says nothing changes after a test read. Left for the next iteration's preregistration. \\
+\bottomrule
+\end{tabular}
+
+\medskip
+
+\textit{Deployment: changes}
+
+\begin{tabular}{p{0.20\linewidth}p{0.30\linewidth}p{0.41\linewidth}}
+\toprule
+What changed & Before & After \\
+\midrule
+Shipped model & A0\_0 & A2\_2, chosen by validation macro-F1 \\
+Live models in the studio & A0 from the bundle, A1 and B separately & All four arms exported to studio/out/arms \\
+\bottomrule
+\end{tabular}

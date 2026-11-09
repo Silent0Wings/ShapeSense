@@ -28,7 +28,6 @@ from typing import Any
 from src.common.config import REPO_ROOT, class_names, load_config, resolve
 from src.common.hashing import config_subtree_hash, sha256_path
 from src.common.status import StageNotReady
-from src.stage6_report.iteration2 import write_iteration2
 from src.stage6_report.snippets import write_snippets
 from src.stage6_report.traceability import check_report
 
@@ -82,7 +81,6 @@ def inputs(config: dict) -> dict[str, str]:
         "export_code": sha256_path(resolve("export/predict.py")),
         "runs": config_subtree_hash(config, "runs"),
         "iteration_log": sha256_path(resolve("docs/crisp_dm/iteration_log.json")),
-        "iteration2_winners": sha256_path(art / "stage4" / "tuning_iter2" / "winners.json"),
     }
 
 
@@ -217,7 +215,6 @@ def run(config: dict) -> dict:
     selection = {k: bundle["selection"].get(k) for k in ("run_name", "arm", "seed", "val_macro_f1")}
 
     snippets = write_snippets(config, art, export_dir)
-    iteration2_files = write_iteration2(config, art)
 
     image_path = draw_hexagon(stage_dir / SMOKE_IMAGE_NAME)
     smoke = smoke_test(config, export_dir, image_path)
@@ -229,7 +226,6 @@ def run(config: dict) -> dict:
 
     outputs = [build["pdf"]] if build["ok"] else []
     outputs += [_rel(bundle[k]) for k in ("onnx", "standardize", "labels", "model_card")]
-    outputs += [_rel(path) for path in iteration2_files]
     outputs += [_rel(snippets["param_ranges"]), _rel(snippets["pipeline_facts"]), _rel(image_path)]
 
     checks = {

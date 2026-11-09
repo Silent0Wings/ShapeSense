@@ -1,0 +1,37 @@
+group,kind,arm,n,accuracy_pct,note
+github_handdrawn,source,A0,451,88.9,
+kaggle_reevald,source,A0,750,99.2,
+mendeley_elkorchi,source,A0,1122,99.6,
+quickdraw,source,A0,453,87.4,
+github_handdrawn,source,A1,451,89.4,
+kaggle_reevald,source,A1,750,98.0,
+mendeley_elkorchi,source,A1,1122,100.0,
+quickdraw,source,A1,453,86.5,
+github_handdrawn,source,B,451,90.7,
+kaggle_reevald,source,B,750,97.3,
+mendeley_elkorchi,source,B,1122,100.0,
+quickdraw,source,B,453,86.8,
+github_handdrawn,source,A2,451,92.0,
+kaggle_reevald,source,A2,750,97.6,
+mendeley_elkorchi,source,A2,1122,100.0,
+quickdraw,source,A2,453,86.3,
+render,domain,A0,1872,99.4,
+sketch,domain,A0,904,88.2,
+render,domain,A1,1872,99.2,
+sketch,domain,A1,904,87.9,
+render,domain,B,1872,98.9,
+sketch,domain,B,904,88.7,
+render,domain,A2,1872,99.0,
+sketch,domain,A2,904,89.2,
+github_handdrawn,held-out source,A0,302,75.8,unseen-source generalization (A0_loso_handdrawn_0)
+github_handdrawn,held-out source,A1,302,77.5,unseen-source generalization (A1_loso_handdrawn_0)
+github_handdrawn,held-out source,B,302,73.8,unseen-source generalization (B_loso_handdrawn_0)
+github_handdrawn,held-out source,A2,302,78.8,unseen-source generalization (A2_loso_handdrawn_0)
+github_handdrawn,held-out source,A0,302,58.3,unseen-source generalization (A0_loso_handdrawn_1)
+github_handdrawn,held-out source,A1,302,73.5,unseen-source generalization (A1_loso_handdrawn_1)
+github_handdrawn,held-out source,B,302,73.5,unseen-source generalization (B_loso_handdrawn_1)
+github_handdrawn,held-out source,A2,302,62.3,unseen-source generalization (A2_loso_handdrawn_1)
+github_handdrawn,held-out source,A0,302,65.6,unseen-source generalization (A0_loso_handdrawn_2)
+github_handdrawn,held-out source,A1,302,72.5,unseen-source generalization (A1_loso_handdrawn_2)
+github_handdrawn,held-out source,B,302,70.5,unseen-source generalization (B_loso_handdrawn_2)
+github_handdrawn,held-out source,A2,302,80.5,unseen-source generalization (A2_loso_handdrawn_2)

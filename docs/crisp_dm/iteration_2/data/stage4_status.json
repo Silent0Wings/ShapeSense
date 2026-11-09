@@ -1,0 +1,546 @@
+{
+  "stage": "stage4",
+  "owner": "",
+  "run_id": "2026-11-09T07:30:29-05:00/550375",
+  "inputs": {
+    "train_manifest": "sha256:66565a3ddd492f95fb992d80b8b8ebee3622015ed18ba28f8a5cd57e629f2fba",
+    "val_manifest": "sha256:890a4838d1811e0c17d0ca97940a5c547da6a52e975c1734609ea7fa46c5cb3c",
+    "taxonomy": "sha256:38aed29524418d859a6d657fee98cd1ecfc2de905df8a49da58d843dbaeaa5ed",
+    "source_classifier": "sha256:09f90dd2447dba59e3c6e44956a0ecd8ca6e88303d8235f51906533dc4f32555",
+    "config.runs": "sha256:98812dae816851f45771c14b31bb94d44ef8cf4aa9e8f83ec65aecab7d327953",
+    "config.arms": "sha256:65ad0afb1d21cfd7618a2090880a44d1ffaf2170794ed7f52c479a0defab6adb",
+    "config.train": "sha256:9298f956b21a10607dc04c4fe83558c211bb6a5009d9c52fbcba8fe11e1ad325",
+    "config.synthetic_fraction": "sha256:221764976efe04132774d96b0253cc31434c5261737469324f222621baf34b20",
+    "config.seed_set": "sha256:7f2c5f390b0c7e30e5a644380decea0554bbb62cfc03eff193d13a8c1a117708",
+    "config.augment": "sha256:b77fff1547d7157624307bab4d624e9dbe40c52bde06d53711c21336686ba988",
+    "config.synth": "sha256:b20ac48e149cf9613d3514131b176a27212f85e9300f1c44c4ef2cc40e5f6b1b",
+    "code.stage4_train": "sha256:2c583ebb438e082e96c634b918b82bf2b0d92ade5b837062ce72377dc65dd68b",
+    "code.stage2_augment": "sha256:28f9d6a467967d8a1cc57876cf559afe13f26f588ec008a4b5e332e9e131f834",
+    "code.stage3_synth": "sha256:8a245a6d816b5d5dc70e50c940472565642deffa02e1d30a210e8320704788be",
+    "code.common": "sha256:7b0da7fc10a03e2efcf84c4df0929a9417bc1ff00bffc1579008729627c4f78b"
+  },
+  "outputs": [
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\baselines\\baselines.json",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\loader_benchmark.json",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\tuning.json",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\seed_disagreement.json",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_0\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_1\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_2\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_0\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_1\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_2\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_0\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_1\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_2\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_3\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_4\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_3\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_4\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_3\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_4\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_0\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_1\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_2\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_3\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_4\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_loso_handdrawn_0\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_loso_handdrawn_0\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_loso_handdrawn_0\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_loso_handdrawn_0\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_loso_handdrawn_1\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_loso_handdrawn_1\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_loso_handdrawn_1\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_loso_handdrawn_1\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_loso_handdrawn_2\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_loso_handdrawn_2\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_loso_handdrawn_2\\model.pt",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_loso_handdrawn_2\\model.pt"
+  ],
+  "metrics": {
+    "steps_per_epoch": 49,
+    "hparams": {
+      "lr": 0.003,
+      "dropout": 0.2
+    },
+    "arm_hparams": {
+      "A0": {
+        "lr": 0.003,
+        "dropout": 0.4
+      },
+      "A1": {
+        "lr": 0.003,
+        "dropout": 0.2
+      },
+      "B": {
+        "lr": 0.003,
+        "dropout": 0.2
+      },
+      "A2": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "tuning_grid": [
+      {
+        "lr": 0.0003,
+        "dropout": 0.2,
+        "val_macro_f1": 90.72792844105372,
+        "best_epoch": 12
+      },
+      {
+        "lr": 0.0003,
+        "dropout": 0.4,
+        "val_macro_f1": 89.92640129468337,
+        "best_epoch": 13
+      },
+      {
+        "lr": 0.001,
+        "dropout": 0.2,
+        "val_macro_f1": 92.29313111100572,
+        "best_epoch": 11
+      },
+      {
+        "lr": 0.001,
+        "dropout": 0.4,
+        "val_macro_f1": 93.3566656836286,
+        "best_epoch": 28
+      },
+      {
+        "lr": 0.003,
+        "dropout": 0.2,
+        "val_macro_f1": 94.69074375589686,
+        "best_epoch": 27
+      },
+      {
+        "lr": 0.003,
+        "dropout": 0.4,
+        "val_macro_f1": 93.70143750853292,
+        "best_epoch": 12
+      }
+    ],
+    "runs": [
+      {
+        "name": "A0_0",
+        "arm": "A0",
+        "seed": 0,
+        "best_epoch": 28,
+        "val_macro_f1": 94.17777736651783,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A0_1",
+        "arm": "A0",
+        "seed": 1,
+        "best_epoch": 5,
+        "val_macro_f1": 89.21181102803303,
+        "epochs_run": 10,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A0_2",
+        "arm": "A0",
+        "seed": 2,
+        "best_epoch": 27,
+        "val_macro_f1": 94.42586440666325,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A1_0",
+        "arm": "A1",
+        "seed": 0,
+        "best_epoch": 27,
+        "val_macro_f1": 94.69074375589686,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A1_1",
+        "arm": "A1",
+        "seed": 1,
+        "best_epoch": 26,
+        "val_macro_f1": 94.73379349931437,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A1_2",
+        "arm": "A1",
+        "seed": 2,
+        "best_epoch": 30,
+        "val_macro_f1": 94.88857758466929,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "B_0",
+        "arm": "B",
+        "seed": 0,
+        "best_epoch": 29,
+        "val_macro_f1": 94.1521961270863,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.27734375,
+        "holdout_source": null
+      },
+      {
+        "name": "B_1",
+        "arm": "B",
+        "seed": 1,
+        "best_epoch": 29,
+        "val_macro_f1": 94.21639730198655,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.27734375,
+        "holdout_source": null
+      },
+      {
+        "name": "B_2",
+        "arm": "B",
+        "seed": 2,
+        "best_epoch": 27,
+        "val_macro_f1": 94.24384138541284,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.27734375,
+        "holdout_source": null
+      },
+      {
+        "name": "A0_3",
+        "arm": "A0",
+        "seed": 3,
+        "best_epoch": 28,
+        "val_macro_f1": 94.05061250535695,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A0_4",
+        "arm": "A0",
+        "seed": 4,
+        "best_epoch": 29,
+        "val_macro_f1": 94.00200145055078,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A1_3",
+        "arm": "A1",
+        "seed": 3,
+        "best_epoch": 30,
+        "val_macro_f1": 94.47609734346496,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A1_4",
+        "arm": "A1",
+        "seed": 4,
+        "best_epoch": 8,
+        "val_macro_f1": 92.03244331674495,
+        "epochs_run": 13,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "B_3",
+        "arm": "B",
+        "seed": 3,
+        "best_epoch": 24,
+        "val_macro_f1": 94.56279514407495,
+        "epochs_run": 29,
+        "realized_synthetic_share": 0.27734375,
+        "holdout_source": null
+      },
+      {
+        "name": "B_4",
+        "arm": "B",
+        "seed": 4,
+        "best_epoch": 25,
+        "val_macro_f1": 93.94917818621552,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.27734375,
+        "holdout_source": null
+      },
+      {
+        "name": "A2_0",
+        "arm": "A2",
+        "seed": 0,
+        "best_epoch": 27,
+        "val_macro_f1": 95.04285070205712,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.19921875,
+        "holdout_source": null
+      },
+      {
+        "name": "A2_1",
+        "arm": "A2",
+        "seed": 1,
+        "best_epoch": 28,
+        "val_macro_f1": 95.00180150806875,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.19921875,
+        "holdout_source": null
+      },
+      {
+        "name": "A2_2",
+        "arm": "A2",
+        "seed": 2,
+        "best_epoch": 30,
+        "val_macro_f1": 95.46335788323722,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.19921875,
+        "holdout_source": null
+      },
+      {
+        "name": "A2_3",
+        "arm": "A2",
+        "seed": 3,
+        "best_epoch": 30,
+        "val_macro_f1": 95.1421240364979,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.19921875,
+        "holdout_source": null
+      },
+      {
+        "name": "A2_4",
+        "arm": "A2",
+        "seed": 4,
+        "best_epoch": 25,
+        "val_macro_f1": 95.00175138981707,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.19921875,
+        "holdout_source": null
+      },
+      {
+        "name": "A0_loso_handdrawn_0",
+        "arm": "A0",
+        "seed": 0,
+        "best_epoch": 5,
+        "val_macro_f1": 92.78894040785303,
+        "epochs_run": 10,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A1_loso_handdrawn_0",
+        "arm": "A1",
+        "seed": 0,
+        "best_epoch": 12,
+        "val_macro_f1": 96.51306919657158,
+        "epochs_run": 17,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "B_loso_handdrawn_0",
+        "arm": "B",
+        "seed": 0,
+        "best_epoch": 28,
+        "val_macro_f1": 97.00777166956546,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.27734375,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A2_loso_handdrawn_0",
+        "arm": "A2",
+        "seed": 0,
+        "best_epoch": 21,
+        "val_macro_f1": 97.12323855758491,
+        "epochs_run": 26,
+        "realized_synthetic_share": 0.19921875,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A0_loso_handdrawn_1",
+        "arm": "A0",
+        "seed": 1,
+        "best_epoch": 10,
+        "val_macro_f1": 94.96819524340059,
+        "epochs_run": 15,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A1_loso_handdrawn_1",
+        "arm": "A1",
+        "seed": 1,
+        "best_epoch": 17,
+        "val_macro_f1": 96.96544354720064,
+        "epochs_run": 22,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "B_loso_handdrawn_1",
+        "arm": "B",
+        "seed": 1,
+        "best_epoch": 23,
+        "val_macro_f1": 97.33079439708389,
+        "epochs_run": 28,
+        "realized_synthetic_share": 0.27734375,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A2_loso_handdrawn_1",
+        "arm": "A2",
+        "seed": 1,
+        "best_epoch": 2,
+        "val_macro_f1": 89.25938556571005,
+        "epochs_run": 7,
+        "realized_synthetic_share": 0.19921875,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A0_loso_handdrawn_2",
+        "arm": "A0",
+        "seed": 2,
+        "best_epoch": 4,
+        "val_macro_f1": 93.18371573048094,
+        "epochs_run": 9,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A1_loso_handdrawn_2",
+        "arm": "A1",
+        "seed": 2,
+        "best_epoch": 17,
+        "val_macro_f1": 96.70157548802639,
+        "epochs_run": 22,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "B_loso_handdrawn_2",
+        "arm": "B",
+        "seed": 2,
+        "best_epoch": 22,
+        "val_macro_f1": 96.98520879301964,
+        "epochs_run": 27,
+        "realized_synthetic_share": 0.27734375,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A2_loso_handdrawn_2",
+        "arm": "A2",
+        "seed": 2,
+        "best_epoch": 29,
+        "val_macro_f1": 97.0895921962145,
+        "epochs_run": 30,
+        "realized_synthetic_share": 0.19921875,
+        "holdout_source": "github_handdrawn"
+      }
+    ],
+    "real_draws_per_step": {
+      "A0": 256,
+      "A1": 256,
+      "B": 185,
+      "A2": 205
+    },
+    "synthetic_per_step": {
+      "A0": 0,
+      "A1": 0,
+      "B": 71,
+      "A2": 51
+    },
+    "equal_compute_note": "B substitutes 30% of each batch: ~0.7 x batch_size real draws per step vs batch_size for A1 at the same step budget (Decision 13)",
+    "loso_required": true,
+    "loso_holdout_source": "github_handdrawn",
+    "baselines": {
+      "logreg_pixels": {
+        "features": "pixels",
+        "hog_pixels_per_cell": null,
+        "best_C": 0.01,
+        "val_macro_f1": 77.74203480855985,
+        "grid": {
+          "0.01": 77.74203480855985,
+          "0.1": 76.18233001714786,
+          "1.0": 75.52063896992681
+        },
+        "n_train": 6000
+      },
+      "svm_hog": {
+        "features": "hog",
+        "hog_pixels_per_cell": 8,
+        "best_C": 1.0,
+        "val_macro_f1": 82.53716320853333,
+        "grid": {
+          "0.01": 76.77621965475868,
+          "0.1": 81.5740206701818,
+          "1.0": 82.53716320853333
+        },
+        "n_train": 6000
+      }
+    },
+    "loader_benchmark": {
+      "per_step_s": 0.1446675169997616,
+      "images_per_s": 2009.2500377868962,
+      "est_run_s": 212.66124998964955,
+      "est_all_runs_s": 8081.127499606683,
+      "n_runs_budget": 38
+    },
+    "seed_disagreement": {
+      "A0": 0.049663001064207166,
+      "A1": 0.03401915572898191,
+      "B": 0.024086555516140477,
+      "A2": 0.02383824051081944
+    }
+  },
+  "checks": {
+    "same_steps_every_run": true,
+    "all_runs_present": true,
+    "test_reads_this_run": 0,
+    "no_test_reads": true
+  },
+  "status": "passed",
+  "finished_at": "2026-11-09T08:28:06-05:00",
+  "output_hashes": {
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\baselines\\baselines.json": "sha256:38e951fd2e5eed38597b41f2256f7f4e71d18528e4997944c4e7d7c27a64332c",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\loader_benchmark.json": "sha256:079bd9f19d44e71b3e0b6dc8a5f66c272d9613ae49cb773b94df8dea13923c09",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\tuning.json": "sha256:d1cde4b9778f6271c28b742dd94c3ca774899ce054f737477f247fe9513f4301",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\seed_disagreement.json": "sha256:861628270ce183d67de568a5effe3f00257b6857115106c722e350ff6ad4abc2",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_0\\model.pt": "sha256:502bd056504a7760c9147e5772bae6ee9717848b038c853e4c339a3601955dba",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_1\\model.pt": "sha256:82e955a41305225197fee99e582de57e819a2a323c77162b12d49fd0b69facb3",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_2\\model.pt": "sha256:b39433a9442d6289166529054044e28101a3df887386f955c96b3894e7bd4402",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_0\\model.pt": "sha256:54951048f70229c48dce41326dcdb594068b08b82d725faafbb0b30ba80d3bb8",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_1\\model.pt": "sha256:9b347edc1a6c5bae12f9647629c26aed4032122dd27d30ccb3d1bf54ebc0b3a3",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_2\\model.pt": "sha256:e9745259ba3cba3594ec5dc3b648fc36b1566d72a28681fdc30536710ebee252",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_0\\model.pt": "sha256:f8ac31622b43aa6d9e44911ab9390d9ed51406d77490f5a75c4b0bc94e4af4c0",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_1\\model.pt": "sha256:1cd1ccf17d24011b7f8b20fea69ac1c6d8ffca232415f9c56fa605de97ae2503",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_2\\model.pt": "sha256:b2047c994aa85b6d752167fc9ac59acd4418ee62af83d8636d00167d239447df",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_3\\model.pt": "sha256:07d4fcbcd63790f0753557ccffa69f217aaa063ad96e6fa632b50ee7931ece5e",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_4\\model.pt": "sha256:4bd320134c66f32c306b2c279c463741328214b0dedd32bab1595a17a4dc38df",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_3\\model.pt": "sha256:5948ce5e20d982bae8c05fc89200876d24a4d11c13a66c31935159ad9b6dda30",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_4\\model.pt": "sha256:a53294e9595053c3e5dbe26d300c00d1f637d987abf174dabcd4800fd986ea01",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_3\\model.pt": "sha256:3fda1ff14ec5d03da4435d1f68110127b5d68c65bd599278fa87501ff059897c",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_4\\model.pt": "sha256:047d1586114538feb4f1c889c07fcc4a1377ebae5a66c5f757ccc12652d37e0b",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_0\\model.pt": "sha256:d862850e34d973950c52c4d6869cb2b0459e0da70d50462bded03c2b3715e8ce",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_1\\model.pt": "sha256:74ec74a5385a2548781be65e3452e7dacc44facccd907e8eb7311221acae4760",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_2\\model.pt": "sha256:e70f2b56ce35a84738126d7fc8ac6baa8ee152bcf7ed4ce2fb328386e8cfe3c7",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_3\\model.pt": "sha256:c8941d8be4c6758e77cedbbb7c08458b0cda128bfecb1cf75a6e717a0c2cd221",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_4\\model.pt": "sha256:2c82c82cf40f04d3f676085f2675d0d2fb10f535cb950d14d42e2b1ecb94f4e1",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_loso_handdrawn_0\\model.pt": "sha256:c91a8c21426918f83ab0270a1159346246624361721293bb2ad051fa928457b3",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_loso_handdrawn_0\\model.pt": "sha256:6f543d22947dcbbffcd33538c6ee07c14c2a7f0bdb260e2fdb29bbb8eb1ed6db",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_loso_handdrawn_0\\model.pt": "sha256:0eefffe5f6de4297cc7dd7eb39e912668baa7528dced539328471a9bd6bbae99",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_loso_handdrawn_0\\model.pt": "sha256:85194a4b79a81e22707a630b9bd2600262db1c132ff7f950288d3ac3f66ec5f4",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_loso_handdrawn_1\\model.pt": "sha256:64b925897bd97f674da4d6da174c3a1b7a7414ed078cf9583203467a10739f50",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_loso_handdrawn_1\\model.pt": "sha256:f56a2475327c2bce441e8374eb7b8c5c2305c80e30a68498ca5945fb94a67861",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_loso_handdrawn_1\\model.pt": "sha256:d6640649f86f8e2160dc98699794cdeebc327c1f1370bd6f2c37ff36815052fd",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_loso_handdrawn_1\\model.pt": "sha256:09682a8be2fdb0b272c7f67400b98e94d782913246cfb2a901333e1b58a1f1f3",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A0_loso_handdrawn_2\\model.pt": "sha256:e450698541736055ad485510f68419dbc6c30161aef4e616caf2baef2c2ba631",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A1_loso_handdrawn_2\\model.pt": "sha256:a01460e7ca80d2b8fccf94c99be78ccab5e2b8d207fc106bbb0e2de85e208c0b",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\B_loso_handdrawn_2\\model.pt": "sha256:fb1c9fb8cddb54538f5fb6db452793ca5ef7281ad69c9dcee73cc5b128880843",
+    "C:\\Users\\Gica\\Github_Clones\\ShapeSense\\artifacts\\stage4\\A2_loso_handdrawn_2\\model.pt": "sha256:91723243ddc29004a4e7aa2c0b4706bbedcfb9e48b28367c10dfac72959f8abc"
+  },
+  "started_at": "2026-11-09T07:38:19-05:00"
+}

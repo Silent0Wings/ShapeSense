@@ -1,0 +1,10 @@
+key,value
+verdict,fail
+delta_macro_f1_points,+0.1
+ci_lo,-0.7
+ci_hi,0.8
+reasons,"gain 0.06 < 1.00 points; CI includes 0 ([-0.69, 0.83])"
+harmful_classes,
+expected_test_half_width,0.8
+underpowered,no
+gap_closed_fraction,-82.515

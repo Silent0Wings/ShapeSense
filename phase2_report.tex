@@ -42,7 +42,7 @@
 % Stage 6: facts from the Stage 1/3/4/5 status files, the config and export/.
 % Sections A to J report iteration 1 from frozen copies, so later runs cannot change them.
 \InputIfFileExists{docs/crisp_dm/iteration_1/pipeline_facts.tex}{}{}
-\InputIfFileExists{artifacts/stage6/generated/iteration2_facts.tex}{}{}
+\InputIfFileExists{docs/crisp_dm/iteration_2/report/iteration2_facts.tex}{}{}
 % CRISP-DM iteration 1: committed evidence (validation only) + Stage 1 count.
 \InputIfFileExists{docs/crisp_dm/iteration_1_quickdraw_diamonds.tex}{}{}
 \InputIfFileExists{artifacts/stage1/exclusions.tex}{}{}
@@ -787,17 +787,17 @@ training. The iteration 1 verdict in Section D stands and is not rewritten.
 
 \textbf{Findings at each step.}
 
-{\small\InputIfFileExists{artifacts/stage6/generated/iteration_log.tex}{}{--}}
+{\small\InputIfFileExists{docs/crisp_dm/iteration_2/report/iteration_log.tex}{}{--}}
 
 \textbf{Failures and how each was handled, in the order they happened.} Some were fixed, and some remain open.
 
-{\small\InputIfFileExists{artifacts/stage6/generated/failures.tex}{}{--}}
+{\small\InputIfFileExists{docs/crisp_dm/iteration_2/report/failures.tex}{}{--}}
 
 \textbf{Changes and review points by CRISP-DM step.} Every change to data,
 training or evaluation is filed under its step, followed by what two outside
 code reviews raised after iteration 2 closed. No verdict changed as a result.
 
-{\small\InputIfFileExists{artifacts/stage6/generated/changes.tex}{}{--}}
+{\small\InputIfFileExists{docs/crisp_dm/iteration_2/report/changes.tex}{}{--}}
 
 \textbf{What changed.} The transform defects were fixed, then the augmentation
 and generator settings were tuned on validation only, under a plan committed
