@@ -6,10 +6,10 @@ import { el } from '../ui.js';
 const SIDE = 256;
 const PEN = 8;
 
-function paint(ctx, strokes) {
-  ctx.fillStyle = '#ffffff';
+function paint(ctx, strokes, paper, ink) {
+  ctx.fillStyle = paper;
   ctx.fillRect(0, 0, SIDE, SIDE);
-  ctx.strokeStyle = '#000000'; ctx.fillStyle = '#000000';
+  ctx.strokeStyle = ink; ctx.fillStyle = ink;
   ctx.lineWidth = PEN; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   for (const stroke of strokes) {
     ctx.beginPath();
@@ -30,7 +30,11 @@ export function createPad({ onChange }) {
     const box = canvas.getBoundingClientRect();
     return [((e.clientX - box.left) / box.width) * SIDE, ((e.clientY - box.top) / box.height) * SIDE];
   };
-  const redraw = () => paint(ctx, strokes);
+  // The screen follows the theme; the upload below is always black on white.
+  const redraw = () => {
+    const style = getComputedStyle(document.documentElement);
+    paint(ctx, strokes, style.getPropertyValue('--pad-paper').trim(), style.getPropertyValue('--pad-ink').trim());
+  };
   const changed = () => { redraw(); onChange(strokes.length); };
 
   canvas.addEventListener('pointerdown', (e) => {
@@ -46,13 +50,21 @@ export function createPad({ onChange }) {
   const clear = () => { strokes.length = 0; changed(); };
   const undo = () => { strokes.pop(); changed(); };
   redraw();
+  new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
+
+  function png() {
+    const copy = el('canvas', { width: SIDE, height: SIDE });
+    paint(copy.getContext('2d'), strokes, '#ffffff', '#000000');
+    return copy.toDataURL('image/png');
+  }
 
   return {
     canvas,
     controls: el('div', { class: 'toolbar' },
       el('button', { type: 'button', class: 'ghost', onclick: undo, text: 'Undo' }),
       el('button', { type: 'button', class: 'ghost', onclick: clear, text: 'Clear' })),
-    png: () => canvas.toDataURL('image/png'),
+    png,
     strokeCount: () => strokes.length,
     strokes: () => strokes.map((stroke) => stroke.map(([x, y]) => [Math.round(x), Math.round(y)])),
   };
