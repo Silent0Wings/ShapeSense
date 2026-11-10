@@ -6,7 +6,8 @@ from src.common.config import load_config
 from src.stage2_augment import build_transform
 from src.stage3_synth import build_generator
 from src.stage4_train.prep import BatchPool, prepared
-from src.stage4_train.sampling import BatchStream, step_rng
+from src.stage2_augment.transform import _ink_facts
+from src.stage4_train.sampling import BatchStream, step_rng, to_float
 
 N_CLASSES = 10
 BATCH = 16
@@ -47,7 +48,8 @@ def test_batches_match_the_single_process_stream():
     pool = BatchPool(stream, config, 2)
     try:
         for fast, slow in zip(pool.epoch(1), stream.epoch(1), strict=True):
-            assert (fast.images == slow.images).all()
+            assert fast.images.dtype == np.uint8
+            assert (to_float(fast.images[:, 0]) == slow.images).all()
             assert (fast.labels == slow.labels).all()
             assert (fast.is_synthetic == slow.is_synthetic).all()
     finally:
@@ -64,3 +66,27 @@ def test_one_worker_stays_in_process():
     config = load_config()
     stream = _stream(config, "B")
     assert prepared(stream, config, 1) is stream
+
+
+def test_one_pool_serves_successive_runs():
+    config = load_config()
+    first, second = _stream(config, "B"), _stream(config, "A1")
+    for stream in (first, second):
+        pool = BatchPool(stream, config, 2)
+        try:
+            fast = list(pool.epoch(0))[0]
+            assert (to_float(fast.images[:, 0]) == stream.batch(0, 0).images).all()
+        finally:
+            pool.close()
+
+
+def test_cached_shape_facts_do_not_change_the_augmented_image():
+    config = load_config()
+    transform = build_transform(config)
+    image = _images()[0][0]
+    fresh = transform(image, 0, np.random.default_rng(3))
+    _ink_facts.cache_clear()
+    assert (transform(image, 0, np.random.default_rng(3)) == fresh).all()
+    assert _ink_facts.cache_info().currsize == 1
+    assert (transform(image, 0, np.random.default_rng(3)) == fresh).all()
+    assert _ink_facts.cache_info().hits == 1

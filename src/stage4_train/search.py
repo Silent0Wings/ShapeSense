@@ -46,7 +46,7 @@ GRID_DROPOUT = (0.2, 0.4)
 ARMS = ("A0", "A1", "B", "A2", "P")
 BUDGET_RESULT = REPO_ROOT / "docs" / "crisp_dm" / "iteration_3" / "experiments" / "budget.json"
 
-_STORES: dict = {}
+_FOLDS: dict = {}   # the last grouped split, reused by every trial of the cross-validation
 
 
 def out_dir(config: dict) -> Path:
@@ -64,6 +64,17 @@ def _per_class(run_dir: Path, names: list[str]) -> dict[str, float]:
     return out
 
 
+def _fold_stores(train, val, n_folds: int, index: int, fold_seed: int):
+    """(train, validation) stores of one grouped fold; the split is computed once per process."""
+    key = (id(train), id(val), n_folds, fold_seed)
+    if _FOLDS.get("key") != key:
+        pool = pooled(train, val)
+        # train and val stay referenced here, so their ids cannot be reused while the key lives.
+        _FOLDS.update(key=key, parts=(train, val), pool=pool, folds=grouped_folds(pool, n_folds, fold_seed))
+    kept, held = _FOLDS["folds"][index]
+    return _FOLDS["pool"].take(kept), _FOLDS["pool"].take(held)
+
+
 def run_trial(spec: dict) -> dict:
     """Worker entry point: train one trial, or return its finished result."""
     run_dir = Path(spec["out_dir"])
@@ -78,19 +89,16 @@ def run_trial(spec: dict) -> dict:
     for key, value in spec["overrides"].items():
         set_dotted(config, key, value)
     validate_pipeline(config)
-    if "stores" not in _STORES:
-        _STORES["stores"] = load_stores(config)
-    train, val, ids = _STORES["stores"]
+    train, val, ids = load_stores(config)
     if spec.get("fold") is not None:
         n_folds, index, fold_seed = spec["fold"]
-        pool = pooled(train, val)
-        kept, held = grouped_folds(pool, n_folds, fold_seed)[index]
-        train, val, ids = pool.take(kept), pool.take(held), None
+        train, val = _fold_stores(train, val, n_folds, index, fold_seed)
+        ids = None
     train = train.real_subset(float(config["train"].get("real_fraction", 1.0)), SUBSET_SEED)
     info = train_one(spec["run_name"], spec["arm"], spec["seed"], config, train, val,
                      build_transform(config), build_generator(config), spec["hparams"], run_dir,
                      steps_per_epoch=int(config["train"]["steps_per_epoch"]), val_image_ids=ids,
-                     prep_workers=int(config["train"]["prep_workers"]))
+                     prep_workers=int(config["train"]["prep_workers"]), save_curve=False)
     result = {"name": spec["run_name"], "settings": settings, "val_macro_f1": info["val_macro_f1"],
               "best_epoch": info["best_epoch"], "epochs_run": info["epochs_run"],
               "per_class": _per_class(run_dir, class_names(config))}

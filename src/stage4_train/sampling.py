@@ -144,13 +144,19 @@ def to_float(images_u8: np.ndarray) -> np.ndarray:
     return (images_u8.astype(np.float32) / UINT8_MAX)[:, None, :, :]
 
 
-def make_batch(images_u8: np.ndarray, labels: np.ndarray, class_idx: list[np.ndarray],
-               arm_cfg: dict, batch_size: int, synthetic_fraction: float,
-               n_classes: int, rng: np.random.Generator,
-               transform: TransformLike | None = None,
-               generate: GenerateLike | None = None,
-               excluded_classes: tuple[int, ...] = ()) -> Batch:
-    """Build one training batch for an arm (Mission M2).
+def make_batch(*args, **kwargs) -> Batch:
+    """One training batch in the shared format: images float32 (N, 1, S, S) in [0, 1]."""
+    batch = raw_batch(*args, **kwargs)
+    return Batch(images=to_float(batch.images[:, 0]), labels=batch.labels, is_synthetic=batch.is_synthetic)
+
+
+def raw_batch(images_u8: np.ndarray, labels: np.ndarray, class_idx: list[np.ndarray],
+              arm_cfg: dict, batch_size: int, synthetic_fraction: float,
+              n_classes: int, rng: np.random.Generator,
+              transform: TransformLike | None = None,
+              generate: GenerateLike | None = None,
+              excluded_classes: tuple[int, ...] = ()) -> Batch:
+    """Build one training batch for an arm (Mission M2), images still uint8.
 
     Args:
         images_u8: stored real images, uint8 (N, S, S).
@@ -170,8 +176,8 @@ def make_batch(images_u8: np.ndarray, labels: np.ndarray, class_idx: list[np.nda
     synthetic labels -> ``generate``; if ``arm_cfg["augment"]`` apply
     ``transform`` to every image (real and synthetic); shuffle jointly.
 
-    Returns a ``Batch`` with images float32 (batch_size, 1, S, S) in
-    [0, 1], labels int64, is_synthetic bool.
+    Returns a ``Batch`` with images uint8 (batch_size, 1, S, S), labels
+    int64, is_synthetic bool.
     Raises ValueError when the arm needs a callable that is None. Arm A0
     never calls ``transform`` or ``generate``.
     """
@@ -207,7 +213,7 @@ def make_batch(images_u8: np.ndarray, labels: np.ndarray, class_idx: list[np.nda
                          for i, (img, lbl) in enumerate(zip(imgs, lbls))])
 
     perm = rng.permutation(n_real + n_syn)
-    return Batch(images=to_float(imgs[perm]), labels=lbls[perm], is_synthetic=is_syn[perm])
+    return Batch(images=imgs[perm][:, None], labels=lbls[perm], is_synthetic=is_syn[perm])
 
 
 def step_rng(seed: int, epoch: int, step: int) -> np.random.Generator:
@@ -249,12 +255,17 @@ class BatchStream:
         self.current_epoch = int(epoch)
         self.excluded_classes = tuple(int(c) for c in excluded_classes)
 
+    def raw_batch(self, epoch: int, step: int) -> Batch:
+        """The uint8 batch of one step, the same whichever process builds it."""
+        return raw_batch(self.images_u8, self.labels, self.class_idx, self.arm_cfg,
+                         self.batch_size, self.synthetic_fraction, self.n_classes,
+                         step_rng(self.seed, epoch, step), transform=self.transform, generate=self.generate,
+                         excluded_classes=self.excluded_classes)
+
     def batch(self, epoch: int, step: int) -> Batch:
-        """The batch of one step, the same whichever process builds it."""
-        return make_batch(self.images_u8, self.labels, self.class_idx, self.arm_cfg,
-                          self.batch_size, self.synthetic_fraction, self.n_classes,
-                          step_rng(self.seed, epoch, step), transform=self.transform, generate=self.generate,
-                          excluded_classes=self.excluded_classes)
+        """The batch of one step in the shared float32 format."""
+        raw = self.raw_batch(epoch, step)
+        return Batch(images=to_float(raw.images[:, 0]), labels=raw.labels, is_synthetic=raw.is_synthetic)
 
     def epoch(self, epoch: int) -> Iterator[Batch]:
         """Yield the ``steps`` batches of ``epoch`` (composition fixed per batch)."""

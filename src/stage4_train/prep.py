@@ -3,16 +3,22 @@
 Augmentation and the synthetic generator are about 80% of a training step and
 run in Python, so threads cannot share the work. Each step draws from its own
 generator (``sampling.step_rng``), so the batches are identical for any number
-of workers. Children rebuild ``transform`` and ``generate`` from the config,
-because both are closures and cannot be pickled.
+of workers. One pool of workers serves every run in a process, and each run
+hands them its stream through a temporary file. Children rebuild ``transform``
+and ``generate`` from the config, because both are closures and cannot be
+pickled. Batches come back as uint8, which is a quarter of the size of float32.
 """
 
 from __future__ import annotations
 
 import copy
+import itertools
 import multiprocessing
+import os
+import pickle
 import sys
-from contextlib import contextmanager
+import tempfile
+from contextlib import contextmanager, suppress
 from typing import Iterator
 
 from threadpoolctl import threadpool_limits
@@ -24,18 +30,28 @@ from src.stage4_train.sampling import BatchStream
 
 BATCH_TIMEOUT_S = 600   # a dead worker's batch never arrives, so a stall must become an error
 
-_CHILD: dict[str, BatchStream] = {}
+_CHILD: dict = {}
+_SHARED: dict = {}
+_STREAM_NUMBERS = itertools.count()   # in every temp name, so workers can never mistake a reused path for its old stream
 
 
-def _init_child(stream: BatchStream, config: dict) -> None:
+def _init_child() -> None:
     threadpool_limits(1)   # one math thread each, or the children fight over the cores
-    stream.transform = build_transform(config) if stream.arm_cfg["augment"] else None
-    stream.generate = build_generator(config) if stream.arm_cfg["synthetic"] else None
-    _CHILD["stream"] = stream
 
 
-def _make_batch(job: tuple[int, int]) -> Batch:
-    return _CHILD["stream"].batch(*job)
+def _load_stream(path: str) -> BatchStream:
+    if _CHILD.get("path") != path:
+        with open(path, "rb") as f:
+            stream, config = pickle.load(f)
+        stream.transform = build_transform(config) if stream.arm_cfg["augment"] else None
+        stream.generate = build_generator(config) if stream.arm_cfg["synthetic"] else None
+        _CHILD.update(path=path, stream=stream)
+    return _CHILD["stream"]
+
+
+def _make_batch(job: tuple[str, int, int]) -> Batch:
+    path, epoch, step = job
+    return _load_stream(path).raw_batch(epoch, step)
 
 
 @contextmanager
@@ -56,28 +72,50 @@ def _light_children():
             main.__file__ = saved[1]
 
 
-class BatchPool:
-    """A stream's batches, in order, prepared by ``workers`` processes.
+def _shared_pool(workers: int):
+    """The process-wide pool, so workers and their caches outlive each run.
 
     ``multiprocessing.Pool`` starts every worker at once. ``ProcessPoolExecutor``
     starts them as jobs arrive, and on Windows that broke with an invalid handle.
     """
+    if _SHARED.get("workers") != workers:
+        old = _SHARED.pop("pool", None)
+        _SHARED.clear()   # no half-updated entry if starting the new pool fails
+        if old is not None:
+            old.terminate()
+            old.join()
+        with _light_children():
+            pool = multiprocessing.get_context("spawn").Pool(workers, _init_child)
+        _SHARED.update(workers=workers, pool=pool)
+    return _SHARED["pool"]
+
+
+class BatchPool:
+    """A stream's batches, in order, as uint8 (N, 1, S, S), from ``workers`` processes."""
 
     def __init__(self, stream: BatchStream, config: dict, workers: int) -> None:
         bare = copy.copy(stream)
         bare.transform, bare.generate = None, None
         self.steps = stream.steps
-        with _light_children():
-            self.pool = multiprocessing.get_context("spawn").Pool(workers, _init_child, (bare, config))
+        self.pool = _shared_pool(workers)
+        handle, self.path = tempfile.mkstemp(prefix=f"shapesense_stream_{next(_STREAM_NUMBERS)}_", suffix=".pkl")
+        try:
+            with os.fdopen(handle, "wb") as f:
+                pickle.dump((bare, config), f, protocol=pickle.HIGHEST_PROTOCOL)
+        except BaseException:
+            self.close()
+            raise
 
     def epoch(self, epoch: int) -> Iterator[Batch]:
-        results = self.pool.imap(_make_batch, ((epoch, step) for step in range(self.steps)))
+        results = self.pool.imap(_make_batch, ((self.path, epoch, step) for step in range(self.steps)))
         for _ in range(self.steps):
             yield results.next(timeout=BATCH_TIMEOUT_S)
 
     def close(self) -> None:
-        self.pool.terminate()
-        self.pool.join()
+        """Delete the temp file. Safe to repeat, and never hides the error of a failed run."""
+        # After a failed run a worker may still hold the file open, and Windows then refuses.
+        with suppress(OSError):
+            os.unlink(self.path)
 
 
 def prepared(stream: BatchStream, config: dict, workers: int) -> BatchStream | BatchPool:

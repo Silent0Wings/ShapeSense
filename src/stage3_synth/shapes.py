@@ -13,6 +13,7 @@ rule ceilings are named constants here.
 
 from __future__ import annotations
 
+import functools
 import math
 
 import numpy as np
@@ -32,6 +33,7 @@ TRIANGLE_MIN_ANGLE_DEG = 25.0  # degrees; every interior angle of a triangle
 TRIANGLE_MAX_JITTER_TRIES = 50  # attempts to keep the triangle angle rule after jitter
 ANGLE_EPS_DEG = 1e-6  # degrees; float tolerance for angle comparisons
 REGULAR_SIDES = {"pentagon": 5, "hexagon": 6, "octagon": 8}  # vertex counts
+UNIT_POLYGON_CACHE_SIZE = 8  # distinct (vertex count, phase) pairs; the classes use five
 SUPPORTED_CLASSES = frozenset({
     "circle", "ellipse", "triangle", "square", "rectangle",
     "pentagon", "hexagon", "octagon", "star", "diamond",
@@ -45,6 +47,15 @@ def _uniform(rng: np.random.Generator, lo: float, hi: float, what: str) -> float
     return float(rng.uniform(lo, hi))
 
 
+@functools.lru_cache(maxsize=UNIT_POLYGON_CACHE_SIZE)
+def _unit_polygon(n: int, phase: float) -> np.ndarray:
+    """(n, 2) float64 vertices of the regular n-gon of radius 1, first at `phase`. Read-only."""
+    ang = phase + np.arange(n) * (TWO_PI / n)
+    pts = np.column_stack([np.cos(ang), np.sin(ang)])
+    pts.setflags(write=False)
+    return pts
+
+
 def _regular_polygon(n: int, radius: float, phase: float = -math.pi / 2) -> np.ndarray:
     """Regular n-gon centred at the origin.
 
@@ -56,8 +67,7 @@ def _regular_polygon(n: int, radius: float, phase: float = -math.pi / 2) -> np.n
     Returns:
         float64 (n, 2), x/y in pixels, every vertex at distance `radius`.
     """
-    ang = phase + np.arange(n) * (TWO_PI / n)
-    return np.column_stack([radius * np.cos(ang), radius * np.sin(ang)])
+    return radius * _unit_polygon(n, phase)
 
 
 def _rotate(pts: np.ndarray, theta: float) -> np.ndarray:
@@ -246,8 +256,8 @@ def vertices(name: str, params: dict, size: int) -> np.ndarray:
     centre = np.array([size / 2.0 + params["dx_px"], size / 2.0 + params["dy_px"]])
     out = pts + centre
     # Shift (not clip) so the whole outline stays inside the frame margin.
-    out = out + np.clip(lo_edge - out.min(axis=0), 0.0, None)
-    out = out - np.clip(out.max(axis=0) - hi_edge, 0.0, None)
+    out = out + np.maximum(lo_edge - out.min(axis=0), 0.0)
+    out = out - np.maximum(out.max(axis=0) - hi_edge, 0.0)
     return out
 
 

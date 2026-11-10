@@ -10,13 +10,14 @@ Stage 0 supplies the rails, not the experiment. Its status records:
 from __future__ import annotations
 
 import json
+import os
 import platform
 import subprocess
 import sys
 from pathlib import Path
 
 from src.common.config import REPO_ROOT, load_config, resolve
-from src.common.hashing import sha256_path
+from src.common.hashing import scan_files, sha256_path
 from src.stage0_infra.data_archive import archive_sha256
 from src.stage0_infra.migration import compare, record, write_check
 
@@ -53,13 +54,14 @@ def raw_fingerprint(root: str | Path, exclude: list[str] | None = None) -> str:
     skip = set(exclude or [])
     n_files = n_bytes = 0
     if root.is_dir():
-        for top in root.iterdir():
+        with os.scandir(root) as it:
+            tops = list(it)
+        for top in tops:
             if top.name in skip:
                 continue
-            for p in ([top] if top.is_file() else top.rglob("*")):
-                if p.is_file():
-                    n_files += 1
-                    n_bytes += p.stat().st_size
+            for entry in ([top] if top.is_file() else [e for _, e in scan_files(top.path)]):
+                n_files += 1
+                n_bytes += entry.stat().st_size
     return f"files={n_files};bytes={n_bytes}"
 
 

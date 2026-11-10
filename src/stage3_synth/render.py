@@ -36,9 +36,9 @@ def render_outline(vertices: np.ndarray, size: int, stroke_px: float,
     # A closed line, not polygon(width=): Pillow's wide polygon outline fills
     # concave shapes such as the star. No joint="curve": it adds a pie slice
     # at every vertex (64 per circle) and halves throughput (R8).
-    ring = np.vstack([pts, pts[:1]])
+    coords = pts.ravel().tolist()  # flat [x0, y0, x1, y1, ...]; the first point closes the line
     width = max(1, round(stroke_px * supersample))
-    draw.line([tuple(p) for p in ring.tolist()], fill=BLACK, width=width)
+    draw.line(coords + coords[:2], fill=BLACK, width=width)
     # square caps at real corners so joins have no notch; smooth curves
     # (circle/ellipse polygons) have tiny turning angles and need none
     if len(pts) <= MAX_CAPPED_VERTICES:
@@ -47,4 +47,4 @@ def render_outline(vertices: np.ndarray, size: int, stroke_px: float,
             draw.rectangle((x - r, y - r, x + r, y + r), fill=BLACK)
     small = canvas.resize((size, size), Image.Resampling.BOX)
     arr = np.asarray(small, dtype=np.uint8)
-    return np.where(arr >= BINARY_THRESHOLD, WHITE, BLACK).astype(np.uint8)
+    return BLACK + (arr >= BINARY_THRESHOLD).astype(np.uint8) * (WHITE - BLACK)
