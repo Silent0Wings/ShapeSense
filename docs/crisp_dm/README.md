@@ -22,14 +22,14 @@ ShapeSense trains a small CNN to name ten 2D shapes from a 64×64 drawing. The r
 |---|---|
 | Iteration 1 | Closed. Verdict: fail |
 | Iteration 2 | Closed. Verdict: fail on both evaluation sets |
-| Iteration 3 | Open. Phases 0 to 7 are done, and Phase 8, the report and dashboard, is next |
+| Iteration 3 | Closed. A clean-clone rehearsal reproduced the results |
 | Iteration 3 verdict | **Pass.** A2 vs A0 on damaged images: +9.20 macro-F1 points, 95% CI [8.89, 9.53], no harmed class |
 | Sealed data | Read once per model in Phase 7: 92 reads of 92 expected |
 | Git | Branch `iteration-3`, local only, nothing pushed |
 
 ## What is next, in order
 
-1. **Finish iteration 3.** Write up the experiments, tune, retrain, evaluate once on sealed data, then report and close out..
+1. **Iteration 3 is finished.** The handoff is in `ignore/handoff_iteration3.md`.
 2. **"All models vote" is built.** An equal-weight average of the exported models' class probabilities, with no retraining and no claimed score. Equal weights beat per-class weights on held-apart validation, 95.59 against 94.80..
 3. **Publish a frozen dashboard, if earned.** Stage 7 builds a static Vercel site with live ONNX models, only after all four gates in [`stages/stage_7.md`](../../stages/stage_7.md) are met, including written user approval.
 
