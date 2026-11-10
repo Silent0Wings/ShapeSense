@@ -94,7 +94,7 @@ def _iteration2() -> dict:
 
 
 def _experiments() -> dict:
-    return {name: read_json(f"exp_{name}") for name in ("scarcity", "equal_real", "budget", "batchnorm", "preprocess", "one_transform_on", "val_vs_test")}
+    return {name: read_json(f"exp_{name}") for name in ("scarcity", "equal_real", "budget", "batchnorm", "preprocess", "one_transform_on", "val_vs_test", "vote_check")}
 
 
 def _live() -> dict:

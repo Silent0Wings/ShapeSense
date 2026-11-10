@@ -42,6 +42,17 @@ def _score(arm: str, x64: np.ndarray, labels: tuple[str, ...], scale: float) -> 
             "all": {labels[i]: float(p) for i, p in enumerate(probs)}}
 
 
+def vote(results: list[dict], labels: tuple[str, ...]) -> dict | None:
+    """Equal-weight average of every arm's class probabilities; None without results."""
+    if not results:
+        return None
+    mean = np.mean([[r["all"][label] for label in labels] for r in results], axis=0)
+    order = np.argsort(-mean, kind="stable")   # a tie goes to the earlier class, every time
+    top = [{"label": labels[int(i)], "p": float(mean[i])} for i in order[:TOP_K]]
+    return {"arm": "vote", "label": top[0]["label"], "top": top, "arms": [r["arm"] for r in results],
+            "latency_ms": float(sum(r["latency_ms"] for r in results)), "not_sure": top[0]["p"] < NOT_SURE_BELOW}
+
+
 def infer(image, requested: list[str]) -> dict:
     """Result for one PIL drawing. Reports problems as messages, never as a crash."""
     bundle = _bundle()
@@ -54,6 +65,6 @@ def infer(image, requested: list[str]) -> dict:
     labels = tuple(bundle._labels())
     have = arm_models.available()
     chosen = [arm for arm in ARMS if arm in requested and arm in have]
-    return {"status": "ok", "seen": to_b64_png(x64),
-            "results": [_score(arm, x64, labels, bundle.PIXEL_SCALE) for arm in chosen],
+    results = [_score(arm, x64, labels, bundle.PIXEL_SCALE) for arm in chosen]
+    return {"status": "ok", "seen": to_b64_png(x64), "results": results, "vote": vote(results, labels),
             "missing": [arm for arm in requested if arm not in have]}

@@ -6,8 +6,8 @@ import { post } from '../api.js';
 import { createPad } from '../draw/pad.js';
 import { debounce, el, errorBox, latestOnly, note } from '../ui.js';
 
-const ARM_COLOR = { A0: 'var(--series-1)', A1: 'var(--series-2)', B: 'var(--series-3)', A2: 'var(--series-4)' };
-const ARM_LABEL = Object.fromEntries(Object.entries(ARM_NAMES).map(([key, name]) => [key, `${name} (${key})`]));
+const ARM_COLOR = { A0: 'var(--series-1)', A1: 'var(--series-2)', B: 'var(--series-3)', A2: 'var(--series-4)', P: 'var(--series-5)', vote: 'var(--accent)' };
+const ARM_LABEL = { ...Object.fromEntries(Object.entries(ARM_NAMES).map(([key, name]) => [key, `${name} (${key})`])), vote: 'All models vote' };
 const TOP_K = 3;
 const EMPTY = 'Draw a shape to see the prediction.';
 const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
@@ -45,7 +45,7 @@ function resultSlot(arm) {
 }
 
 export function predictPanel({ arms, labels, compact = false }) {
-  const slots = Object.fromEntries(arms.map((arm) => [arm, resultSlot(arm)]));
+  const slots = Object.fromEntries((arms.length > 1 ? ['vote', ...arms] : arms).map((arm) => [arm, resultSlot(arm)]));
   const seenSize = compact ? 96 : 128;
   const seen = el('img', { class: 'pix', src: BLANK, alt: '', width: seenSize, height: seenSize, 'data-tip': 'Your drawing after the same standardization as the training images.' });
   const chips = Object.fromEntries(labels.map((name) => {
@@ -81,7 +81,7 @@ export function predictPanel({ arms, labels, compact = false }) {
         return;
       }
       last = out;
-      out.results.forEach((result) => slots[result.arm].show(result));
+      [out.vote, ...out.results].filter((result) => result && slots[result.arm]).forEach((result) => slots[result.arm].show(result));
       markChips(out.results);
       seen.src = `data:image/png;base64,${out.seen}`; seen.alt = 'Preprocessed drawing';
       message.replaceChildren(out.missing.length
@@ -106,6 +106,7 @@ export function predictPanel({ arms, labels, compact = false }) {
       el('div', { class: 'pad-wrap' }, pad.canvas, pad.controls, tools),
       el('div', {},
         el('div', { class: 'results' }, Object.values(slots).map((slot) => slot.root)),
+        arms.length > 1 ? note('All models vote averages every model above, with equal weight. It has no measured score of its own.') : null,
         el('h3', { text: 'What the model saw (64×64)' }), seen, message)),
     el('div', { class: 'label-row', role: 'list', 'aria-label': 'All classes the models know' },
       Object.values(chips).map((chip) => chip.node)));

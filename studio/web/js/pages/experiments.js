@@ -1,5 +1,6 @@
 import { card, el, fmt, note, pageHead, signed, table, tableView } from '../ui.js';
 import { lines, valueBars } from '../svg/charts.js';
+import { armName } from '../plain.js';
 import { select } from '../widgets/controls.js';
 import { ARM_SERIES, boot } from './boot.js';
 
@@ -74,6 +75,15 @@ function oneOn(d) {
     tableView(known.map(([key, label]) => ({ label, ...d.scores[key] })), [{ key: 'label', label: 'Condition' }, ...scoreColumns])];
 }
 
+function voteCheck(d) {
+  const names = { equal: 'Vote, equal weights', per_class: 'Vote, per-class weights' };
+  const rows = Object.entries(d.held_apart_macro_f1).map(([key, value]) => ({ label: names[key] ?? armName(key), value: Number(fmt(value, 2)), mark: key === 'equal' }));
+  const values = rows.map((r) => r.value);
+  return [valueBars({ rows, label: 'Held-apart validation macro-F1 by method', domain: [Math.floor(Math.min(...values)) - 1, Math.ceil(Math.max(...values)) + 1] }),
+    note(`Per-class weights changed macro-F1 by ${signed(d.per_class_gain_over_equal)} points against equal weights. They would need at least +${d.margin} to be considered, so ${d.keep === 'equal' ? 'equal weights stay' : 'per-class weights cleared the bar'}.`),
+    note(d.note)];
+}
+
 function shares(title, block) {
   const rows = Object.entries(block.rows).map(([name, r]) => ({ name, ...r }));
   return el('div', {}, el('h3', { text: title }), table(rows, [{ key: 'name', label: title }, { label: 'Validation', num: true, render: (r) => pct(r.val_share) }, { label: 'Test', num: true, render: (r) => pct(r.test_share) }]),
@@ -91,6 +101,7 @@ boot('experiments', (main, d) => {
     section('Training length', d.budget, budget),
     section('Re-frame and binarise alone', d.preprocess, preprocess),
     section('One transform on', d.one_transform_on, oneOn),
+    section('All models vote: equal against per-class weights', d.vote_check, voteCheck),
     section('Validation against test balance', d.val_vs_test, (x) => [el('div', { class: 'grid two', style: 'margin:0' }, shares('Class', x.class), shares('Source', x.source)),
       note('Computed from aggregate counts only. No test image or prediction was opened.')]));
 });
