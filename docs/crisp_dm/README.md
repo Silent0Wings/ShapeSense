@@ -22,7 +22,7 @@ ShapeSense trains a small CNN to name ten 2D shapes from a 64×64 drawing. The r
 |---|---|
 | Iteration 1 | Closed. Verdict: fail |
 | Iteration 2 | Closed. Verdict: fail on both evaluation sets |
-| Iteration 3 | Open. Phases 0 to 4 are done, and Phase 5, the tuning search, is running |
+| Iteration 3 | Open. Phases 0 to 5 are done, and Phase 6, the final retraining, is next |
 | Iteration 3 results | Validation experiments only. There is no verdict yet |
 | Sealed data | No sealed set has been read in iteration 3 |
 | Git | Branch `iteration-3`, local only, nothing pushed |
@@ -98,7 +98,7 @@ CRISP-DM has six standard steps, so Optimization is a named stage inside Modelin
 |---|---|
 | Original, image preparation on one core | About 5 to 7.5 minutes effective, with two trials at once |
 | First parallel version | About 3.7 minutes on average, between 2.6 and 5 |
-| Latest optimized code | 163 and 176 seconds on two rerun trials, including start-up. Two trials only, so not yet a reliable average |
+| Latest optimized code | Median 92 to 184 seconds by phase, across the real search. Other programs were closed part way through, so part of this gain is a quieter machine |
 
 The two reruns matched the earlier trials exactly, on every logged number across all 60 epochs.
 
