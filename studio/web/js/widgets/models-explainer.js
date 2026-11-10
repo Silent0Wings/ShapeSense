@@ -27,7 +27,7 @@ function batchBar(values, caption) {
 function modelCard(r, maxEpochs) {
   const usual = { clean: r.clean, augmented: r.augmented, synthetic: r.synthetic };
   return el('div', { class: 'model-card' },
-    el('h3', { text: `${ARM_NAMES[r.arm]} (${r.arm})`, style: `color:${ARM_COLOR[r.arm]}`, 'data-tip': ARM_TIPS[r.arm] }),
+    el('h3', { 'data-tip': ARM_TIPS[r.arm] }, el('span', { class: 'arm-swatch', style: `background:${ARM_COLOR[r.arm]}` }), `${ARM_NAMES[r.arm]} (${r.arm})`),
     el('p', { text: ABOUT[r.arm] }),
     r.pretrain_epochs
       ? [batchBar({ synthetic: r.pretrain_synthetic }, `Epochs 1 to ${r.pretrain_epochs}`), batchBar(usual, `Epochs ${r.pretrain_epochs + 1} to ${maxEpochs}`)]

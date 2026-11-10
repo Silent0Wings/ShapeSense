@@ -38,3 +38,12 @@ def test_each_iteration_reports_its_own_result_and_a_missing_record_is_skipped(m
     monkeypatch.setattr(lights, "read_json", lambda name: records.get(name))
     out = lights.iteration_results()
     assert sorted(out) == [1, 3] and out[1] == {"verdict": "pass", "delta": 9.2, "ci": [8.9, 9.5], "label": "A2 vs A0"}
+
+
+def test_clean_gain_is_read_when_present_and_none_for_older_records(monkeypatch):
+    status = _status()
+    status["metrics"]["robust"]["clean"] = {"A2 vs A0": {"delta": 0.64, "ci": [0.19, 1.07]}}
+    monkeypatch.setattr(lights, "read_json", lambda name: status)
+    assert lights.verdict()["clean"] == {"label": "A2 vs A0", "delta": 0.64, "ci": [0.19, 1.07]}
+    del status["metrics"]["robust"]["clean"]
+    assert lights.verdict()["clean"] is None

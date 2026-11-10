@@ -62,7 +62,7 @@ boot('stage5', (main, d, meta) => {
     el('span', { class: 'big', text: signed(v.delta) }),
     v.verdict === 'pass' ? badge('pass', 'Pass') : badge('fail', 'Fail'),
     el('span', { text: `${nameArms(v.label)}, macro-F1 points, 95% CI [${fmt(v.ci[0])}, ${fmt(v.ci[1])}], ${r.levels.length} damage levels of ${r.n.toLocaleString()} never-read images` })),
-  el('p', { class: 'finding', text: finding(v) }),
+  el('p', { class: 'finding', text: finding(v, { damaged: true }) }),
   el('p', { class: 'note', text: v.reasons.join('. ') }),
   stats(...ARMS.map((a) => stat(armName(a), fmt(r.ensembles[a].perturbed_macro_f1, 1))),
     stat('Test reads', `${d.checks.test_reads} / ${d.checks.test_reads_expected}`, `extra: ${d.checks.extra_reads}`), stat('Expected half-width', fmt(d.power.expected_test_half_width), `limit ${d.power.limit_points}`))));

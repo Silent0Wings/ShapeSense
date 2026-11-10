@@ -20,7 +20,7 @@ boot('failure', (main, _data, meta) => {
   document.title = `${f.id} · ShapeSense Studio`;
   main.append(pageHead({ eyebrow: `Failure ${at + 1} of ${meta.failures.length} · ${f.group}`, title: f.failure, lede: f.cause, chips: [f.iteration, STEP_NAME[f.step]] }));
   main.append(el('div', { class: 'toolbar' }, badge(STATE_TONE[f.state], f.state)));
-  main.append(card('What it looks like', ...failureVisual(f.visual, meta)));
+  main.append(card('What it looks like', ...failureVisual(f.visual, meta, f.iteration)));
   main.append(el('div', { class: 'grid two' },
     card('Why it happened', el('p', { text: f.cause })),
     card('How it was handled', el('p', { text: f.handled }), note(f.state === 'Still open' ? 'This one is not solved.' : `State: ${f.state}.`))));

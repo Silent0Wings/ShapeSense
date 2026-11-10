@@ -25,12 +25,22 @@ export function headline(verdict) {
   return spansZero(verdict.ci) ? 'No clear gain' : 'Target not met';
 }
 
-export function finding(verdict) {
+// Iteration 3 passes { damaged: true }: its test ran on damaged images, and its clean-image result is added after it.
+export function finding(verdict, { damaged = false } = {}) {
   const [candidate, reference] = String(verdict.label).split(' vs ');
   const direction = verdict.delta >= 0 ? 'higher' : 'lower';
   const uncertainty = spansZero(verdict.ci) ? ' The uncertainty range includes no difference at all.' : '';
   const rule = verdict.verdict === 'pass' ? ' It met the success rule set in advance.' : ' It did not meet the success rule set in advance.';
-  return `${armName(candidate)} scored ${fmt(Math.abs(verdict.delta))} points ${direction} than ${armName(reference)}.${uncertainty}${rule}`;
+  const where = damaged ? ' on damaged images' : '';
+  const sentence = `${armName(candidate)} scored ${fmt(Math.abs(verdict.delta))} points ${direction} than ${armName(reference)}${where}.${uncertainty}${rule}`;
+  return damaged && verdict.clean ? `${sentence} ${cleanSentence(verdict.clean)}` : sentence;
+}
+
+function cleanSentence(clean) {
+  const [candidate, reference] = String(clean.label).split(' vs ');
+  const direction = clean.delta >= 0 ? 'higher' : 'lower';
+  const range = spansZero(clean.ci) ? 'Its uncertainty range includes zero.' : 'Its uncertainty range excludes zero.';
+  return `On clean images, ${armName(candidate)} scored ${fmt(Math.abs(clean.delta))} points ${direction} than ${armName(reference)} (95% CI [${fmt(clean.ci[0])}, ${fmt(clean.ci[1])}]). The success rule covers damaged images only, so this is context. ${range}`;
 }
 
 export function verdictPicture(verdict, required) {

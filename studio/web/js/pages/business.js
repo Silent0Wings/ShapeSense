@@ -8,34 +8,42 @@ function numberField(label, value, step, onInput) {
   return { root: el('label', { style: 'display:grid;gap:3px;font-size:13.5px' }, label, input), get: () => Number(input.value) };
 }
 
-boot('business', (main, data) => {
+boot('business', (main, data, meta) => {
   const c = data.criterion;
+  const statusOf = (id) => (meta.iterations.find((it) => it.id === id)?.status === 'closed' ? badge('good', 'Closed') : badge('warn', 'In progress'));
   main.append(pageHead({
     eyebrow: 'CRISP-DM step 1', title: 'Business understanding',
-    lede: 'Does adding procedurally generated shapes to training improve a small CNN on real images? The rule for success was fixed before anyone saw test data, in both iterations.',
+    lede: 'The current question, from iteration 3, is which training mix still works when images are damaged. Iterations 1 and 2 asked earlier questions, both on clean images.',
   }));
+  main.append(card('The question in each iteration', table([
+    { iteration: 'Iteration 1', status: statusOf(1), question: 'Does synthetic data beat augmentation alone?', test: 'Real + synthetic (B) against Real + augmented (A1)', images: 'Clean' },
+    { iteration: 'Iteration 2', status: statusOf(2), question: 'Does the full mix beat real images alone?', test: 'Full mix (A2) against Real only (A0)', images: 'Clean' },
+    { iteration: 'Iteration 3 (current)', status: statusOf(3), question: 'Which training mix survives damage?', test: 'Full mix (A2) against Real only (A0)', images: 'Damaged, with clean shown for context' },
+  ], [{ key: 'iteration', label: 'Iteration' }, { key: 'status', label: 'Status' }, { key: 'question', label: 'Question' },
+    { key: 'test', label: 'Comparison' }, { key: 'images', label: 'Images' }]),
+  el('p', { class: 'note' }, 'Their results are on ', el('a', { href: 'iteration1.html', text: 'iteration 1' }), ' and ', el('a', { href: 'iteration2.html', text: 'iteration 2' }), ', and the iteration 3 experiments are on ', el('a', { href: 'experiments.html', text: 'experiments' }), '.')));
   main.append(el('div', { class: 'grid two' },
-    card('The question and its arms', table([
+    card('The arms and what each one tests', table([
       { arm: 'Real only (A0)', data: 'Real images only', role: 'Control' },
       { arm: 'Real + augmented (A1)', data: 'Real images plus class-safe augmentation', role: 'Isolates augmentation' },
-      { arm: 'Real + synthetic (B)', data: 'A1 plus synthetic images in every batch', role: 'Iteration 1 primary hypothesis: B beats A1' },
+      { arm: 'Real + synthetic (B)', data: 'A1 plus synthetic images in every batch', role: 'Iteration 1 test: B against A1' },
       { arm: 'Synthetic pretraining (P)', data: 'Generated shapes first, then real images', role: 'Iteration 3, reported descriptively' },
-      { arm: 'Full mix (A2)', data: 'Clean real, augmented real and synthetic images in each batch', role: 'Iteration 2 primary hypothesis: A2 beats A0' },
+      { arm: 'Full mix (A2)', data: 'Clean real, augmented real and synthetic images in each batch', role: 'Iteration 2 test: A2 against A0. Iteration 3 primary test on damaged images: A2 against A0' },
     ], [{ key: 'arm', label: 'Arm' }, { key: 'data', label: 'Training data' }, { key: 'role', label: 'Purpose' }])),
     card('The locked success rule', table([
-      { rule: 'Macro-F1 gain (iteration 2: A2 over A0)', value: `at least ${c.macro_f1_min_gain_points} point` },
+      { rule: 'Macro-F1 gain of A2 over A0 (iterations 2 and 3)', value: `at least ${c.macro_f1_min_gain_points} point` },
       { rule: 'Paired bootstrap confidence level', value: `${c.ci_level * 100}%, interval must exclude 0` },
       { rule: 'Largest allowed class drop', value: `${c.max_class_f1_drop_points} points, or the noise band if wider` },
     ], [{ key: 'rule', label: 'Rule' }, { key: 'value', label: 'Value' }]),
     note('These values were frozen before the first test read and are never edited here.'))));
 
-  if (!data.verdict) { main.append(card('Result', note('Stage 5 has not run yet.'))); return; }
+  if (!data.verdict) { main.append(card('Iteration 3 result', note('Stage 5 has not run yet.'))); return; }
   const v = data.verdict;
-  main.append(card('The actual result', el('div', { class: 'hero' },
+  main.append(card('Iteration 3 result: damaged images (current question)', el('div', { class: 'hero' },
     el('span', { class: 'big', text: signed(v.delta) }),
     v.verdict === 'pass' ? badge('pass', 'Criterion met') : badge('fail', 'Criterion not met'),
-    el('span', { text: `points of macro-F1, 95% CI [${fmt(v.ci[0])}, ${fmt(v.ci[1])}]` })),
-    el('p', { class: 'finding', text: finding(v) }), verdictPicture(v, c.macro_f1_min_gain_points),
+    el('span', { text: `points of macro-F1 on damaged images, 95% CI [${fmt(v.ci[0])}, ${fmt(v.ci[1])}]` })),
+    el('p', { class: 'finding', text: finding(v, { damaged: true }) }), verdictPicture(v, c.macro_f1_min_gain_points),
     v.others?.length ? note(otherArmsNote) : null,
     el('p', { class: 'note', text: v.reasons.join('. ') })));
 
@@ -54,10 +62,10 @@ boot('business', (main, data) => {
       r.harmful_classes.length ? note(`Harmful classes: ${r.harmful_classes.join(', ')}`) : note('No class would count as harmed.'));
     } catch (error) { out.replaceChildren(errorBox(error)); }
   }, 120);
-  main.append(card('What if the rule had been different?',
+  main.append(card('Iteration 3: what if the rule had been different?',
     el('div', { class: 'grid two', style: 'margin-bottom:6px' }, gain.root, drop.root),
     el('label', {}, requireCi, ' The confidence interval must exclude 0'),
     out,
-    note(`A what-if only. It re-applies the rule to stored results and changes nothing: the real verdict stays "${v.verdict}". The confidence level is fixed at ${c.ci_level * 100}%, because changing it would need a new computation on test predictions. Per-class drops come from a table rounded to 0.1, so values right at a threshold can differ slightly from the exact rule.`)));
+    note(`A what-if only. It re-applies the rule to the stored iteration 3 results and changes nothing: the real verdict stays "${v.verdict}". The confidence level is fixed at ${c.ci_level * 100}%, because changing it would need a new computation on test predictions. Per-class drops come from a table rounded to 0.1, so values right at a threshold can differ slightly from the exact rule.`)));
   refresh();
 });

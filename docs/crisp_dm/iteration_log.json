@@ -1016,6 +1016,35 @@
           ]
         }
       ]
+    },
+    {
+      "id": "F31",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "deploy",
+      "pipeline_stages": [
+        6
+      ],
+      "failure": "The page for failure F14 showed iteration 3 numbers.",
+      "cause": "Its chart read the live results, which changed when iteration 3 finished. A screen review found it.",
+      "handled": "Earlier failures now read the frozen record of their own iteration, so F14 shows +0.06 and +0.08. F11 shows a note, because no per-epoch log was kept for that run. The live previews on F07, F08 and F10 still use the current settings.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Which results an old failure reads",
+          "before": [
+            "Failure F14",
+            "Live iteration 3 results",
+            "+9.20 shown"
+          ],
+          "after": [
+            "Failure F14",
+            "Frozen iteration 2 record",
+            "+0.06 shown"
+          ]
+        }
+      ]
     }
   ],
   "changes_note": "Every change to data, training or evaluation, filed under its CRISP-DM step.",
@@ -1390,6 +1419,13 @@
       "before": "Each model's full setup had to be pieced together from the shared config and its overrides",
       "after": "configs/models holds one generated file per model with its network, training settings, batch mix, augmentation and generator ranges, and a test keeps them in step with the shared config",
       "why": "A reader can see one model's whole setup in one place."
+    },
+    {
+      "step": "deploy",
+      "what": "Screen review fixes",
+      "before": "A review of every screen found misleading headlines, faint model names, very long pages and colliding labels",
+      "after": "The headline says the gain is on damaged images and gives the clean result, the Business page separates the iterations, the home page is about half as long, findings fold after their first sentence, model names and batch text pass contrast, chart labels no longer collide, and phone touch targets are larger",
+      "why": "Readers should be able to trust and read the results on every screen."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",
