@@ -30,7 +30,7 @@ def _status_lines() -> dict[str, str]:
     card = read_json("model_card") or {}
     winner = tuning.get("winner", {})
     return {
-        "business": ("Does synthetic data help a small CNN? "
+        "business": ("Which training mix survives damage? "
                      + (f"Verdict: {verdict['verdict']}." if verdict else "No verdict yet.")),
         "data": f"{_image_total():,} images from four public sources, leak-free split.",
         "prep": "Class-safe augmentation and a synthetic generator, train side only.",

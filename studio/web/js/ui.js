@@ -48,7 +48,7 @@ export function table(rows, columns) {
   const head = el('tr', {}, columns.map((c) => el('th', { class: c.num ? 'num' : '', text: c.label })));
   const body = rows.map((row) => el('tr', {}, columns.map((c) => {
     const value = c.render ? c.render(row) : row[c.key];
-    return el('td', { class: c.num ? 'num' : '' }, value instanceof Node ? value : String(value ?? '–'));
+    return el('td', { class: c.num ? 'num' : '', 'data-tip': c.tip?.(row) }, value instanceof Node ? value : String(value ?? '–'));
   })));
   return el('div', { class: 'table-wrap' }, el('table', {}, el('thead', {}, head), el('tbody', {}, body)));
 }

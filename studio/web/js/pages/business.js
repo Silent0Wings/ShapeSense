@@ -1,5 +1,5 @@
 import { post } from '../api.js';
-import { finding, verdictPicture } from '../plain.js';
+import { finding, otherArmsNote, verdictPicture } from '../plain.js';
 import { badge, card, debounce, el, errorBox, fmt, latestOnly, note, pageHead, signed, table } from '../ui.js';
 import { boot } from './boot.js';
 
@@ -36,6 +36,7 @@ boot('business', (main, data) => {
     v.verdict === 'pass' ? badge('pass', 'Criterion met') : badge('fail', 'Criterion not met'),
     el('span', { text: `points of macro-F1, 95% CI [${fmt(v.ci[0])}, ${fmt(v.ci[1])}]` })),
     el('p', { class: 'finding', text: finding(v) }), verdictPicture(v, c.macro_f1_min_gain_points),
+    v.others?.length ? note(otherArmsNote) : null,
     el('p', { class: 'note', text: v.reasons.join('. ') })));
 
   const gain = numberField('Minimum gain (points)', c.macro_f1_min_gain_points, 0.1, () => refresh());

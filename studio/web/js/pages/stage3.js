@@ -1,6 +1,6 @@
 import { post } from '../api.js';
 import { card, el, errorBox, fmt, note, pageHead, pixImg, singleFlight, stat, stats, table, tableView } from '../ui.js';
-import { classPicker, sliderRow } from '../widgets/controls.js';
+import { animateButton, classPicker, sliderRow } from '../widgets/controls.js';
 import { boot } from './boot.js';
 
 const SLIDERS = [
@@ -14,8 +14,8 @@ const SLIDERS = [
 
 boot('stage3', (main, d, meta) => {
   main.append(pageHead({ eyebrow: 'Stage 3 · CRISP-DM data preparation', title: 'Synthetic generator',
-    lede: 'Arms B and A2 draw part of each training batch from this generator. These samples come from the real Stage 3 code, including the margins that stop a shape looking like its neighbouring class.',
-    chips: ['arms B and A2', 'starts from the tuned settings', 'margins enforced'] }));
+    lede: 'Arms B and A2 draw part of each training batch from this generator, and arm P trains on it alone before moving to real images. These samples come from the real Stage 3 code, including the margins that stop a shape looking like its neighbouring class.',
+    chips: ['arms B, A2 and P', 'starts from the tuned settings', 'margins enforced'] }));
 
   let seed = 3; let chosen = null;
   const grid = el('div', { class: 'tiles' }); const detail = el('div', {}); 
@@ -64,13 +64,14 @@ boot('stage3', (main, d, meta) => {
   const picker = classPicker(meta.classes, () => { applyClass(); refresh(); }, 8);
   for (const [key, label, min, max, step] of SLIDERS) sliders[key] = sliderRow({ label, min, max, step, value: d.defaults[key], note: ' ', onInput: () => { keepOrdered(key); refresh(); } });
   applyClass();
+  const animation = animateButton({ sliders, onStep: keepOrdered, refresh });
 
   const ranges = Object.entries(d.ranges).filter(([k]) => k !== 'margins_in_force').flatMap(([name, params]) =>
     Object.entries(params).map(([param, [min, max]]) => ({ name, param, min, max })));
   main.append(el('div', { class: 'grid side' },
     card('Controls', ...Object.values(sliders).map((s) => s.root),
-      el('div', { class: 'toolbar' }, el('button', { type: 'button', text: 'Resample', onclick: () => { seed += 100; refresh(); } }),
-        el('button', { type: 'button', class: 'ghost', text: 'Reset to config', onclick: () => { for (const k of Object.keys(sliders)) sliders[k].set(d.defaults[k]); refresh(); } }))),
+      el('div', { class: 'toolbar' }, el('button', { type: 'button', text: 'Resample', onclick: () => { seed += 100; refresh(); } }), animation.button,
+        el('button', { type: 'button', class: 'ghost', text: 'Reset to config', onclick: () => { animation.stop(); for (const k of Object.keys(sliders)) sliders[k].set(d.defaults[k]); refresh(); } }))),
     el('div', {}, card('Generated samples', picker.root, el('div', { style: 'height:10px' }), grid, detail))));
   main.append(el('div', { class: 'grid two' },
     card('Ambiguity margins', stats(...Object.entries(d.margins).map(([k, v]) => stat(k.replace(/_/g, ' '), v))),

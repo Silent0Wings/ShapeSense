@@ -4,6 +4,15 @@ import { fmt } from './ui.js';
 
 export const ARM_NAMES = { A0: 'Real only', A1: 'Real + augmented', B: 'Real + synthetic', A2: 'Full mix', P: 'Synthetic pretraining' };
 
+export const ARM_TIPS = {
+  A0: 'Trained on real images only, with no augmentation. The control.',
+  A1: 'Trained on real images, all of them augmented.',
+  B: 'Trained on augmented real images plus computer-generated shapes.',
+  A2: 'Trained on unchanged real images, augmented real images and computer-generated shapes.',
+  P: 'Pretrained on computer-generated shapes only, then fine-tuned on augmented real images.',
+  vote: 'Averages the probabilities of every model, with equal weight.',
+};
+
 export const armName = (key) => ARM_NAMES[key] ?? key;
 
 // For comparison labels such as "A2 vs A0".
@@ -25,6 +34,13 @@ export function finding(verdict) {
 }
 
 export function verdictPicture(verdict, required) {
+  const others = verdict.others ?? [];
+  const nameOf = (label) => armName(String(label).split(' vs ')[0]);
+  const tested = { delta: verdict.delta, ci: verdict.ci };
   return ciChart({ label: `${nameArms(verdict.label)}: result, uncertainty range and target`, required,
-    rows: [{ label: 'Result', delta: verdict.delta, ci: verdict.ci }] });
+    rows: others.length
+      ? [{ ...tested, label: `${nameOf(verdict.label)} (tested)` }, ...others.map((row) => ({ ...row, label: nameOf(row.label), muted: true }))]
+      : [{ ...tested, label: 'Result' }] });
 }
+
+export const otherArmsNote = 'Every row is compared with Real only, on damaged images. The test and its target were set in advance for Full mix only, so the grey rows are extra comparisons. Synthetic pretraining has no line because no uncertainty range was calculated for it.';
