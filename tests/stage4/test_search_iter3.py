@@ -31,3 +31,21 @@ def test_search_refuses_to_start_before_the_budget_rule_has_run(tmp_path, monkey
     monkeypatch.setattr(search, "BUDGET_RESULT", tmp_path / "missing.json")
     with pytest.raises(FileNotFoundError, match="budget rule"):
         search.adopted_budget()
+
+
+def test_execute_reuses_only_a_trial_with_identical_settings(monkeypatch):
+    config = load_config()
+    same = search._spec(config, "c", "grid", "same", "A1", 0, {"a": 1}, {"lr": 0.1, "dropout": 0.2})
+    other = search._spec(config, "c", "grid", "other", "A1", 0, {"a": 2}, {"lr": 0.1, "dropout": 0.2})
+    finished = [{"name": "t00", "settings": search._settings(same), "val_macro_f1": 90.0}]
+    trained = []
+
+    def fake_run_specs(_config, specs, job_runner):
+        trained.extend(s["run_name"] for s in specs)
+        return {s["run_name"]: {"name": s["run_name"], "settings": search._settings(s), "val_macro_f1": 50.0} for s in specs}
+
+    monkeypatch.setattr(search, "run_specs", fake_run_specs)
+    out = search.execute(config, [same, other], finished=finished)
+    assert trained == [other["run_name"]]
+    assert [r["val_macro_f1"] for r in out] == [90.0, 50.0]
+    assert out[0]["name"] == same["run_name"] and out[1]["name"] == other["run_name"]
