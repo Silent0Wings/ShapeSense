@@ -27,8 +27,8 @@ def test_primary_and_secondary_come_from_the_config():
 def test_hold_out_runs_cover_every_arm_and_the_configured_seeds():
     cfg = load_config()
     runs = s5.loso_runs(cfg)
-    assert len(runs) == 12
-    assert {arm for arm, _, _ in runs} == {"A0", "A1", "B", "A2"}
+    assert len(runs) == 15
+    assert {arm for arm, _, _ in runs} == {"A0", "A1", "B", "A2", "P"}
     assert {seed for _, seed, _ in runs} == {0, 1, 2}
     assert ("A2", 1, "A2_loso_handdrawn_1") in runs
 
