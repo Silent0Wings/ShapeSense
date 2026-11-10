@@ -124,6 +124,9 @@ def _table(rows: dict[str, list[dict]]) -> dict:
     return out
 
 
+HIST_EDGES = {"aspect_ratio": np.linspace(1.0, 4.0, 25), "stroke_px": np.linspace(0.0, 8.0, 25)}
+
+
 def _measure(image: np.ndarray) -> tuple[float, float]:
     """(long side / short side of the bounding box, mean stroke width in pixels)."""
     ink = image < 128
@@ -140,7 +143,8 @@ def _profile(images: np.ndarray, labels: np.ndarray, names: list[str]) -> dict:
     out = {}
     for name in SHAPES:
         measured = np.array([_measure(im) for im in images[labels == names.index(name)]])
-        out[name] = {key: {"mean": float(col.mean()), "p10": float(np.percentile(col, 10)), "p90": float(np.percentile(col, 90))}
+        out[name] = {key: {"mean": float(col.mean()), "p10": float(np.percentile(col, 10)), "p90": float(np.percentile(col, 90)),
+                           "hist": np.histogram(np.clip(col, HIST_EDGES[key][0], HIST_EDGES[key][-1]), HIST_EDGES[key])[0].tolist()}
                      for key, col in (("aspect_ratio", measured[:, 0]), ("stroke_px", measured[:, 1]))}
     return out
 
@@ -255,7 +259,8 @@ def score_all(config: dict) -> dict:
     _write("preprocess", {"scores": _table(preprocess),
                           "profiles": {"real": _profile(val.images, val.labels, names),
                                        "reframed": _profile(reframed, val.labels, names),
-                                       "augmented": _profile(augmented, val.labels, names)}})
+                                       "augmented": _profile(augmented, val.labels, names)},
+                          "hist_edges": {key: edges.tolist() for key, edges in HIST_EDGES.items()}})
 
     one_on = {name: name for name in ("rotation", "scale", "noise", "blur", "reframe_only")}
     one_rows = rows_for(root / "exp_one_on", one_on)
