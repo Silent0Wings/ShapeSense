@@ -10,10 +10,9 @@ from src.stage4_train.sampling import (
     balanced_labels,
     batch_composition,
     class_index,
-    epoch_rng,
     make_batch,
     sample_real_indices,
-    worker_seed,
+    step_rng,
 )
 
 N_CLASSES = 10
@@ -219,11 +218,8 @@ def test_stream_reproducible_per_epoch():
     assert not all(np.array_equal(a.images, c.images) for a, c in zip(e0a, e1))
 
 
-def test_epoch_rng_and_worker_seed_deterministic():
-    r1 = epoch_rng(3, 2).integers(0, 1 << 30, size=4)
-    r2 = epoch_rng(3, 2).integers(0, 1 << 30, size=4)
-    r3 = epoch_rng(3, 3).integers(0, 1 << 30, size=4)
+def test_step_rng_deterministic():
+    r1 = step_rng(3, 2, 0).integers(0, 1 << 30, size=4)
+    r2 = step_rng(3, 2, 0).integers(0, 1 << 30, size=4)
+    r3 = step_rng(3, 3, 0).integers(0, 1 << 30, size=4)
     assert np.array_equal(r1, r2) and not np.array_equal(r1, r3)
-    assert worker_seed(1, 0) == worker_seed(1, 0)
-    assert worker_seed(1, 0) != worker_seed(1, 1)
-    assert worker_seed(1, 0) != worker_seed(2, 0)

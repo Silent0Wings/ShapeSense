@@ -10,18 +10,16 @@ spread evenly over classes), stages/stage_4.md R6/R7/R9 and Mission M2:
 * when the arm augments, ``transform`` is applied to every image, real
   and synthetic alike (R7 "synthetic images are augmented too");
 * all randomness comes from an injected ``np.random.Generator``, and
-  :class:`BatchStream` derives one generator per (seed, epoch), so
-  (arm, seed, epoch) reproduces the identical batch sequence (R9).
+  :class:`BatchStream` derives one generator per (seed, epoch, step), so
+  (arm, seed, epoch) reproduces the identical batch sequence (R9), for any
+  number of preparation workers (``prep.py``).
 
 Stage 2 / Stage 3 code is never imported here. ``transform`` and
 ``generate`` arrive as injected callables matching
 ``src.common.interfaces.TransformFn`` / ``GeneratorFn``.
 
-Why single-process: the train/val images live in memory as one uint8
-array (see ``data.ImageStore``) and the transforms are NumPy functions,
-so one process produces batches faster than the CPU model consumes them.
-DataLoader worker processes would only add pickling overhead on Windows.
-``worker_seed`` is kept so a multi-worker variant stays reproducible.
+This module stays single-process and pure. ``prep.py`` shares the work across
+CPU cores, because preparation is most of a training step on a GPU.
 
 Image conventions: uint8 (S, S) in, float32 (N, 1, S, S) in [0, 1] out.
 """
@@ -212,24 +210,19 @@ def make_batch(images_u8: np.ndarray, labels: np.ndarray, class_idx: list[np.nda
     return Batch(images=to_float(imgs[perm]), labels=lbls[perm], is_synthetic=is_syn[perm])
 
 
-def worker_seed(run_seed: int, worker_id: int) -> int:
-    """Deterministic per-worker seed derived from the run seed (R9, Pitfalls)."""
-    return int(np.random.SeedSequence([int(run_seed), int(worker_id)]).generate_state(1)[0])
-
-
-def epoch_rng(seed: int, epoch: int) -> np.random.Generator:
-    """The generator that produces epoch ``epoch`` of run seed ``seed``."""
-    return np.random.Generator(np.random.PCG64(np.random.SeedSequence([int(seed), int(epoch)])))
+def step_rng(seed: int, epoch: int, step: int) -> np.random.Generator:
+    """The generator for one step, independent of every step before it."""
+    return np.random.Generator(np.random.PCG64(np.random.SeedSequence([int(seed), int(epoch), int(step)])))
 
 
 class BatchStream:
     """Exactly ``steps`` batches per epoch from a (seed, epoch)-derived RNG.
 
     ``iter(stream)`` (or ``stream.epoch(e)``) yields ``steps`` batches
-    drawn with :func:`epoch_rng`, so the same (arm, seed, epoch) always
+    drawn with :func:`step_rng`, so the same (arm, seed, epoch) always
     gives the identical sequence (R9). Decision 13: an epoch is a fixed
-    step budget, not a pass over the data. Runs in-process; see the
-    module docstring for why no DataLoader workers are used.
+    step budget, not a pass over the data. Runs in-process; ``prep.py``
+    prepares the same batches on several cores.
     """
 
     def __init__(self, images_u8: np.ndarray, labels: np.ndarray, arm_cfg: dict,
@@ -256,14 +249,17 @@ class BatchStream:
         self.current_epoch = int(epoch)
         self.excluded_classes = tuple(int(c) for c in excluded_classes)
 
+    def batch(self, epoch: int, step: int) -> Batch:
+        """The batch of one step, the same whichever process builds it."""
+        return make_batch(self.images_u8, self.labels, self.class_idx, self.arm_cfg,
+                          self.batch_size, self.synthetic_fraction, self.n_classes,
+                          step_rng(self.seed, epoch, step), transform=self.transform, generate=self.generate,
+                          excluded_classes=self.excluded_classes)
+
     def epoch(self, epoch: int) -> Iterator[Batch]:
         """Yield the ``steps`` batches of ``epoch`` (composition fixed per batch)."""
-        rng = epoch_rng(self.seed, epoch)
-        for _ in range(self.steps):
-            yield make_batch(self.images_u8, self.labels, self.class_idx, self.arm_cfg,
-                             self.batch_size, self.synthetic_fraction, self.n_classes,
-                             rng, transform=self.transform, generate=self.generate,
-                             excluded_classes=self.excluded_classes)
+        for step in range(self.steps):
+            yield self.batch(epoch, step)
 
     def __iter__(self) -> Iterator[Batch]:
         return self.epoch(self.current_epoch)

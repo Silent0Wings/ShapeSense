@@ -21,7 +21,7 @@ TorchScript together with its probabilities. Early stopping waits
 ``early_stopping_patience`` epochs without improvement.
 
 Determinism (R9): ``torch.manual_seed(seed)``, NumPy only through
-``sampling.epoch_rng(seed, epoch)``, a fixed thread count and
+``sampling.step_rng(seed, epoch, step)``, a fixed thread count and
 ``torch.use_deterministic_algorithms(True, warn_only=True)``.
 
 Stage 4 never touches the test split; the stores it receives were built
@@ -46,6 +46,7 @@ from torch import nn
 from src.common.config import resolve
 from src.common.hashing import sha256_obj, sha256_path
 from src.stage4_train.model import build_model, count_params
+from src.stage4_train.prep import BatchPool, prepared
 from src.stage4_train.sampling import (BatchStream, clean_count, GenerateLike, TransformLike,
                                        batch_composition, to_float)
 
@@ -172,7 +173,7 @@ def runtime_id(config: dict) -> dict:
     return {"device": device, "device_name": name, "torch": torch.__version__}
 
 
-RECIPE_TRAIN_KEYS_IGNORED = ("num_threads", "parallel_runs", "tuned", "benchmark_batches",
+RECIPE_TRAIN_KEYS_IGNORED = ("num_threads", "parallel_runs", "prep_workers", "tuned", "benchmark_batches",
                              "device")  # the resolved hardware is hashed via runtime_id
 RECIPE_CODE_DIRS = ("src/stage2_augment", "src/stage3_synth", "src/stage4_train")
 
@@ -314,7 +315,8 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
               steps_per_epoch: int,
               val_image_ids: np.ndarray | None = None,
               val_scorer: ValScorer | None = None,
-              excluded_classes: tuple[int, ...] = ()) -> dict:
+              excluded_classes: tuple[int, ...] = (),
+              prep_workers: int = 0) -> dict:
     """Train one (arm, seed) CNN with validation-based early stopping (M3).
 
     Args:
@@ -322,7 +324,7 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
         arm: key into ``config["arms"]``; decides only whether ``transform``
             / ``generate`` are used (R2).
         seed: run seed (``config["seed_set"]`` entry); fixes torch init and
-            every batch via ``sampling.epoch_rng`` (R9).
+            every batch via ``sampling.step_rng`` (R9).
         config: merged pipeline config (``load_config()``).
         train_store, val_store: ``data.ImageStore`` (images uint8 (N, S, S),
             labels int64 (N,), class_idx, n_classes). Train may be a
@@ -341,6 +343,9 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
             preset sequence to pin the selected epoch.
         excluded_classes: classes never sampled and left out of validation
             macro-F1 (P-61, leave-one-source-out runs only).
+        prep_workers: CPU processes preparing the batches. They rebuild
+            ``transform`` and ``generate`` from ``config``, so pass more than
+            1 only when both were built from this same ``config``.
 
     Writes ``model.pt`` (TorchScript, best epoch), ``train_log.csv``,
     ``val_curve.png``, ``val_probs.npz`` (probs float32 (n_val, k), labels
@@ -383,6 +388,8 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
                                       transform=transform if arm_cfg["augment"] else None, generate=generate,
                                       class_idx=getattr(train_store, "class_idx", None),
                                       excluded_classes=excluded)
+    pretrain_batches = prepared(pretrain_stream, config, prep_workers) if pretrain_stream else None
+    batches = None if pretrain_stream else prepared(stream, config, prep_workers)
     val_labels = np.asarray(val_store.labels, dtype=np.int64)
     n_val = int(val_labels.shape[0])
     if val_image_ids is None:
@@ -408,7 +415,11 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
         loss_sum = 0.0
         correct = 0
         seen = 0
-        source = pretrain_stream if epoch_idx < pretrain_epochs else stream
+        if pretrain_stream and epoch_idx == pretrain_epochs:
+            if isinstance(pretrain_batches, BatchPool):
+                pretrain_batches.close()   # one pool at a time
+            batches = prepared(stream, config, prep_workers)
+        source = pretrain_batches if epoch_idx < pretrain_epochs else batches
         for batch in source.epoch(epoch_idx):
             x = torch.from_numpy(batch.images).to(device)
             y = torch.from_numpy(batch.labels).to(device)
@@ -456,6 +467,8 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
             if wait >= patience:
                 break
 
+    if isinstance(batches, BatchPool):
+        batches.close()
     assert best_state is not None and best_probs is not None  # max_epochs >= 1 by config
     model.load_state_dict(best_state)
     model.cpu()  # saved models stay device-neutral for Stages 5 and 6

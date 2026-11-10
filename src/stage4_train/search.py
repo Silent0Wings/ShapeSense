@@ -89,7 +89,8 @@ def run_trial(spec: dict) -> dict:
     train = train.real_subset(float(config["train"].get("real_fraction", 1.0)), SUBSET_SEED)
     info = train_one(spec["run_name"], spec["arm"], spec["seed"], config, train, val,
                      build_transform(config), build_generator(config), spec["hparams"], run_dir,
-                     steps_per_epoch=int(config["train"]["steps_per_epoch"]), val_image_ids=ids)
+                     steps_per_epoch=int(config["train"]["steps_per_epoch"]), val_image_ids=ids,
+                     prep_workers=int(config["train"]["prep_workers"]))
     result = {"name": spec["run_name"], "settings": settings, "val_macro_f1": info["val_macro_f1"],
               "best_epoch": info["best_epoch"], "epochs_run": info["epochs_run"],
               "per_class": _per_class(run_dir, class_names(config))}
