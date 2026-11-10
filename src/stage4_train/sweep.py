@@ -31,6 +31,7 @@ from threadpoolctl import threadpool_limits
 
 from src.common.catalog import load_split_rows
 from src.common.config import DEFAULT_CONFIG, LOSO_ARMS, arm_config, load_config, resolve
+from src.common.hashing import sha256_path
 from src.stage2_augment import build_transform
 from src.stage3_synth import build_generator
 from src.stage4_train.data import ImageStore
@@ -53,6 +54,8 @@ SEED_DISAGREEMENT_NOTE = ("Robustness number only (stage_4.md R11): mean pairwis
 
 JobRunner = Callable[[dict], dict]
 
+_LOADED: dict = {}   # the stores last read from disk; decoding every PNG costs seconds per run
+
 
 # --------------------------------------------------------------------------- #
 # Stores
@@ -64,6 +67,26 @@ def val_image_ids(config: dict) -> np.ndarray:
     return np.array([row[IMAGE_ID_COLUMN] for row in rows], dtype=str)
 
 
+def _loaded_stores(config: dict) -> tuple[ImageStore, ImageStore, np.ndarray]:
+    """The full train and val stores and val ids, read from disk once per process.
+
+    Stores are never modified in place, so every run can share them. The key
+    holds the manifests' contents, so a re-freeze of the splits reads them again.
+    """
+    paths = config["paths"]
+    splits = resolve(paths["splits_dir"])
+    key = (sha256_path(splits / f"{TRAIN_SPLIT}.csv"), sha256_path(splits / f"{VAL_SPLIT}.csv"),
+           paths["unified_dir"], paths["catalog"], config["image_size"], len(config["taxonomy"]["classes"]))
+    if _LOADED.get("key") != key:
+        train = ImageStore.from_split(config, TRAIN_SPLIT)
+        val = ImageStore.from_split(config, VAL_SPLIT)
+        ids = val_image_ids(config)
+        if ids.shape[0] != len(val):
+            raise ValueError(f"val has {len(val)} images but {ids.shape[0]} manifest ids")
+        _LOADED.update(key=key, stores=(train, val, ids))
+    return _LOADED["stores"]
+
+
 def load_stores(config: dict, holdout_source: str | None = None
                 ) -> tuple[ImageStore, ImageStore, np.ndarray]:
     """Train and val ``ImageStore`` plus val image ids, optionally without one source.
@@ -72,11 +95,7 @@ def load_stores(config: dict, holdout_source: str | None = None
     of that source is dropped from BOTH stores and from the id array, so
     ``val_probs.npz`` stays aligned. Never touches the test split (R8).
     """
-    train = ImageStore.from_split(config, TRAIN_SPLIT)
-    val = ImageStore.from_split(config, VAL_SPLIT)
-    ids = val_image_ids(config)
-    if ids.shape[0] != len(val):
-        raise ValueError(f"val has {len(val)} images but {ids.shape[0]} manifest ids")
+    train, val, ids = _loaded_stores(config)
     if holdout_source:
         keep = val.source_ids != str(holdout_source)
         ids = ids[keep]

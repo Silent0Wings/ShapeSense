@@ -231,9 +231,16 @@ def analysis_rng(seed: int, name: str) -> np.random.Generator:
     return np.random.default_rng(np.random.SeedSequence(seed, spawn_key=(zlib.crc32(name.encode("utf-8")),)))
 
 
-def _cluster_counts(codes: np.ndarray, clusters: np.ndarray, m: int, kk: int) -> sparse.csr_matrix:
-    """Sparse (m, k*k): how many images of each cluster fall in each confusion cell."""
-    return sparse.csr_matrix((np.ones(codes.size, dtype=np.int64), (clusters, codes)), shape=(m, kk))
+def _cluster_counts(codes: np.ndarray, clusters: np.ndarray, m: int, kk: int) -> sparse.csc_matrix:
+    """Sparse (levels * k*k, m): how many images of each cluster fall in each level's confusion cell.
+
+    ``codes`` is (levels, n). One matrix for all levels means one sparse product
+    per resample block instead of one per level.
+    """
+    levels = codes.shape[0]
+    cells = (codes + np.arange(levels, dtype=np.int64)[:, None] * kk).ravel()
+    return sparse.csc_matrix((np.ones(cells.size, dtype=np.int64), (cells, np.tile(clusters, levels))),
+                             shape=(levels * kk, m))
 
 
 def cluster_bootstrap(
@@ -272,16 +279,16 @@ def cluster_bootstrap(
     _, clusters = np.unique(np.asarray(groups).astype(str), return_inverse=True)
     m = int(clusters.max()) + 1
     kk = n_classes * n_classes
-    counts_a = [_cluster_counts(y * n_classes + p, clusters, m, kk) for p in pa]
-    counts_b = [_cluster_counts(y * n_classes + p, clusters, m, kk) for p in pb]
+    levels = pa.shape[0]
+    counts_a = _cluster_counts(y * n_classes + pa, clusters, m, kk)
+    counts_b = _cluster_counts(y * n_classes + pb, clusters, m, kk)
 
-    def per_class(matrices: list, weights: np.ndarray) -> np.ndarray:
+    def per_class(matrix: sparse.csc_matrix, weights: np.ndarray) -> np.ndarray:
         """Mean per-class F1 over levels, one row per row of ``weights``."""
-        scores = []
-        for matrix in matrices:
-            cells = np.asarray(matrix.T @ weights.T).T.astype(np.int64)
-            scores.append(f1_from_confusion(cells.reshape(-1, n_classes, n_classes)))
-        return np.mean(scores, axis=0)
+        cells = np.asarray(matrix @ weights.T).reshape(levels, n_classes, n_classes, -1)
+        scores = f1_from_confusion(np.moveaxis(cells, -1, 1))
+        # NumPy's float sums depend on memory layout; C order keeps the level mean's bits.
+        return np.asarray(scores, order="C").mean(axis=0)
 
     observed = np.ones((1, m), dtype=np.int64)
     f1_a, f1_b = per_class(counts_a, observed)[0], per_class(counts_b, observed)[0]

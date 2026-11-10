@@ -232,16 +232,18 @@ def predict_proba(model: nn.Module, images_u8: np.ndarray, labels: np.ndarray | 
                   device: str = "cpu") -> tuple[np.ndarray, float]:
     """Softmax probabilities of ``model`` on uint8 (N, S, S) images.
 
+    ``images_u8`` may instead be a float32 tensor already on ``device``.
     Returns ``(probs float32 (N, k), mean cross-entropy)``; the loss is
     ``nan`` when ``labels`` is None. Runs in eval mode without gradients.
     """
     model.eval()
     chunks: list[np.ndarray] = []
     loss_sum = 0.0
-    n = int(np.asarray(images_u8).shape[0])
+    n = int(images_u8.shape[0])
     with torch.no_grad():
         for start in range(0, n, batch_size):
-            x = torch.from_numpy(to_float(images_u8[start:start + batch_size])).to(device)
+            chunk = images_u8[start:start + batch_size]
+            x = chunk if isinstance(chunk, torch.Tensor) else torch.from_numpy(to_float(chunk)).to(device)
             logits = model(x)
             if labels is not None:
                 y = torch.from_numpy(np.asarray(labels[start:start + batch_size],
@@ -316,7 +318,8 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
               val_image_ids: np.ndarray | None = None,
               val_scorer: ValScorer | None = None,
               excluded_classes: tuple[int, ...] = (),
-              prep_workers: int = 0) -> dict:
+              prep_workers: int = 0,
+              save_curve: bool = True) -> dict:
     """Train one (arm, seed) CNN with validation-based early stopping (M3).
 
     Args:
@@ -346,6 +349,7 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
         prep_workers: CPU processes preparing the batches. They rebuild
             ``transform`` and ``generate`` from ``config``, so pass more than
             1 only when both were built from this same ``config``.
+        save_curve: write ``val_curve.png``; search trials skip the plot.
 
     Writes ``model.pt`` (TorchScript, best epoch), ``train_log.csv``,
     ``val_curve.png``, ``val_probs.npz`` (probs float32 (n_val, k), labels
@@ -388,10 +392,11 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
                                       transform=transform if arm_cfg["augment"] else None, generate=generate,
                                       class_idx=getattr(train_store, "class_idx", None),
                                       excluded_classes=excluded)
-    pretrain_batches = prepared(pretrain_stream, config, prep_workers) if pretrain_stream else None
-    batches = None if pretrain_stream else prepared(stream, config, prep_workers)
     val_labels = np.asarray(val_store.labels, dtype=np.int64)
     n_val = int(val_labels.shape[0])
+    val_images = torch.from_numpy(to_float(val_store.images)).to(device)
+    # Exact CPU uint8 -> float32 values: dividing on the GPU rounds 126 of the 256 levels differently.
+    pixel_values = torch.from_numpy(to_float(np.arange(256, dtype=np.uint8).reshape(1, 1, 256))).reshape(-1).to(device)
     if val_image_ids is None:
         val_image_ids = np.array([str(i) for i in range(n_val)], dtype=str)
     val_image_ids = np.asarray(val_image_ids).astype(str)
@@ -409,66 +414,74 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
     img_total = 0
     optimizer_steps = 0
 
-    for epoch_idx in range(max_epochs):
-        t_epoch = time.perf_counter()
-        model.train()
-        loss_sum = 0.0
-        correct = 0
-        seen = 0
-        if pretrain_stream and epoch_idx == pretrain_epochs:
-            if isinstance(pretrain_batches, BatchPool):
-                pretrain_batches.close()   # one pool at a time
-            batches = prepared(stream, config, prep_workers)
-        source = pretrain_batches if epoch_idx < pretrain_epochs else batches
-        for batch in source.epoch(epoch_idx):
-            x = torch.from_numpy(batch.images).to(device)
-            y = torch.from_numpy(batch.labels).to(device)
-            optimizer.zero_grad(set_to_none=True)
-            logits = model(x)
-            loss = nn.functional.cross_entropy(logits, y)
-            loss.backward()
-            optimizer.step()
-            scheduler.step()
-            optimizer_steps += 1
-            loss_sum += float(loss.detach()) * int(y.shape[0])
-            correct += int((logits.argmax(dim=1) == y).sum())
-            seen += int(y.shape[0])
-            syn_total += int(batch.is_synthetic.sum())
-            img_total += int(batch.is_synthetic.shape[0])
+    pretrain_batches = prepared(pretrain_stream, config, prep_workers) if pretrain_stream else None
+    batches = None if pretrain_stream else prepared(stream, config, prep_workers)
+    try:
+        for epoch_idx in range(max_epochs):
+            t_epoch = time.perf_counter()
+            model.train()
+            loss_total = torch.zeros((), dtype=torch.float64, device=device)   # read once per epoch, no GPU sync per step
+            correct_total = torch.zeros((), dtype=torch.int64, device=device)
+            seen = 0
+            if pretrain_stream and epoch_idx == pretrain_epochs:
+                if isinstance(pretrain_batches, BatchPool):
+                    pretrain_batches.close()   # one pool at a time
+                batches = prepared(stream, config, prep_workers)
+            source = pretrain_batches if epoch_idx < pretrain_epochs else batches
+            for batch in source.epoch(epoch_idx):
+                x = torch.from_numpy(batch.images).to(device)
+                if batch.images.dtype == np.uint8:
+                    x = pixel_values[x.long()]
+                y = torch.from_numpy(batch.labels).to(device)
+                optimizer.zero_grad(set_to_none=True)
+                logits = model(x)
+                loss = nn.functional.cross_entropy(logits, y)
+                loss.backward()
+                optimizer.step()
+                scheduler.step()
+                optimizer_steps += 1
+                loss_total += loss.detach().double() * int(y.shape[0])
+                correct_total += (logits.argmax(dim=1) == y).sum()
+                seen += int(y.shape[0])
+                syn_total += int(batch.is_synthetic.sum())
+                img_total += int(batch.is_synthetic.shape[0])
 
-        probs, val_loss = predict_proba(model, val_store.images, val_labels, device=device)
-        preds = probs.argmax(axis=1)
-        val_f1 = macro_f1_points(val_labels, preds, n_classes, excluded=excluded)
-        val_acc = accuracy_points(val_labels, preds)
-        score = float(val_scorer(epoch_idx, probs, val_labels)) if val_scorer else val_f1
-        epoch = epoch_idx + 1  # 1-based in logs and run.json
-        log_rows.append({
-            "epoch": epoch,
-            "train_loss": loss_sum / seen if seen else float("nan"),
-            "train_acc_trainmode": PERCENT * correct / seen if seen else float("nan"),
-            "val_loss": val_loss,
-            "val_acc": val_acc,
-            "val_macro_f1": val_f1,
-            "lr": float(scheduler.get_last_lr()[0]),
-            "synthetic_share": syn_total / img_total if img_total else 0.0,
-            "seconds": time.perf_counter() - t_epoch,
-        })
-        if epoch_idx < pretrain_epochs:
-            continue                # the real-image phase decides the best epoch and patience
-        if score > best_score:  # strict: ties keep the earlier epoch
-            best_score = score
-            best_epoch = epoch
-            best_state = copy.deepcopy(model.state_dict())
-            best_probs = probs
-            best_val_f1 = val_f1
-            wait = 0
-        else:
-            wait += 1
-            if wait >= patience:
-                break
+            loss_sum, correct = float(loss_total), int(correct_total)
+            probs, val_loss = predict_proba(model, val_images, val_labels, device=device)
+            preds = probs.argmax(axis=1)
+            val_f1 = macro_f1_points(val_labels, preds, n_classes, excluded=excluded)
+            val_acc = accuracy_points(val_labels, preds)
+            score = float(val_scorer(epoch_idx, probs, val_labels)) if val_scorer else val_f1
+            epoch = epoch_idx + 1  # 1-based in logs and run.json
+            log_rows.append({
+                "epoch": epoch,
+                "train_loss": loss_sum / seen if seen else float("nan"),
+                "train_acc_trainmode": PERCENT * correct / seen if seen else float("nan"),
+                "val_loss": val_loss,
+                "val_acc": val_acc,
+                "val_macro_f1": val_f1,
+                "lr": float(scheduler.get_last_lr()[0]),
+                "synthetic_share": syn_total / img_total if img_total else 0.0,
+                "seconds": time.perf_counter() - t_epoch,
+            })
+            if epoch_idx < pretrain_epochs:
+                continue                # the real-image phase decides the best epoch and patience
+            if score > best_score:  # strict: ties keep the earlier epoch
+                best_score = score
+                best_epoch = epoch
+                best_state = copy.deepcopy(model.state_dict())
+                best_probs = probs
+                best_val_f1 = val_f1
+                wait = 0
+            else:
+                wait += 1
+                if wait >= patience:
+                    break
+    finally:
+        for prepared_batches in (pretrain_batches, batches):   # also when training raises
+            if isinstance(prepared_batches, BatchPool):
+                prepared_batches.close()
 
-    if isinstance(batches, BatchPool):
-        batches.close()
     assert best_state is not None and best_probs is not None  # max_epochs >= 1 by config
     model.load_state_dict(best_state)
     model.cpu()  # saved models stay device-neutral for Stages 5 and 6
@@ -476,7 +489,8 @@ def train_one(run_name: str, arm: str, seed: int, config: dict,
     np.savez(out_dir / VAL_PROBS_FILE, probs=best_probs.astype(np.float32),
              labels=val_labels, image_ids=val_image_ids)
     _write_log(log_rows, out_dir / TRAIN_LOG_CSV)
-    _plot_curve(log_rows, best_epoch, out_dir / VAL_CURVE_FILE)
+    if save_curve:
+        _plot_curve(log_rows, best_epoch, out_dir / VAL_CURVE_FILE)
 
     info = {
         "run_name": run_name,

@@ -33,8 +33,8 @@ BINARY_LEVEL = 0.5         # re-threshold on the 0..1 ink map (half of INK_VALUE
 FRAME_MARGIN_PX = 1        # pixels kept white between the ink and the frame edge
 FIT_SHRINK_FACTOR = 0.97   # multiplicative scale step when the ink does not fit, unitless
 MAX_FIT_STEPS = 100        # bound on shrink iterations (0.97**100 is about 0.05)
-NOISE_KERNEL = (3, 3)      # 1-px dilation neighbourhood around the outline, pixels
 THIN_LINE_LEVEL = 0.2      # share of the warped peak kept for 1-px strokes, so they stay joined
+SHAPE_CACHE_SIZE = 20_000  # stored images whose ink facts are kept; synthetic images churn through it
 
 
 @dataclass(frozen=True)
@@ -55,11 +55,28 @@ class _Ranges:
     frame_margin: float           # standardization margin, share of the bbox side
 
 
+@functools.lru_cache(maxsize=8)
 def _outer_ring(size: int, width: int) -> np.ndarray:
-    """(size, size) bool mask of the outermost `width` pixels (the frame margin)."""
+    """(size, size) bool mask of the outermost `width` pixels (the frame margin). Read-only."""
     mask = np.ones((size, size), dtype=bool)
     mask[width:size - width, width:size - width] = False
+    mask.setflags(write=False)
     return mask
+
+
+@functools.lru_cache(maxsize=SHAPE_CACHE_SIZE)
+def _ink_facts(pixels: bytes, size: int, threshold: float) -> tuple[np.ndarray, bool]:
+    """(ink pixel positions, whether the stroke is 1 px thin) for one image. Read-only.
+
+    The same stored images are augmented many times, and neither fact depends on the random draw.
+    """
+    img = np.frombuffer(pixels, dtype=np.uint8).reshape(size, size)
+    pts = ink_coords(img, threshold)
+    pts.setflags(write=False)
+    ink = img < threshold
+    # Thin means no 2x2 block is all ink, which is what a 2x2 binary erosion tests.
+    solid = ink[:-1, :-1] & ink[:-1, 1:] & ink[1:, :-1] & ink[1:, 1:]
+    return pts, not solid.any()
 
 
 def _render(ink: np.ndarray, matrix: np.ndarray, center: np.ndarray,
@@ -91,6 +108,20 @@ def _render(ink: np.ndarray, matrix: np.ndarray, center: np.ndarray,
     return warped >= level
 
 
+def _dilate_1px(mask: np.ndarray) -> np.ndarray:
+    """`mask` grown by 1 px in all 8 directions, inside the frame (a full 3x3 dilation).
+
+    One pass along each axis, using slices. mask: (S, S) bool. Returns a new (S, S) bool array.
+    """
+    rows = mask.copy()
+    rows[1:] |= mask[:-1]
+    rows[:-1] |= mask[1:]
+    grown = rows.copy()
+    grown[:, 1:] |= rows[:, :-1]
+    grown[:, :-1] |= rows[:, 1:]
+    return grown
+
+
 def _flip_near_outline(binary: np.ndarray, ring: np.ndarray, fraction: float,
                        rng: np.random.Generator) -> np.ndarray:
     """Add ink to `fraction` of all pixels, chosen among background pixels
@@ -100,8 +131,7 @@ def _flip_near_outline(binary: np.ndarray, ring: np.ndarray, fraction: float,
     binary: (S, S) bool. ring: (S, S) bool frame margin, never touched.
     Returns a new (S, S) bool array.
     """
-    near = (ndimage.binary_dilation(binary, structure=np.ones(NOISE_KERNEL, dtype=bool))
-            & ~binary & ~ring)
+    near = _dilate_1px(binary) & ~binary & ~ring
     candidates = np.flatnonzero(near)
     n_flip = min(int(round(fraction * binary.size)), candidates.size)
     if n_flip == 0:
@@ -117,7 +147,7 @@ def _augment(img: np.ndarray, shear_allowed: bool, r: _Ranges,
     """One augmented sample. img: (S, S) uint8. Returns (S, S) uint8 in {0, 255}."""
     if img.shape != (r.size, r.size) or img.dtype != np.uint8:
         raise ValueError(f"expected uint8 ({r.size}, {r.size}), got {img.dtype} {img.shape}")
-    pts = ink_coords(img, r.ink_threshold)
+    pts, thin = _ink_facts(img.tobytes(), r.size, r.ink_threshold)
     if pts.shape[0] == 0:
         return np.full((r.size, r.size), WHITE_LEVEL, dtype=np.uint8)
     ink = (img < r.ink_threshold).astype(np.float64) * INK_VALUE
@@ -144,14 +174,14 @@ def _augment(img: np.ndarray, shear_allowed: bool, r: _Ranges,
     # Without this, rotation + fit-to-frame shrinks training shapes below the
     # size of every (never augmented) validation/test image.
     q = (pts - center) @ linear.T
-    extent = float((q.max(axis=0) - q.min(axis=0)).max()) + 1.0
+    q_max, q_min = q.max(axis=0), q.min(axis=0)
+    extent = float((q_max - q_min).max()) + 1.0
     target = r.size / (1.0 + 2.0 * r.frame_margin)
     scale = scale * target / extent
-    mid = 0.5 * (q.max(axis=0) + q.min(axis=0)) * scale
+    mid = 0.5 * (q_max + q_min) * scale
     frame_center = np.full(2, (r.size - 1) / 2.0)
     shift = frame_center - center - mid + shift
     ring = _outer_ring(r.size, FRAME_MARGIN_PX)
-    thin = not ndimage.binary_erosion(ink > 0, structure=np.ones((2, 2), dtype=bool)).any()
     binary = None
     # Cheap analytic fit first (ink pixel centres), then render; re-render
     # only if interpolation/blur still reaches the frame margin.
@@ -170,7 +200,7 @@ def _augment(img: np.ndarray, shear_allowed: bool, r: _Ranges,
     binary = binary & ~ring
     if do_noise:
         binary = _flip_near_outline(binary, ring, r.noise_fraction, rng)
-    return np.where(binary, BLACK_LEVEL, WHITE_LEVEL).astype(np.uint8)
+    return WHITE_LEVEL - binary.astype(np.uint8) * (WHITE_LEVEL - BLACK_LEVEL)
 
 
 def build_transform(config: dict) -> Callable[[np.ndarray, int, np.random.Generator], np.ndarray]:

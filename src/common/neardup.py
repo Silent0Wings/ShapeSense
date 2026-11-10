@@ -13,8 +13,7 @@ import numpy as np
 
 def hamming_matrix_row(h: np.ndarray, i: int) -> np.ndarray:
     """Hamming distances from h[i] to h[i+1:] (h is uint64)."""
-    x = np.bitwise_xor(h[i + 1:], h[i])
-    return np.unpackbits(x.view(np.uint8).reshape(-1, 8), axis=1).sum(axis=1)
+    return np.bitwise_count(np.bitwise_xor(h[i + 1:], h[i]))
 
 
 def near_dup_groups(hashes: Sequence[int], max_hamming: int) -> list[int]:

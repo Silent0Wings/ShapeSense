@@ -3,7 +3,6 @@
 importing Stage 4 (implementation.md § Separation of concerns 1)."""
 
 import numpy as np
-from skimage.feature import hog
 
 ORIENTATIONS = 9  # HOG orientation bins
 CELLS_PER_BLOCK = 2  # HOG cells per block side
@@ -23,6 +22,8 @@ def hog_features(images_u8: np.ndarray, pixels_per_cell: int) -> np.ndarray:
     """
     if images_u8.shape[0] == 0:
         return np.empty((0, 0), dtype=np.float32)
+    # Imported here: every batch worker imports this module for PIXEL_SCALE alone.
+    from skimage.feature import hog
     cell = (pixels_per_cell, pixels_per_cell)
     block = (CELLS_PER_BLOCK, CELLS_PER_BLOCK)
     rows = [

@@ -182,8 +182,10 @@ def build_report(repo_root: Path = REPO_ROOT) -> dict[str, Any]:
                 "output": "neither powershell nor pwsh found on PATH"}
     cmd = [exe, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", BUILD_SCRIPT,
            "-File", REPORT_TEX]
+    # errors="replace": PowerShell pipes in the OEM code page, Python decodes in the ANSI
+    # one, and a byte undefined there must not crash the stage over a log line.
     proc = subprocess.run(cmd, cwd=repo_root, capture_output=True, text=True,
-                          timeout=BUILD_TIMEOUT_S)
+                          errors="replace", timeout=BUILD_TIMEOUT_S)
     return {"ok": proc.returncode == 0 and pdf.is_file(), "exe": exe,
             "returncode": proc.returncode, "pdf": _rel(pdf),
             "output": _tail(proc.stdout + proc.stderr)}

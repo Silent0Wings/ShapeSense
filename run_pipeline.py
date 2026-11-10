@@ -63,6 +63,18 @@ def dependency_closure(requested: list[int], depends: dict[int, list[int]]) -> l
     return sorted(seen)
 
 
+def stage_depends(requested: list[int],
+                  load: Callable[[str], object] = importlib.import_module) -> dict[int, list[int]]:
+    """DEPENDS of the requested stages and their dependencies; no other stage is imported."""
+    depends: dict[int, list[int]] = {}
+    pending = list(requested)
+    for n in pending:  # grows while it is walked
+        if n not in depends:
+            depends[n] = [stage_number(d) for d in getattr(load(STAGES[n]), "DEPENDS", [])]
+            pending.extend(depends[n])
+    return depends
+
+
 def restore_frozen_winners(artifacts: Path, source: Path) -> bool:
     """Copy the committed search result to where Stages 4 and 6 read it, if absent."""
     target = artifacts / "stage4" / "tuning_iter3" / "winners.json"
@@ -78,14 +90,16 @@ def _scripts_dir() -> Path:
 
 
 def run_guards(config: dict) -> dict[str, bool]:
-    """import-linter + contract tests. Writes artifacts/stage0/guards.json."""
-    results = {}
+    """import-linter + contract tests, side by side. Writes artifacts/stage0/guards.json."""
     lint = [sys.executable, "-c",
             "import sys; from importlinter.cli import lint_imports_command as c; "
             "sys.argv=['lint-imports']; c()"]
-    results["import_linter"] = subprocess.run(lint, cwd=REPO_ROOT).returncode == 0
     tests = [sys.executable, "-m", "pytest", "tests/contracts", "-q", "-p", "no:cacheprovider"]
-    results["contract_tests"] = subprocess.run(tests, cwd=REPO_ROOT).returncode == 0
+    # Both guards always run and neither reads the other's output.
+    with subprocess.Popen(lint, cwd=REPO_ROOT) as lint_run, \
+            subprocess.Popen(tests, cwd=REPO_ROOT) as tests_run:
+        results = {"import_linter": lint_run.wait() == 0,
+                   "contract_tests": tests_run.wait() == 0}
     out = resolve(config["paths"]["artifacts_dir"]) / "stage0" / "guards.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
@@ -157,9 +171,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     restore_frozen_winners(resolve(config["paths"]["artifacts_dir"]), resolve(FROZEN_WINNERS))
-    depends = {n: [stage_number(d) for d in getattr(importlib.import_module(m), "DEPENDS", [])]
-               for n, m in STAGES.items()}
-    numbers = dependency_closure(args.stages or list(STAGES), depends)
+    requested = args.stages or list(STAGES)
+    numbers = dependency_closure(requested, stage_depends(requested))
     outcome = run_stages(config, numbers, force=args.force)
     return exit_code(outcome)
 

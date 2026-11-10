@@ -9,6 +9,7 @@ opened read-only (`mode=ro`), one per process (Windows-safe).
 from __future__ import annotations
 
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +17,8 @@ from PIL import Image
 
 from src.common.config import resolve
 from src.common.splits import load_split
+
+PNG_READERS = 8  # threads reading PNGs; file opens and zlib run outside the GIL
 
 
 def connect_readonly(catalog_path: str | Path) -> sqlite3.Connection:
@@ -49,8 +52,10 @@ def load_images(config: dict, image_ids: list[str]) -> np.ndarray:
     root = resolve(config["paths"]["unified_dir"])
     size = config["image_size"]
     out = np.empty((len(image_ids), size, size), dtype=np.uint8)
-    for i, iid in enumerate(image_ids):
-        out[i] = read_png(root / paths[iid])
+    files = [root / paths[iid] for iid in image_ids]
+    with ThreadPoolExecutor(PNG_READERS) as pool:
+        for i, image in enumerate(pool.map(read_png, files)):
+            out[i] = image
     return out
 
 
