@@ -22,7 +22,7 @@ ShapeSense trains a small CNN to name ten 2D shapes from a 64×64 drawing. The r
 |---|---|
 | Iteration 1 | Closed. Verdict: fail |
 | Iteration 2 | Closed. Verdict: fail on both evaluation sets |
-| Iteration 3 | Open. Phases 0 to 4 are done, and Phase 5, the tuning search, is next |
+| Iteration 3 | Open. Phases 0 to 4 are done, and Phase 5, the tuning search, is running |
 | Iteration 3 results | Validation experiments only. There is no verdict yet |
 | Sealed data | No sealed set has been read in iteration 3 |
 | Git | Branch `iteration-3`, local only, nothing pushed |
@@ -90,9 +90,17 @@ Three seeds, on validation images only. These answer the questions below, but no
 | Does re-framing alone cause errors? | Not much. It keeps shape proportions, and arms trained on it lost 0.3 to 1.1 points |
 | Do validation and test differ in balance? | No. Class shares differ by 1.1% in total and source shares by 0.9% |
 
-### Optimization steps (Modeling)
+### Optimization stage (part of Modeling)
 
-A speed change is registered here as an optimization step once measurement shows it helped. Candidates that are not built or not proven stay listed as candidates.
+CRISP-DM has six standard steps, so Optimization is a named stage inside Modeling rather than a seventh step. A speed change is registered here once measurement shows it helped. Anything not built or not proven stays listed as a candidate.
+
+| Version | Time per 60-epoch trial |
+|---|---|
+| Original, image preparation on one core | About 5 to 7.5 minutes effective, with two trials at once |
+| First parallel version | About 3.7 minutes on average, between 2.6 and 5 |
+| Latest optimized code | 163 and 176 seconds on two rerun trials, including start-up. Two trials only, so not yet a reliable average |
+
+The two reruns matched the earlier trials exactly, on every logged number across all 60 epochs.
 
 | Step | Evidence | Result |
 |---|---|---|
@@ -103,17 +111,17 @@ A speed change is registered here as an optimization step once measurement shows
 | Trained one run at a time | Nested pools were the setup that had hung | The GPU is not shared between runs |
 | Investigated the remaining slow epochs | The CPU was 99% busy in slow epochs and 90% in fast ones, with temperature unchanged | Windows Defender used about 2 cores, and other programs used several more |
 
-Candidates, audited against measurements on 2026-11-09. None is applied yet, and none should be applied while a search runs, because workers reload the transform code for every trial.
+Later optimizations, audited against measurements on 2026-11-09. Do not edit this code while a search runs, because workers reload it for every trial.
 
-| Candidate | Measured size | Assessment |
+| Change | Measured size | State |
 |---|---|---|
-| Cache each stored image's ink points and thin-line flag | About 18% of the transform's time, from a profile | Worth trying. Should not change results |
-| Keep one worker pool across trials | 16 seconds of about 220 per trial are outside the epochs, about 7% | Worth trying |
-| Reduce other CPU load on the machine | Slow epochs had the CPU at 99%, and an epoch ranges from 2 to 6 seconds | Largest effect. Needs a user decision on Defender exclusions |
-| Send batches as 1 MB of bytes | Saves at most about 3 ms of a roughly 69 ms step | Small |
-| Stop syncing with the GPU on every step | Not measured. The GPU is only 38 to 63% busy | Probably small |
-| Cache validation images on the GPU | Conversion is 43 ms of a roughly 3.4 second epoch | About 1% |
-| Skip the training-curve plot | 0.57 seconds per trial | Negligible, and the dashboard uses it |
+| Cache each stored image's ink points and thin-line flag | About 18% of the transform's time, from a profile | Applied |
+| Keep one worker pool across trials | 16 seconds of about 220 per trial were outside the epochs | Applied |
+| Send batches as 1 MB of bytes, with an exact GPU pixel lookup | Saves at most about 3 ms of a roughly 69 ms step | Applied |
+| Stop syncing with the GPU on every step | Not measured separately | Applied |
+| Cache validation images on the GPU | Conversion was 43 ms of a roughly 3.4 second epoch | Applied |
+| Skip the training-curve plot for search trials | 0.57 seconds per trial | Applied |
+| Reduce other CPU load on the machine | Slow epochs had the CPU at 99% | Defender exclusion added by the user |
 | Mixed precision or relaxed determinism | Not measured | Not used, because they change results or repeatability |
 
 All 27 outside-review points are now handled. The last two, unequal real images per step and BatchNorm statistics, were closed by these measurements.

@@ -976,6 +976,20 @@
       "before": "One random generator per epoch, batches built on the training thread, two runs at once",
       "after": "One generator per step, batches built by 7 processes, one run at a time",
       "why": "Image preparation was about 80% of a step. The batches are the same at any process count, but differ from the stream the validation experiments used."
+    },
+    {
+      "step": "model",
+      "what": "Optimization stage",
+      "before": "About 5 to 7.5 minutes per 60-epoch trial, image preparation on one core",
+      "after": "About 3.7 minutes after the first parallel version, and 163 and 176 seconds on two reruns with the latest code",
+      "why": "A named stage inside Modeling. Optimizations are registered once measured. Both reruns matched the earlier trials on every logged number."
+    },
+    {
+      "step": "model",
+      "what": "Repeated search runs",
+      "before": "9 of the 200 search runs repeated a finished trial with identical settings",
+      "after": "Those 9 reuse the finished result, so 191 runs train",
+      "why": "Identical settings give the same result, so training them again adds nothing. No trial limit changes."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",

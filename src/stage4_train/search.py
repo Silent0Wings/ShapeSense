@@ -14,6 +14,7 @@ import argparse
 import copy
 import json
 import random
+from collections.abc import Iterable
 from pathlib import Path
 
 import numpy as np
@@ -75,11 +76,19 @@ def _fold_stores(train, val, n_folds: int, index: int, fold_seed: int):
     return _FOLDS["pool"].take(kept), _FOLDS["pool"].take(held)
 
 
+def _settings(spec: dict) -> dict:
+    return {k: spec.get(k) for k in ("arm", "seed", "overrides", "hparams", "fold")}
+
+
+def _settings_key(settings: dict) -> str:
+    return json.dumps(settings, sort_keys=True)
+
+
 def run_trial(spec: dict) -> dict:
     """Worker entry point: train one trial, or return its finished result."""
     run_dir = Path(spec["out_dir"])
     done_path = run_dir / RESULT_JSON
-    settings = {k: spec.get(k) for k in ("arm", "seed", "overrides", "hparams", "fold")}
+    settings = _settings(spec)
     if done_path.is_file():
         done = json.loads(done_path.read_text(encoding="utf-8"))
         if done.get("settings") == settings:
@@ -171,9 +180,13 @@ def grid_specs(config: dict, path, bases: dict[str, dict]) -> list[dict]:
             for arm, base in bases.items() for lr in GRID_LR for dropout in GRID_DROPOUT]
 
 
-def execute(config: dict, specs: list[dict]) -> list[dict]:
-    done = run_specs(config, specs, job_runner=run_trial)
-    return [done[s["run_name"]] for s in specs]
+def execute(config: dict, specs: list[dict], finished: Iterable[dict] = ()) -> list[dict]:
+    """Train ``specs``, reusing any finished trial with exactly the same settings."""
+    known = {_settings_key(r["settings"]): r for r in finished}
+    pending = [s for s in specs if _settings_key(_settings(s)) not in known]
+    done = run_specs(config, pending, job_runner=run_trial)
+    return [done[s["run_name"]] if s["run_name"] in done else {**known[_settings_key(_settings(s))], "name": s["run_name"]}
+            for s in specs]
 
 
 def save(config: dict, name: str, results: list[dict]) -> None:
@@ -241,7 +254,7 @@ def run_search(config_path=DEFAULT_CONFIG) -> dict:
     save(config, "pretrain", pretrain)
     best_p = best(pretrain)["settings"]["overrides"]
     bases = {"A0": budget, "A1": best_aug, "B": best_b, "A2": best_shares, "P": best_p}
-    grid = execute(config, grid_specs(*args, bases))
+    grid = execute(config, grid_specs(*args, bases), finished=augment + synth_b + synth_a2 + shares + pretrain)
     save(config, "grid", grid)
     pools = {"A0": [], "A1": augment, "B": synth_b, "A2": synth_a2 + shares, "P": pretrain}
     winners, counts, cv_scores = {}, {}, {}
@@ -256,7 +269,7 @@ def run_search(config_path=DEFAULT_CONFIG) -> dict:
         cv_scores[arm] = means
         specs = [_spec(config, config_path, "confirm", f"{arm}_s{seed}", arm, seed,
                        chosen["settings"]["overrides"], chosen["settings"]["hparams"]) for seed in SEEDS]
-        confirmed = execute(config, specs)
+        confirmed = execute(config, specs, finished=candidates)
         save(config, f"confirm_{arm}", confirmed)
         winners[arm] = {"overrides": chosen["settings"]["overrides"], "hparams": chosen["settings"]["hparams"],
                         "cv_macro_f1": max(means), "mean_val_macro_f1": float(np.mean([x["val_macro_f1"] for x in confirmed])),

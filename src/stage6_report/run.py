@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any
 
 from src.common.config import REPO_ROOT, class_names, load_config, resolve
-from src.common.hashing import config_subtree_hash, sha256_path
+from src.common.hashing import sha256_obj, sha256_path
 from src.common.status import StageNotReady
 from src.stage6_report.snippets import write_snippets
 from src.stage6_report.traceability import check_report
@@ -76,10 +76,12 @@ def inputs(config: dict) -> dict[str, str]:
         "phase1_tex": sha256_path(resolve("phase1_report.tex")),
         "stage1": sha256_path(art / "stage1"),
         "stage3": sha256_path(art / "stage3" / "param_ranges.json"),
+        "stage3_status": sha256_path(art / "stage3" / "status.json"),
+        "standardize": sha256_path(resolve("src/stage1_freeze/standardize.py")),
         "stage4_runs": sha256_path(art / "stage4" / "status.json"),
         "stage5": sha256_path(art / "stage5"),
         "export_code": sha256_path(resolve("export/predict.py")),
-        "runs": config_subtree_hash(config, "runs"),
+        "config": sha256_obj(config),
         "iteration_log": sha256_path(resolve("docs/crisp_dm/iteration_log.json")),
     }
 
@@ -255,13 +257,17 @@ def run(config: dict) -> dict:
         },
         "checks": checks,
     }
-    if not checks["report_built"] or not checks["export_smoke_test"]:
+    problems = []
+    if not checks["report_built"]:
+        problems.append(f"report build failed: {build['output'][-400:]}")
+    if not checks["export_smoke_test"]:
+        problems.append(f"export smoke test failed: {smoke['output'][-400:]}")
+    if not checks["traceable"]:
+        problems.append(f"{trace['n_failing']} report numbers failed the traceability check")
+    if not checks["attribution_present"]:
+        problems.append("source attribution is missing from the report or export README")
+    if problems:
         result["status"] = "failed"
-        problems = []
-        if not checks["report_built"]:
-            problems.append(f"report build failed: {build['output'][-400:]}")
-        if not checks["export_smoke_test"]:
-            problems.append(f"export smoke test failed: {smoke['output'][-400:]}")
         result["error"] = " | ".join(problems)
     return result
 
