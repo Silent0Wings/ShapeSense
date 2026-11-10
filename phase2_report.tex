@@ -877,19 +877,6 @@ better. The question therefore moved from clean accuracy on familiar sources to
 survival under damage. The plan was committed before any tuning
 (\nolinkurl{docs/crisp_dm/iteration_3/preregistration.md}).
 
-\textbf{What each step found.}
-
-{\small\InputIfFileExists{artifacts/stage6/generated/iteration3_log.tex}{}{--}}
-
-\textbf{What went wrong, and how it was handled.}
-
-{\small\InputIfFileExists{artifacts/stage6/generated/iteration3_failures.tex}{}{--}}
-
-\textbf{Every change, by CRISP-DM step.} This list runs from the start of the
-project, so earlier entries repeat Section K.
-
-{\small\InputIfFileExists{artifacts/stage6/generated/iteration3_changes.tex}{}{--}}
-
 \textbf{What changed in the method.} Arm P pretrains on synthetic images and then
 fine-tunes on real images. It is reported descriptively, outside the corrected
 comparisons. The search re-scored each arm's best settings by cross-validation
@@ -954,6 +941,19 @@ image stream than the final runs.
 \small
 \IfFileExists{artifacts/stage5/tables/robust_comparisons.tex}{\resizebox{\linewidth}{!}{\input{artifacts/stage5/tables/robust_comparisons.tex}}}{--}
 \end{table}
+
+\textbf{What each step found.}
+
+{\small\InputIfFileExists{artifacts/stage6/generated/iteration3_log.tex}{}{--}}
+
+\textbf{What went wrong, and how it was handled.}
+
+{\small\InputIfFileExists{artifacts/stage6/generated/iteration3_failures.tex}{}{--}}
+
+\textbf{Every change, by CRISP-DM step.} This list runs from the start of the
+project, so earlier entries repeat Section K.
+
+{\small\InputIfFileExists{artifacts/stage6/generated/iteration3_changes.tex}{}{--}}
 
 \begin{thebibliography}{9}
 \bibitem{quickdraw} Google Creative Lab. \emph{The Quick, Draw! Dataset}.
