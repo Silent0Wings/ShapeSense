@@ -3,6 +3,8 @@ import { badge, card, el, errorBox, fmt, note, pageHead, stat, stats, table, tab
 import { lines, heatmap, scoreRows } from '../svg/charts.js';
 import { select, sliderRow } from '../widgets/controls.js';
 import { networkExplorer, recipeBars, systemExplorer, trainingFlow } from '../widgets/architecture.js';
+import { stageBrief, stageNav } from '../widgets/stage-brief.js';
+import { ARM_NAMES } from '../plain.js';
 import { ARM_SERIES, boot } from './boot.js';
 
 function tuningCard(t) {
@@ -51,7 +53,7 @@ function compareCard(d) {
   }, {});
   const all = Object.values(rows);
   const scores = all.flatMap((r) => Object.values(r.values));
-  return card('Validation macro-F1 by arm and seed',
+  return card('Validation score by model and seed',
     scoreRows({ rows: all, series: ARM_SERIES, label: 'Validation macro-F1 by seed and arm', domain: [Math.floor(Math.min(...scores)), Math.ceil(Math.max(...scores))] }),
     tableView(d.runs, [{ key: 'name', label: 'Run' }, { label: 'Val macro-F1', num: true, render: (r) => fmt(r.val_macro_f1) }, { key: 'best_epoch', label: 'Best epoch', num: true }, { key: 'epochs_run', label: 'Epochs run', num: true }, { label: 'Held-out source', render: (r) => r.holdout_source || '–' }]),
     note('The axis is zoomed to the range of these scores, and the highest score in each row is highlighted in that model\'s colour. Selection used validation only. These are not test results.'));
@@ -61,6 +63,23 @@ boot('stage4', (main, d) => {
   main.append(pageHead({ eyebrow: 'Stage 4 · CRISP-DM modeling', title: 'Training',
     lede: 'One small CNN, the same step budget for every arm, five seeds per arm, plus runs that hold out a whole source. Settings were tuned on validation only.',
     chips: ['one GPU', 'same steps per arm', 'best epoch chosen on validation'] }));
+  // The key finding ranks the models by their stored mean validation score.
+  const ranked = Object.entries(d.winners?.winners ?? {}).map(([arm, w]) => ({ arm, mean: w.mean_val_macro_f1 })).sort((a, b) => b.mean - a.mean);
+  const top = ranked[0]; const bottom = ranked[ranked.length - 1];
+  const keyFinding = top
+    ? `The highest mean validation score is ${ARM_NAMES[top.arm]}, at ${fmt(top.mean, 2)}, and the lowest is ${ARM_NAMES[bottom.arm]}, at ${fmt(bottom.mean, 2)}. These are validation scores used for choosing settings; the real test comes in the next stage.`
+    : 'No search results are stored yet, so no model scores can be compared.';
+  const checkLabel = (key) => { const text = key.replace(/_/g, ' '); return text.charAt(0).toUpperCase() + text.slice(1); };
+  const checks = [{ label: 'No test data read in this stage', ok: typeof d.checks.no_test_reads === 'boolean' ? d.checks.no_test_reads : null },
+    ...Object.entries(d.checks).filter(([key, ok]) => key !== 'no_test_reads' && typeof ok === 'boolean').map(([key, ok]) => ({ label: checkLabel(key), ok }))];
+  main.append(stageBrief({
+    job: `Trains the same small network for each of the ${ARM_SERIES.length} models, each on a different mix of training images, so the mixes can be compared fairly.`,
+    input: 'Batches of images and tuned settings.',
+    process: 'Trains each model with several seeds and keeps each run\'s best epoch by validation score.',
+    output: `${d.runs.length} trained runs, including the runs that hold out a whole source.`,
+    finding: keyFinding,
+    checks,
+  }));
   const info = d.benchmark; const seeds = d.seed.per_arm;
   main.append(card('Run setup', stats(stat('Steps per epoch', d.train.steps_per_epoch), stat('Max epochs', d.train.max_epochs), stat('Batch size', d.train.batch_size),
     stat('Heaviest stream', `${Math.round(info.images_per_s).toLocaleString()} img/s`, 'arm B loader'), stat('Model parameters', info.n_params?.toLocaleString() ?? '–')),
@@ -74,15 +93,16 @@ boot('stage4', (main, d) => {
   main.append(card('How each model was trained', trainingFlow(d.train, d.runs),
     el('h3', { text: 'What each model saw in one batch' }), recipeBars(d.recipes, d.train.max_epochs),
     note('Hover a bar for its count. Synthetic pretraining spends its first epochs on computer-generated images only, then continues on real images. The learning rate and dropout each model used are in the search table.')));
+  main.append(compareCard(d));
   if (d.winners) {
     main.append(card('Search on validation (iteration 3)', table(Object.entries(d.winners.winners).map(([arm, w]) => ({ arm, mean: w.mean_val_macro_f1, seeds: w.val_macro_f1_by_seed.map((v) => fmt(v, 1)).join(', '), trials: d.winners.trials_per_arm[arm], lr: w.hparams.lr, dropout: w.hparams.dropout })),
       [{ key: 'arm', label: 'Arm' }, { label: 'Mean val macro-F1', num: true, render: (r) => fmt(r.mean, 2) }, { key: 'seeds', label: 'Seeds 0, 1, 2' }, { key: 'lr', label: 'Learning rate', num: true }, { key: 'dropout', label: 'Dropout', num: true }, { key: 'trials', label: 'Trials', num: true }]),
     note('Each arm got its own learning-rate and dropout tuning. A0 has no augmentation settings to search, so it had fewer trials.')));
   }
-  main.append(compareCard(d));
   main.append(tuningCard(d.tuning));
   main.append(runsCard(d));
   main.append(el('div', { class: 'grid two' },
     card('Seed agreement', stats(...Object.entries(seeds).map(([arm, s]) => stat(`${arm}: seeds disagree`, `${fmt(s.mean_pairwise_disagreement * 100, 1)}%`))), note('Share of validation images where two seeds of the same arm predict different classes. A robustness number, not the power check.')),
     card('Baselines (validation)', stats(stat('Logistic regression on pixels', fmt(d.baselines.logreg_pixels.val_macro_f1, 1)), stat('Linear SVM on HOG', fmt(d.baselines.svm_hog.val_macro_f1, 1))), note('Reference points only. Macro-F1 in points.'))));
+  main.append(stageNav(4));
 });

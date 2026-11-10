@@ -3,9 +3,11 @@ import { get } from '../api.js';
 import { badge, card, el, errorBox, fmt, note, pageHead, pixImg, signed, stat, stats, table, tableView } from '../ui.js';
 import { ciChart, heatmap, scoreRows } from '../svg/charts.js';
 import { classPicker } from '../widgets/controls.js';
+import { stageBrief, stageNav } from '../widgets/stage-brief.js';
 import { ARM_SERIES, boot } from './boot.js';
 
 const ARMS = ARM_SERIES.map((s) => s.key);
+const known = (...values) => values.every((x) => x !== undefined && x !== null);
 
 function confusionCard(names, pairs, candidate) {
   const host = el('div', { style: 'max-width:640px' }); const detail = el('div', {});
@@ -56,8 +58,21 @@ function perClass(rows) {
 boot('stage5', (main, d, meta) => {
   main.append(pageHead({ eyebrow: 'Stage 5 · CRISP-DM evaluation', title: 'Evaluation',
     lede: 'Each model read each sealed set exactly once. Everything on this page comes from what Stage 5 saved, so this page never reads the data again.' }));
-  if (!d.verdict) { main.append(card('Verdict', note('Stage 5 has not run yet.'))); return; }
-  const m = d.metrics; const v = d.verdict; const r = m.robust;
+  if (!d.verdict) { main.append(card('Verdict', note('Stage 5 has not run yet.')), stageNav(5)); return; }
+  const m = d.metrics; const v = d.verdict; const r = m.robust; const c = d.checks;
+  const harmed = Array.isArray(r.harmful_classes) ? r.harmful_classes : null;
+  main.append(stageBrief({
+    job: 'Scores each finished model once on images nobody had looked at, and applies a success rule set in advance.',
+    input: 'The finished models and the sealed image sets.',
+    process: 'Scores every model once and compares them with uncertainty ranges.',
+    output: 'The verdict and the score tables.',
+    finding: `${finding(v, { damaged: true })} The holdout used image sources seen in training, and the damage was synthetic, so this says nothing about new sources.`,
+    checks: [
+      { label: 'The success rule was met', ok: v.verdict === 'pass' },
+      { label: `Sealed reads match the plan: ${known(c.test_reads) ? c.test_reads : 'not recorded'} of ${known(c.test_reads_expected) ? c.test_reads_expected : 'not recorded'}`, ok: known(c.test_reads, c.test_reads_expected) ? c.test_reads === c.test_reads_expected : null },
+      { label: `Extra reads outside the plan: ${known(c.extra_reads) ? c.extra_reads : 'not recorded'}`, ok: known(c.extra_reads) ? c.extra_reads === 0 : null },
+      { label: harmed === null ? 'Harmed classes not recorded' : harmed.length ? `Harmed: ${harmed.map((i) => meta.classes[i] ?? i).join(', ')}` : 'No class scored worse with Full mix than with Real only, beyond the allowed drop', ok: harmed === null ? null : harmed.length === 0 },
+    ] }));
   main.append(card('Verdict', el('div', { class: 'hero' },
     el('span', { class: 'big', text: signed(v.delta) }),
     v.verdict === 'pass' ? badge('pass', 'Pass') : badge('fail', 'Fail'),
@@ -85,6 +100,8 @@ boot('stage5', (main, d, meta) => {
     { label: '95% CI', tip: rangeTip, render: (x) => `[${fmt(x.ci[0])}, ${fmt(x.ci[1])}]` },
     { label: 'Result', tip: resultTip, render: (x) => x.verdict ?? 'descriptive' }]),
     note('These sets do not decide the verdict. The test split and the first fresh holdout had already been read, so they are weaker evidence.')));
+  main.append(confusionCard(meta.classes, d.pairs, d.candidate));
+  main.append(perClass(d.per_class));
   if (d.fresh) {
     const f = d.fresh;
     main.append(card('First fresh holdout (already read)', el('div', { class: 'hero' },
@@ -94,8 +111,6 @@ boot('stage5', (main, d, meta) => {
     scoreRows({ rows: d.fresh_per_class.map((r) => ({ label: r.class, values: Object.fromEntries(ARMS.map((a) => [a, Number(r[`f1_${a}`])])) })), series: ARM_SERIES, label: 'Fresh holdout per-class F1', domain: [85, 100] }),
     note('Images that never entered the catalog and informed no choice. They come from sources seen in training, and include no Quick, Draw! sketches because all local drawings were already used.')));
   }
-  main.append(confusionCard(meta.classes, d.pairs, d.candidate));
-  main.append(perClass(d.per_class));
   main.append(el('div', { class: 'grid two' },
     card('Unseen-source check (9-class)', table(ARMS.map((arm) => { const rows = m.loso.filter((r) => r.arm === arm); const mean = (key) => rows.reduce((s, r) => s + r[key], 0) / rows.length; return { arm, seeds: rows.length, n: rows[0].n, f1: mean('macro_f1'), acc: mean('accuracy') }; }), [{ key: 'arm', label: 'Arm' }, { key: 'seeds', label: 'Seeds', num: true }, { key: 'n', label: 'Images', num: true }, { label: 'Macro-F1', num: true, render: (r) => fmt(r.f1, 1) }, { label: 'Accuracy', num: true, render: (r) => `${fmt(r.acc * 100, 1)}%` }]),
       note('Trained without Hand-Drawn, scored on Hand-Drawn triangles and rectangles only. Hand-Drawn is the only source of ellipses, so this says nothing about ellipses.')),
@@ -103,4 +118,5 @@ boot('stage5', (main, d, meta) => {
   main.append(el('div', { class: 'grid two' },
     card('Power check', stats(stat('Validation half-width', fmt(d.power.half_width_val)), stat('Underpowered?', d.power.underpowered ? 'Yes' : 'No'), stat('Reads before the check', d.power.access_log_reads_at_power_check)), note('Run on validation before the first test read.')),
     card('Test-access log', stats(stat('Lines', d.access.total), stat('Callers', Object.keys(d.access.callers).length)), note(Object.keys(d.access.callers).join(', ')))));
+  main.append(stageNav(5));
 });

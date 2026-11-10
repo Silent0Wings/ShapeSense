@@ -2,6 +2,7 @@ import { post } from '../api.js';
 import { card, el, errorBox, note, pageHead, pixImg, singleFlight, stat, stats } from '../ui.js';
 import { animateButton, classPicker, select, sliderRow } from '../widgets/controls.js';
 import { fanLines } from '../widgets/fan-lines.js';
+import { stageBrief, stageNav } from '../widgets/stage-brief.js';
 import { boot } from './boot.js';
 
 const deg = (v) => `±${v}°`;
@@ -16,11 +17,21 @@ const SLIDERS = [
   ['blur_p', 'Blur probability', 0, 1, 0.05, (v) => `${Math.round(v * 100)}%`],
 ];
 const CLASS_RISK = ['nonuniform_scale', 'shear_deg'];
+const sentence = (key) => { const text = key.replace(/_/g, ' '); return text.charAt(0).toUpperCase() + text.slice(1); };
+const checkRows = (checks = {}) => Object.entries(checks).map(([key, ok]) => ({ label: sentence(key), ok: typeof ok === 'boolean' ? ok : null }));
 
 boot('stage2', (main, d, meta) => {
   main.append(pageHead({ eyebrow: 'Stage 2 · CRISP-DM data preparation', title: 'Augmentation',
     lede: 'Every preview below runs the real Stage 2 code. Pick a class, then change the ranges and see how training images would be altered.',
     chips: ['train side only', 'arms A1, B, A2 and P', 'starts from the tuned settings', 'output is re-framed and binarised'] }));
+  main.append(stageBrief({
+    job: 'Makes more varied training images by changing real drawings at random without changing what shape they are.',
+    input: 'Real training images.',
+    process: 'Rotates, scales, moves, blurs and adds noise, within limits set per shape.',
+    output: 'Augmented images, for training only.',
+    finding: `The first version rotated images through the full range, which hurt shapes whose orientation matters, and augmented shapes came out too small with their strokes breaking apart. Rotation is now limited to ±${d.defaults.rotate_deg}° and both defects are fixed.`,
+    checks: checkRows(d.checks),
+  }));
 
   let index = 0; let seed = 7; let count = 12;
   const original = el('div', {}); const variants = el('div', { class: 'tiles fan-tiles' }); const status = el('p', { class: 'note' });
@@ -78,5 +89,6 @@ boot('stage2', (main, d, meta) => {
   main.append(el('div', { class: 'grid two' },
     card('Pool used here', stats(stat('Train images browsable', d.pool.train.kept.toLocaleString(), `of ${d.pool.train.total_manifest.toLocaleString()}`)), note('Augmentation runs only on the training side, after the split.')),
     card('QA sheet from Stage 2', el('img', { class: 'sheet', src: '/img/qa2', alt: 'Stage 2 quality-check sheet' }))));
+  main.append(stageNav(2));
   refresh();
 });

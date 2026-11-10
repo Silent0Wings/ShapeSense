@@ -1,6 +1,7 @@
 import { get } from '../api.js';
 import { badge, card, debounce, el, errorBox, fmt, note, pageHead, pixImg, stat, stats, table, tableView } from '../ui.js';
 import { classPicker, select } from '../widgets/controls.js';
+import { stageBrief, stageNav } from '../widgets/stage-brief.js';
 import { stackedBars } from '../svg/charts.js';
 import { boot } from './boot.js';
 
@@ -77,18 +78,32 @@ boot('stage1', (main, d, meta) => {
   const names = meta.classes; const rows = byClass(d.split_stats, names);
   main.append(pageHead({ eyebrow: 'Stage 1 · CRISP-DM data understanding and preparation', title: 'Data freeze',
     lede: 'Four public sources become one frozen split with no near-duplicates crossing it, and a check for whether the source itself gives the answer away.' }));
+  const sources = new Set(d.split_stats.map((r) => r.source_id)).size;
+  main.append(stageBrief({
+    job: 'This stage gathers the drawings and locks them into fixed training, validation and test sets.',
+    input: `${sources} public image sources`,
+    process: 'Cleans the labels, removes near-duplicates across the sets, and fixes the split.',
+    output: `${split(d.split_stats, 'train').toLocaleString()} train, ${split(d.split_stats, 'val').toLocaleString()} validation and ${split(d.split_stats, 'test').toLocaleString()} test images`,
+    finding: `An image's source alone almost gives away the answer: a classifier identified the source ${fmt(d.source_check.pooled_accuracy * 100, 1)}% of the time, against ${fmt(d.source_check.pooled_majority_rate * 100, 1)}% by always guessing the largest source. Most Quick, Draw! drawings labelled diamond were not real diamonds, so those were removed before the split.`,
+    checks: [
+      { label: 'Functional dependencies all hold', ok: Object.values(d.fd).every((r) => r.holds) },
+      { label: 'No near-duplicates cross the split', ok: d.checks.no_phash_group_spans ?? null },
+      { label: 'Source shortcut found, recorded as a warning', ok: null },
+    ],
+  }));
   main.append(card('Frozen split', stats(stat('Train', split(d.split_stats, 'train').toLocaleString()),
     stat('Validation', split(d.split_stats, 'val').toLocaleString()), stat('Test', split(d.split_stats, 'test').toLocaleString(), 'counts only'))));
-  main.append(card('Class distribution by source',
-    stackedBars({ rows, series: SOURCES, label: 'Images per class by source', valueLabel: 'images' }),
-    tableView(rows, [{ key: 'label', label: 'Class' }, ...SOURCES.map((s) => ({ label: s.label, num: true, render: (r) => r.values[s.key] || 0 })), { key: 'total', label: 'Total', num: true }])));
-  main.append(browser(names, d.pool));
   main.append(el('div', { class: 'grid two' },
     card('Source shortcut check', stats(stat('Source classifier', `${fmt(d.source_check.pooled_accuracy * 100, 1)}%`), stat('Majority-source guess', `${fmt(d.source_check.pooled_majority_rate * 100, 1)}%`), stat('Gain', `${fmt(d.source_check.gain_points, 1)} pts`, `trigger: ${d.source_check.trigger_points}`)),
       el('div', { class: 'toolbar' }, d.source_check.shortcut_detected ? badge('warn', 'Shortcut detected') : badge('good', 'No shortcut')),
       note('If shape can be told from source, a model may learn the source. Firing this check makes the leave-one-source-out runs mandatory.')),
     card('Functional dependencies', table(Object.entries(d.fd).map(([rule, r]) => ({ rule, ...r })), [{ key: 'rule', label: 'Must hold' },
       { key: 'n_violations', label: 'Violations', num: true }, { label: 'Result', render: (r) => (r.holds ? badge('good', 'Holds') : badge('bad', 'Broken')) }]))));
+  main.append(card('Class distribution by source',
+    stackedBars({ rows, series: SOURCES, label: 'Images per class by source', valueLabel: 'images' }),
+    tableView(rows, [{ key: 'label', label: 'Class' }, ...SOURCES.map((s) => ({ label: s.label, num: true, render: (r) => r.values[s.key] || 0 })), { key: 'total', label: 'Total', num: true }])));
+  main.append(browser(names, d.pool));
   main.append(duplicates(d.duplicates, names));
   main.append(diamonds(d));
+  main.append(stageNav(1));
 });
