@@ -99,11 +99,13 @@ def log_table(repo_root: Path = REPO_ROOT, iteration: int = 2) -> str:
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
 
 
-def failure_tables(repo_root: Path = REPO_ROOT) -> str:
-    """One table per failure group, so that each fits on a page."""
+def failure_tables(repo_root: Path = REPO_ROOT, iteration: str | None = None) -> str:
+    """One table per failure group, so that each fits on a page; ``iteration`` keeps only that one."""
     log = _load(repo_root / "docs" / "crisp_dm" / "iteration_log.json")
     groups: dict[str, list[str]] = {}
     for f in log.get("failures", []):
+        if iteration is not None and f["iteration"] != iteration:
+            continue
         groups.setdefault(f["group"], []).append(
             f"\\textbf{{{latex_escape(f['failure'])}}} {latex_escape(f['cause'])} & "
             f"{latex_escape(f['handled'])} & {latex_escape(f['state'])} \\\\")

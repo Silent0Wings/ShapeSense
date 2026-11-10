@@ -67,7 +67,7 @@ boot('stage4', (main, d) => {
     card('Architecture', table(d.layers, [{ key: 'layer', label: 'Layer' }, { key: 'detail', label: 'Detail' }, { key: 'shape', label: 'Output', num: true }])),
     tuningCard(d.tuning)));
   if (d.winners) {
-    main.append(card('Search on validation (iteration 2)', table(Object.entries(d.winners.winners).map(([arm, w]) => ({ arm, mean: w.mean_val_macro_f1, seeds: w.val_macro_f1_by_seed.map((v) => fmt(v, 1)).join(', '), trials: d.winners.trials_per_arm[arm], lr: w.hparams.lr, dropout: w.hparams.dropout })),
+    main.append(card('Search on validation (iteration 3)', table(Object.entries(d.winners.winners).map(([arm, w]) => ({ arm, mean: w.mean_val_macro_f1, seeds: w.val_macro_f1_by_seed.map((v) => fmt(v, 1)).join(', '), trials: d.winners.trials_per_arm[arm], lr: w.hparams.lr, dropout: w.hparams.dropout })),
       [{ key: 'arm', label: 'Arm' }, { label: 'Mean val macro-F1', num: true, render: (r) => fmt(r.mean, 2) }, { key: 'seeds', label: 'Seeds 0, 1, 2' }, { key: 'lr', label: 'Learning rate', num: true }, { key: 'dropout', label: 'Dropout', num: true }, { key: 'trials', label: 'Trials', num: true }]),
     note('Each arm got its own learning-rate and dropout tuning. A0 has no augmentation settings to search, so it had fewer trials.')));
   }

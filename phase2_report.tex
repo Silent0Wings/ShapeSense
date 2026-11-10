@@ -43,6 +43,7 @@
 % Sections A to J report iteration 1 from frozen copies, so later runs cannot change them.
 \InputIfFileExists{docs/crisp_dm/iteration_1/pipeline_facts.tex}{}{}
 \InputIfFileExists{docs/crisp_dm/iteration_2/report/iteration2_facts.tex}{}{}
+\InputIfFileExists{artifacts/stage6/generated/iteration3_facts.tex}{}{}
 % CRISP-DM iteration 1: committed evidence (validation only) + Stage 1 count.
 \InputIfFileExists{docs/crisp_dm/iteration_1_quickdraw_diamonds.tex}{}{}
 \InputIfFileExists{artifacts/stage1/exclusions.tex}{}{}
@@ -213,7 +214,7 @@ Ray Ntukanyagwe         & \TBD \\
 % =====================================================================
 
 \textbf{Note.} Sections A to J report iteration 1 and its verdict, unchanged.
-Iteration 2 is a separate experiment, reported in Section K.
+Iteration 2 is a separate experiment, reported in Section K, and iteration 3 in Section L.
 
 The project trains one classifier for \NumClasses{} geometric shape classes
 (circle, ellipse, triangle, square, rectangle, pentagon, hexagon, octagon,
@@ -854,14 +855,104 @@ the deployed model may use is a design decision for the project owner.
 \centering
 \caption{Iteration 2 comparisons on the reused test split.}
 \small
-\IfFileExists{artifacts/stage5/tables/comparisons.tex}{\resizebox{\linewidth}{!}{\input{artifacts/stage5/tables/comparisons.tex}}}{--}
+\IfFileExists{docs/crisp_dm/iteration_2/tables/comparisons.tex}{\resizebox{\linewidth}{!}{\input{docs/crisp_dm/iteration_2/tables/comparisons.tex}}}{--}
 \end{table}
 
 \begin{table}[H]
 \centering
 \caption{Iteration 2 per-class F1 on the fresh holdout.}
 \small
-\InputIfFileExists{artifacts/stage5/tables/fresh_per_class.tex}{}{--}
+\InputIfFileExists{docs/crisp_dm/iteration_2/tables/fresh_per_class.tex}{}{--}
+\end{table}
+
+\clearpage
+\section*{L. CRISP-DM iteration 3}
+\addcontentsline{toc}{section}{L. CRISP-DM iteration 3}
+
+Iteration 3 is a separately reported experiment. It does not change the
+iteration 1 or iteration 2 verdicts. Iteration 2 failed on both evaluation sets,
+and outside reviews left points that could not be fixed inside a closed
+iteration. A validation check also suggested that augmented arms survive damage
+better. The question therefore moved from clean accuracy on familiar sources to
+survival under damage. The plan was committed before any tuning
+(\nolinkurl{docs/crisp_dm/iteration_3/preregistration.md}).
+
+\textbf{What each step found.}
+
+{\small\InputIfFileExists{artifacts/stage6/generated/iteration3_log.tex}{}{--}}
+
+\textbf{What went wrong, and how it was handled.}
+
+{\small\InputIfFileExists{artifacts/stage6/generated/iteration3_failures.tex}{}{--}}
+
+\textbf{Every change, by CRISP-DM step.} This list runs from the start of the
+project, so earlier entries repeat Section K.
+
+{\small\InputIfFileExists{artifacts/stage6/generated/iteration3_changes.tex}{}{--}}
+
+\textbf{What changed in the method.} Arm P pretrains on synthetic images and then
+fine-tunes on real images. It is reported descriptively, outside the corrected
+comparisons. The search re-scored each arm's best settings by cross-validation
+grouped on near-duplicates, and confirmed the winner on several seeds. Trials
+per arm: A0 \IthreeTrialsAzero, A1 \IthreeTrialsAone, B \IthreeTrialsB,
+A2 \IthreeTrialsAtwo, P \IthreeTrialsP. A0 has no augmentation settings to
+search, so it received fewer trials, which gives the tuned arms some selection
+advantage on validation.
+
+\begin{table}[H]
+\centering
+\caption{Iteration 3 macro-F1 by arm: mean on validation over the tuning seeds,
+then soft-vote ensembles on clean and damaged images of fresh holdout 2, and
+accuracy of the Hand-Drawn hold-out models.}
+\label{tab:iterthree}
+\begin{tabular}{lrrrr}
+\toprule
+Arm & Validation & Clean holdout & Damaged holdout & Unseen source (\%) \\
+\midrule
+A0 & \IthreeValAzero & \IthreeCleanAzero & \IthreeDamagedAzero & \IthreeLosoAzero \\
+A1 & \IthreeValAone & \IthreeCleanAone & \IthreeDamagedAone & \IthreeLosoAone \\
+B & \IthreeValB & \IthreeCleanB & \IthreeDamagedB & \IthreeLosoB \\
+A2 & \IthreeValAtwo & \IthreeCleanAtwo & \IthreeDamagedAtwo & \IthreeLosoAtwo \\
+P & \IthreeValP & \IthreeCleanP & \IthreeDamagedP & \IthreeLosoP \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Pre-registered result (\IthreePrimary).} Averaged over \IthreeLevels{}
+damage levels of \IthreeN{} never-read images, the macro-F1 change is
+\IthreeDelta{} points, \CILevelPct\% paired bootstrap CI
+[\IthreeCILo, \IthreeCIHi], verdict: \textbf{\IthreeVerdict}. The stricter
+reading, in which the lower bound must clear the required gain, passes:
+\IthreeStrict. The interval clustered by source is
+[\IthreeSourceCILo, \IthreeSourceCIHi]; with three sources it is coarse. Sealed
+reads: \IthreeReads{} of \IthreeReadsExpected{} expected.
+
+\textbf{Secondary comparisons.} Holm-corrected, on the same damaged images:
+A1 vs A0 \IthreeSecAoneAzeroDelta{} points (p \IthreeSecAoneAzeroP),
+B vs A0 \IthreeSecBAzeroDelta{} (p \IthreeSecBAzeroP),
+A2 vs A1 \IthreeSecAtwoAoneDelta{} (p \IthreeSecAtwoAoneP),
+A2 vs B \IthreeSecAtwoBDelta{} (p \IthreeSecAtwoBP).
+
+\textbf{How much weight this can carry.} The gain is in surviving damage. On
+clean images of the same holdout, \IthreePrimary{} changes macro-F1 by
+\IthreeCleanDelta{} points, CI [\IthreeCleanCILo, \IthreeCleanCIHi]. The two
+earlier evaluation sets had already been read, so they are reported as weaker
+evidence: on the reused test split the change is \IthreeTestDelta{} points,
+CI [\IthreeTestCILo, \IthreeTestCIHi], verdict: \IthreeTestVerdict; on the first
+fresh holdout it is \IthreeFreshDelta{} points,
+CI [\IthreeFreshCILo, \IthreeFreshCIHi], verdict: \IthreeFreshVerdict.
+
+\textbf{Limitations.} Fresh holdout 2 uses sources seen in training and contains
+no Quick, Draw! images, so this result does not test new sources. The damage
+types are synthetic. Rotation is not a meaningful test for circles, or for
+squares at a right angle. The validation experiments used an earlier random
+image stream than the final runs.
+
+\begin{table}[H]
+\centering
+\caption{Iteration 3 comparisons on damaged images of fresh holdout 2.}
+\small
+\IfFileExists{artifacts/stage5/tables/robust_comparisons.tex}{\resizebox{\linewidth}{!}{\input{artifacts/stage5/tables/robust_comparisons.tex}}}{--}
 \end{table}
 
 \begin{thebibliography}{9}

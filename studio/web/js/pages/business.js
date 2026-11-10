@@ -15,10 +15,11 @@ boot('business', (main, data) => {
     lede: 'Does adding procedurally generated shapes to training improve a small CNN on real images? The rule for success was fixed before anyone saw test data, in both iterations.',
   }));
   main.append(el('div', { class: 'grid two' },
-    card('The question and its four arms', table([
+    card('The question and its arms', table([
       { arm: 'Real only (A0)', data: 'Real images only', role: 'Control' },
       { arm: 'Real + augmented (A1)', data: 'Real images plus class-safe augmentation', role: 'Isolates augmentation' },
       { arm: 'Real + synthetic (B)', data: 'A1 plus synthetic images in every batch', role: 'Iteration 1 primary hypothesis: B beats A1' },
+      { arm: 'Synthetic pretraining (P)', data: 'Generated shapes first, then real images', role: 'Iteration 3, reported descriptively' },
       { arm: 'Full mix (A2)', data: 'Clean real, augmented real and synthetic images in each batch', role: 'Iteration 2 primary hypothesis: A2 beats A0' },
     ], [{ key: 'arm', label: 'Arm' }, { key: 'data', label: 'Training data' }, { key: 'role', label: 'Purpose' }])),
     card('The locked success rule', table([

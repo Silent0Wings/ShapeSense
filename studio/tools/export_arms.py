@@ -15,7 +15,7 @@ from src.stage6_report.export import export_candidates, export_onnx, select_mode
 from studio.context import config
 from studio.settings import ARMS_DIR, ARMS_MANIFEST
 
-ARMS_TO_EXPORT = ("A0", "A1", "B", "A2")
+ARMS_TO_EXPORT = ("A0", "A1", "B", "A2", "P")
 
 
 def main() -> None:

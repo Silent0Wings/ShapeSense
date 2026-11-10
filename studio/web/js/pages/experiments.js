@@ -3,7 +3,7 @@ import { lines, valueBars } from '../svg/charts.js';
 import { select } from '../widgets/controls.js';
 import { ARM_SERIES, boot } from './boot.js';
 
-const SERIES = [...ARM_SERIES, { key: 'P', label: 'P · synthetic pretraining', color: 'var(--series-5)' }];
+const SERIES = ARM_SERIES;
 const BUDGETS = [['e60', '60 epochs'], ['e30_nostop', '30 epochs, no early stop'], ['e60_nostop', '60 epochs, no early stop']];
 const TRANSFORMS = [['all_on', 'All transforms'], ['rotation', 'Rotation only'], ['scale', 'Scale only'], ['noise', 'Noise only'], ['blur', 'Blur only'], ['reframe_only', 'Re-frame only']];
 const pm = (x) => `${fmt(x.mean, 1)} ± ${fmt(x.std, 1)}`;
