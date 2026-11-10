@@ -90,6 +90,20 @@ Three seeds, on validation images only. These answer the questions below, but no
 | Does re-framing alone cause errors? | Not much. It keeps shape proportions, and arms trained on it lost 0.3 to 1.1 points |
 | Do validation and test differ in balance? | No. Class shares differ by 1.1% in total and source shares by 0.9% |
 
+### Speeding up training
+
+All of this sits under Modeling.
+
+| Step | Evidence | Result |
+|---|---|---|
+| Measured a training step | Preparing a batch took 226 to 376 ms, and the GPU step about 70 ms | Preparation was about 80% of the time |
+| Built batches on 7 CPU processes, with one random generator per step | Scores were identical with 4 and 7 processes | An epoch fell from about 20 seconds to between 2 and 6 |
+| Stopped each worker reloading PyTorch | Pool start-up had cost about 2 minutes a trial | Start-up cost is now only a few seconds |
+| Replaced the worker pool | The old pool failed with an invalid-handle error on Windows | Workers start together, and a stalled batch raises an error |
+| Trained one run at a time | Nested pools were the setup that had hung | The GPU is not shared between runs |
+| Investigated the remaining slow epochs | The CPU was 99% busy in slow epochs and 90% in fast ones, with temperature unchanged | Windows Defender used about 2 cores, and other programs used several more |
+| Still open | Caching per-image work and sending smaller batches should not change results | Not built or measured. Other options would change results, so they are not used |
+
 All 27 outside-review points are now handled. The last two, unequal real images per step and BatchNorm statistics, were closed by these measurements.
 
 ## Decisions
@@ -115,7 +129,7 @@ All 27 outside-review points are now handled. The last two, unequal real images 
 | Arm P is reported descriptively, outside the corrected comparisons | Its value was unknown when the test was pre-registered |
 | All arms move to a longer training budget only if each tested arm gains at least 0.5 points | One shared budget keeps arms comparable |
 | Every arm trains for 60 epochs with no early stopping | That rule was met: A0 gained 1.99, A1 0.51 and A2 0.71 points |
-| Batches are built by 7 CPU processes, one training run at a time, with one random generator per step | Image preparation was about 80% of each step. An epoch fell from about 20 seconds to about 2.3, and scores are identical at any process count |
+| Batches are built by 7 CPU processes, one training run at a time, with one random generator per step | Image preparation was about 80% of each step. An epoch fell from about 20 seconds to between 2 and 6, and scores are identical at any process count |
 | The 108 validation experiments are not retrained after that change | They measured the design questions. Their random image stream differs from later runs, which is recorded as a deviation |
 | The final vote uses equal weights | Nothing to tune or overfit. Per-class weights rely on differences that are mostly noise |
 | Per-class weights are adopted only if they win by at least 0.5 points on held-apart validation, and the user agrees | They have to earn the added complexity |
