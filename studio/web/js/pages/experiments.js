@@ -1,5 +1,6 @@
 import { card, el, fmt, note, pageHead, signed, table, tableView } from '../ui.js';
 import { lines, valueBars } from '../svg/charts.js';
+import { select } from '../widgets/controls.js';
 import { ARM_SERIES, boot } from './boot.js';
 
 const SERIES = [...ARM_SERIES, { key: 'P', label: 'P · synthetic pretraining', color: 'var(--series-5)' }];
@@ -33,6 +34,25 @@ function budget(d) {
     note(`Gain in clean validation macro-F1 over 30 epochs with early stopping. An option is adopted only if every tested arm gains at least ${d.rule_points} points.`)];
 }
 
+function histograms(d) {
+  const sets = [['real', 'Real', 'var(--series-1)'], ['reframed', 'Re-framed', 'var(--series-2)'], ['augmented', 'Augmented', 'var(--series-3)']];
+  const shapes = Object.keys(d.profiles.real);
+  let shape = 'rectangle';
+  const host = el('div', { class: 'grid two', style: 'margin:0' });
+  const chart = (key, title, xTitle) => {
+    const edges = d.hist_edges[key];
+    const series = sets.map(([set, label, color]) => {
+      const counts = d.profiles[set][shape][key].hist;
+      const total = counts.reduce((a, b) => a + b, 0) || 1;
+      return { label, color, values: counts.map((n) => (100 * n) / total) };
+    });
+    return el('div', {}, el('h3', { text: title }), lines({ series, xs: edges.slice(0, -1).map((e, i) => (e + edges[i + 1]) / 2), xTitle, label: `${title} for ${shape}`, yLabel: '% of images' }));
+  };
+  const paint = () => host.replaceChildren(chart('aspect_ratio', 'Long side over short side', 'ratio'), chart('stroke_px', 'Stroke width', 'pixels'));
+  paint();
+  return [el('div', { class: 'toolbar' }, select(shapes, shape, (v) => { shape = v; paint(); }, 'Shape')), host];
+}
+
 function preprocess(d) {
   const arms = SERIES.filter((s) => d.scores[s.key]).map((s) => ({ arm: s.key, ...d.scores[s.key] }));
   const shapes = Object.keys(d.profiles.real);
@@ -42,7 +62,8 @@ function preprocess(d) {
   return [table(arms, [{ key: 'arm', label: 'Arm' }, { label: 'Unchanged images', num: true, render: (r) => pm(r.raw) }, { label: 'Re-framed and binarised', num: true, render: (r) => pm(r.reframed_only) }]),
     note('Macro-F1 on the same validation images, unchanged and after only the re-frame and binarise step.'),
     el('div', { class: 'grid two', style: 'margin:0' }, el('div', {}, el('h3', { text: 'Long side over short side' }), table(measure('aspect_ratio', 2), columns)),
-      el('div', {}, el('h3', { text: 'Stroke width (px)' }), table(measure('stroke_px', 2), columns)))];
+      el('div', {}, el('h3', { text: 'Stroke width (px)' }), table(measure('stroke_px', 2), columns))),
+    ...histograms(d)];
 }
 
 function oneOn(d) {

@@ -22,8 +22,8 @@ ShapeSense trains a small CNN to name ten 2D shapes from a 64×64 drawing. The r
 |---|---|
 | Iteration 1 | Closed. Verdict: fail |
 | Iteration 2 | Closed. Verdict: fail on both evaluation sets |
-| Iteration 3 | Open, Phase 4 of 9: 108 validation experiments are running |
-| Iteration 3 results | None yet. Every statement about them below is a hypothesis |
+| Iteration 3 | Open. Phases 0 to 4 are done, and Phase 5, the tuning search, is next |
+| Iteration 3 results | Validation experiments only. There is no verdict yet |
 | Sealed data | No sealed set has been read in iteration 3 |
 | Git | Branch `iteration-3`, local only, nothing pushed |
 
@@ -69,12 +69,28 @@ The pass rule: a gain of at least 1.0 macro-F1 point, a 95% CI excluding 0, and 
 |---|---|
 | Business Understanding | The question moved to survival under damage. Hypotheses, not results: A0 is weakest under damage, A1 better, A2 best. B helps most when real data is scarce. Synthetic pretraining recovers any domain gap |
 | Data Understanding | Built fresh holdout 2, after first reproducing the earlier holdout's manifest so its images could be excluded unopened |
-| Data Preparation | Validation-only tests are running on whether re-framing and binarising alone cause errors, and on each transform alone |
-| Modeling | Added arm P, grouped cross-validation in the search, and equal-real, real-fraction and training-length options. Experiments are running |
+| Data Preparation | Re-framing and binarising alone costs 0.3 to 1.1 points for the arms trained on it, so it is not the main source of errors. The transforms work together: all on scored 77.7 under damage, and no single transform passed 70.1 |
+| Modeling | Added arm P, grouped cross-validation in the search, and equal-real, real-fraction and training-length options. The 108 experiments are done, and every arm moves to 60 epochs with no early stopping |
 | Evaluation | Repaired before any result: bootstrap on near-duplicate groups, exact McNemar under 25 discordant pairs, corrected harm rule, Holm on one metric, real read accounting, checked caches |
 | Deployment | Not started. Planned after evaluation: iteration 3 report section, dashboard pages and re-export |
 
-Two of the 27 outside-review points stay open until the experiments finish: unequal real images per step, and BatchNorm statistics in B and A2.
+### What the validation experiments found
+
+Three seeds, on validation images only. These answer the questions below, but none is a verdict, and only the sealed test in Phase 7 decides the pre-registered result.
+
+| Question | Answer on validation |
+|---|---|
+| Is A0 weakest on damaged images? | Yes. Macro-F1 on damaged images was A0 66.3, A1 77.7, B 77.1, A2 80.3, P 75.6 |
+| Does A1 improve robustness? | Yes, by 11.4 points over A0 |
+| Is A2 best overall? | Highest on clean (95.2) and damaged (80.3) images, with all real images |
+| Does B help most when real data is scarce? | Not beyond augmentation. At 10% of real images, A1 and B both scored 91.6, against 81.3 for A0 |
+| Does synthetic pretraining recover a domain gap? | Partly. P was best at 10% and 25% of real images (92.6 and 93.5), but with all of them it matched B (94.3 and 94.2) and stayed below A2 (95.2) |
+| Do equal real images per step help? | No. B fell 2.0 points and A2 fell 0.5 |
+| Does BatchNorm recalibration help? | No. B fell 0.7 points and A2 fell 0.8 |
+| Does re-framing alone cause errors? | Not much. It keeps shape proportions, and arms trained on it lost 0.3 to 1.1 points |
+| Do validation and test differ in balance? | No. Class shares differ by 1.1% in total and source shares by 0.9% |
+
+All 27 outside-review points are now handled. The last two, unequal real images per step and BatchNorm statistics, were closed by these measurements.
 
 ## Decisions
 
@@ -98,6 +114,7 @@ Two of the 27 outside-review points stay open until the experiments finish: uneq
 |---|---|
 | Arm P is reported descriptively, outside the corrected comparisons | Its value was unknown when the test was pre-registered |
 | All arms move to a longer training budget only if each tested arm gains at least 0.5 points | One shared budget keeps arms comparable |
+| Every arm trains for 60 epochs with no early stopping | That rule was met: A0 gained 1.99, A1 0.51 and A2 0.71 points |
 | The final vote uses equal weights | Nothing to tune or overfit. Per-class weights rely on differences that are mostly noise |
 | Per-class weights are adopted only if they win by at least 0.5 points on held-apart validation, and the user agrees | They have to earn the added complexity |
 | "All models vote" claims no score | Proving it better needs a new pre-registered iteration |

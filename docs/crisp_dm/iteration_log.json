@@ -39,9 +39,11 @@
       "route": "Evaluation → Business Understanding",
       "decision": "Pre-registered in docs/crisp_dm/iteration_3/preregistration.md: A2 vs A0 on perturbed copies of a new, never-read 4,500-image holdout, with the evaluation repaired first.",
       "findings": {
-        "business": "The question moves from clean accuracy on familiar sources to survival under damage, and to when synthetic data helps. Hypotheses, not results: A0 weakest under damage, A1 better, A2 best; B helps most when real data is scarce; synthetic pretraining recovers any domain gap.",
-        "data": "Built fresh holdout 2: 4,500 never-read images, ten classes, 300 per source and class. The build first reproduced the first holdout's manifest byte for byte, so its images could be excluded without opening them.",
-        "eval": "Repaired before any iteration 3 result: cluster bootstrap on near-duplicate groups, exact McNemar under 25 discordant pairs, one named generator per analysis, Holm on bootstrap p-values, Bonferroni-corrected harm rule, real read accounting, checked error and prediction caches, and a class-count check. The robustness code moved into Stage 5."
+        "business": "The question moves from clean accuracy on familiar sources to survival under damage, and to when synthetic data helps. Hypotheses, not results: A0 weakest under damage, A1 better, A2 best; B helps most when real data is scarce; synthetic pretraining recovers any domain gap. Validation answers from Phase 4, three seeds, not a verdict: A0 was weakest under damage, A1 better, and A2 highest on clean and damaged images. Synthetic images added nothing over augmentation alone when real data was scarce. Pretraining on synthetic images gave the best score at 10% and 25% of the real images, but not with all of them.",
+        "data": "Built fresh holdout 2: 4,500 never-read images, ten classes, 300 per source and class. The build first reproduced the first holdout's manifest byte for byte, so its images could be excluded without opening them. Validation and test are balanced: their class shares differ by 1.1% in total and their source shares by 0.9%, from aggregate counts only, so the mix of classes and sources does not explain why validation and test disagreed.",
+        "eval": "Repaired before any iteration 3 result: cluster bootstrap on near-duplicate groups, exact McNemar under 25 discordant pairs, one named generator per analysis, Holm on bootstrap p-values, Bonferroni-corrected harm rule, real read accounting, checked error and prediction caches, and a class-count check. The robustness code moved into Stage 5.",
+        "prep": "Validation, three seeds. Re-framing and binarising alone costs little: macro-F1 falls 0.3 points for A1, 0.6 for B, 1.1 for A2 and 2.8 for A0, the arm that never trained on re-framed images. It keeps proportions (rectangle long side over short side 1.96 to 2.00, ellipse 2.15 to 2.18), while full augmentation shortens them (rectangle 1.79, ellipse 1.87). One transform on, clean macro-F1: scale 94.6, rotation 92.7, noise 90.1, re-frame only 86.1, blur 84.7, against 94.8 with all on. Under damage, all on scored 77.7 and no single transform passed 70.1, so the transforms work together.",
+        "model": "Validation macro-F1 with all real images, clean and damaged: A0 92.6 and 66.3, A1 94.8 and 77.7, B 94.2 and 77.1, A2 95.2 and 80.3, P 94.3 and 75.6. Scarcity at 10% of real images, clean: A0 81.3, A1 91.6, B 91.6, A2 92.0, P 92.6. At 25%: A0 83.5, A1 87.4 with a seed spread of 10.5, B 91.7, A2 91.6, P 93.5. Equal real images per step did not help: B fell 2.0 points and A2 0.5. BatchNorm recalibration on real images did not help: B fell 0.7 and A2 0.8. Training length: 60 epochs with no early stopping gained A0 1.99, A1 0.51 and A2 0.71 points, so the pre-registered rule moves every arm to it. A1 cleared the 0.5 threshold by 0.01. 60 epochs with early stopping lost 1.0 to 3.4 points, confirming that early stopping is fragile. Scoring twice gave identical numbers."
       }
     }
   ],
@@ -920,6 +922,13 @@
       "before": "A separate script on validation only",
       "after": "Moved into Stage 5, with perturbed copies built once and hashed",
       "why": "So sealed perturbed sets are created and read in only one place."
+    },
+    {
+      "step": "model",
+      "what": "Training budget",
+      "before": "30 epochs with early stopping",
+      "after": "60 epochs with no early stopping, for every arm",
+      "why": "The pre-registered rule: each tested arm gained at least 0.5 validation points (A0 1.99, A1 0.51, A2 0.71)."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",
@@ -949,15 +958,15 @@
       "step": "model",
       "claim": "Arms see different numbers of real images per step.",
       "verdict": "Stands",
-      "action": "A0 and A1 256, A2 205, B 185. No equal-real run exists. Would need new training.",
-      "state": "Next iteration"
+      "action": "Measured in iteration 3 on validation. Giving B and A2 the same real images per step lowered clean macro-F1 by 2.0 and 0.5 points, so the arms keep their tuned batches. The unequal counts stay disclosed.",
+      "state": "Closed by experiment"
     },
     {
       "step": "model",
       "claim": "BatchNorm statistics include synthetic images in B and A2.",
       "verdict": "Stands",
-      "action": "No recalibration exists. Would need new runs, so it cannot be tested now.",
-      "state": "Next iteration"
+      "action": "Measured in iteration 3 on validation. Recalibrating BatchNorm on real images lowered clean macro-F1 by 0.7 for B and 0.8 for A2, so it is not used.",
+      "state": "Closed by experiment"
     },
     {
       "step": "model",
