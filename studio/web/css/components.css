@@ -113,6 +113,28 @@ tr:last-child td { border-bottom: 0; }
 .cycle .node.active rect { fill: var(--accent); stroke: var(--accent); }
 .cycle .node.active .name, .cycle .node.active .line { fill: var(--on-accent); }
 .cycle-list a[aria-current] { outline: 2px solid var(--accent); }
+.cycle .node.dim { opacity: .5; }
+.cycle .node.selected rect { stroke: var(--accent); stroke-width: 2.5; }
+.cycle .arrow.back.past { opacity: .4; }
+.cycle .arrow.back.now { stroke-width: 2.6; }
+.cycle .center.now { fill: var(--text-primary); font-weight: 650; }
+.progress-control { margin-bottom: 8px; }
+.progress-slider { width: 100%; accent-color: var(--accent); cursor: pointer; }
+.progress-ticks { display: flex; justify-content: space-between; gap: 8px; }
+.progress-tick { background: none; border: 0; padding: 4px 0; color: var(--text-secondary); font: inherit; font-size: 13px; cursor: pointer; }
+.progress-tick.on { color: var(--text-primary); font-weight: 650; }
+.progress-detail { margin-top: 10px; }
+.vote-net { position: relative; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: 12px; row-gap: 58px; }
+.vote-net .result { position: relative; z-index: 1; border: 2px solid transparent; }
+.vote-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.vote-line-label { fill: var(--text-primary); font-size: 12px; paint-order: stroke; stroke: var(--surface-1); stroke-width: 4px; }
+.label-swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.arch-flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; padding: 0; margin: 0 0 14px; list-style: none; counter-reset: arch; }
+.arch-flow li { background: var(--surface-2); border-radius: 9px; padding: 10px 12px; counter-increment: arch; }
+.arch-flow strong { display: block; }
+.arch-flow strong::before { content: counter(arch) ". "; color: var(--text-muted); }
+.arch-flow span { font-size: 13px; color: var(--text-secondary); }
+@media (max-width: 620px) { .vote-net { grid-template-columns: minmax(0, 1fr); row-gap: 10px; } .vote-net .result { grid-area: auto !important; } .vote-lines { display: none; } }
 .visual-block { margin-bottom: 22px; }
 .flow-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
 .flow-tag { font-weight: 650; font-size: 13px; min-width: 52px; }

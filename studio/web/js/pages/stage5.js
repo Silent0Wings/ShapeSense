@@ -75,7 +75,15 @@ boot('stage5', (main, d, meta) => {
     ...Object.entries(r.clean).map(([label, s]) => ({ set: 'Fresh holdout 2, clean images', label: nameArms(label), delta: s.delta, ci: s.ci })),
     { set: 'Reused test split (already read)', label: nameArms(v.label), delta: m.reused_test.delta, ci: m.reused_test.ci, verdict: m.reused_test.verdict },
   ];
-  main.append(card('Clean images and earlier evaluation sets', table(earlier, [{ key: 'set', label: 'Data' }, { key: 'label', label: 'Comparison' }, { label: 'Change', num: true, render: (x) => signed(x.delta) }, { label: '95% CI', render: (x) => `[${fmt(x.ci[0])}, ${fmt(x.ci[1])}]` }, { label: 'Result', render: (x) => x.verdict ?? 'descriptive' }]),
+  const sides = (x) => x.label.split(' vs ');
+  const rangeTip = (x) => `The likely range of the true change. ${x.ci[0] > 0 ? 'It stays above zero.' : x.ci[1] < 0 ? 'It stays below zero.' : 'It includes zero, so no difference cannot be ruled out.'}`;
+  const resultTip = (x) => (x.verdict ? `${x.verdict === 'pass' ? 'Met' : 'Did not meet'} the success rule on this set. These images had already been read, so this is weaker evidence.` : 'Reported for context. No success rule applies to this row.');
+  main.append(card('Clean images and earlier evaluation sets', table(earlier, [
+    { key: 'set', label: 'Data', tip: (x) => (x.verdict ? 'The test split, already read in earlier iterations.' : 'The never-read holdout, with no damage added to the images.') },
+    { key: 'label', label: 'Comparison', tip: (x) => `How ${sides(x)[0]} scored against ${sides(x)[1]}.` },
+    { label: 'Change', num: true, tip: (x) => `${sides(x)[0]} scored ${signed(x.delta)} macro-F1 points against ${sides(x)[1]}.`, render: (x) => signed(x.delta) },
+    { label: '95% CI', tip: rangeTip, render: (x) => `[${fmt(x.ci[0])}, ${fmt(x.ci[1])}]` },
+    { label: 'Result', tip: resultTip, render: (x) => x.verdict ?? 'descriptive' }]),
     note('These sets do not decide the verdict. The test split and the first fresh holdout had already been read, so they are weaker evidence.')));
   if (d.fresh) {
     const f = d.fresh;

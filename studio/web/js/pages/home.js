@@ -1,8 +1,8 @@
-import { crispCycle } from '../widgets/crisp-cycle.js';
+import { crispProgress } from '../widgets/crisp-cycle.js';
 import { failureLog, iterationLog } from '../widgets/findings.js';
 import { predictPanel } from '../widgets/predict-panel.js';
 import { get } from '../api.js';
-import { finding, verdictPicture } from '../plain.js';
+import { finding, otherArmsNote, verdictPicture } from '../plain.js';
 import { badge, card, el, note, pageHead, pixImg } from '../ui.js';
 import { boot } from './boot.js';
 
@@ -19,9 +19,10 @@ boot('home', async (main, data, meta) => {
   }));
   main.append(card('The ten shapes', await shapeRow(meta.classes), el('p', {}, el('a', { class: 'cta', href: 'live.html', text: 'Try drawing a shape' }))));
   if (data.verdict) main.append(card('The main finding', el('p', { class: 'finding', text: finding(data.verdict) }), verdictPicture(data.verdict, data.criterion.macro_f1_min_gain_points),
-    note('The dot is the measured difference in macro-F1 points, the line is its uncertainty range, and the dashed line is the gain set in advance as the target. Real only trains on real images alone. Full mix adds augmented and computer-generated shapes.')));
-  main.append(card('The CRISP-DM cycle', crispCycle({ phases: data.phases, verdict: data.verdict }),
-    note('Select a step to open it. Dashed arrows are the trips back round the loop: iteration 1 went from Modeling to Data Preparation, and iteration 2 from Evaluation to Data Preparation.')));
+    note('The dot is the measured difference in macro-F1 points, the line is its uncertainty range, and the dashed line is the gain set in advance as the target. Real only trains on real images alone. Full mix adds augmented and computer-generated shapes.'),
+    data.verdict.others?.length ? note(otherArmsNote) : null));
+  main.append(card('The CRISP-DM cycle', crispProgress({ phases: data.phases, iterations: meta.iterations, results: data.results }),
+    note('Move the slider to walk through each trip round the cycle, and select a step to read what was found there. Dashed arrows are the trips back: the brightest one started the iteration shown.')));
   main.append(iterationLog(meta.iterations));
   main.append(failureLog(meta.failures, meta.phases));
   main.append(el('div', { class: 'grid two' },

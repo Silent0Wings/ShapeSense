@@ -437,8 +437,8 @@
       ],
       "failure": "A1 was still improving when training ended, and early stopping is unstable.",
       "cause": "The budget is 30 epochs, and at learning rate 0.003 validation scores can swing by 30 points between epochs.",
-      "handled": "Kept the same budget and early stopping for every arm so the comparison stays fair. Not fixed.",
-      "state": "Still open",
+      "handled": "Kept the same budget and early stopping for every arm so the comparison stays fair. Not fixed in iteration 2, whose results stay at 30 epochs. Iteration 3 trained every arm for 60 epochs with no early stopping.",
+      "state": "Partly",
       "visual": [
         {
           "kind": "curve",
@@ -639,7 +639,7 @@
     },
     {
       "id": "F18",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "data",
       "pipeline_stages": [
@@ -669,7 +669,7 @@
     },
     {
       "id": "F19",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "model",
       "pipeline_stages": [
@@ -698,7 +698,7 @@
     },
     {
       "id": "F20",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "model",
       "pipeline_stages": [
@@ -727,7 +727,7 @@
     },
     {
       "id": "F21",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "model",
       "pipeline_stages": [
@@ -767,7 +767,7 @@
     },
     {
       "id": "F22",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "model",
       "pipeline_stages": [
@@ -796,7 +796,7 @@
     },
     {
       "id": "F23",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "model",
       "pipeline_stages": [
@@ -825,7 +825,7 @@
     },
     {
       "id": "F24",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "model",
       "pipeline_stages": [
@@ -854,7 +854,7 @@
     },
     {
       "id": "F25",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "model",
       "pipeline_stages": [
@@ -882,7 +882,7 @@
     },
     {
       "id": "F26",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "deploy",
       "pipeline_stages": [
@@ -910,7 +910,7 @@
     },
     {
       "id": "F27",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "deploy",
       "pipeline_stages": [
@@ -937,7 +937,7 @@
     },
     {
       "id": "F28",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "deploy",
       "pipeline_stages": [
@@ -964,7 +964,7 @@
     },
     {
       "id": "F29",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "deploy",
       "pipeline_stages": [
@@ -991,7 +991,7 @@
     },
     {
       "id": "F30",
-      "group": "6. Iteration 3 so far",
+      "group": "6. Iteration 3",
       "iteration": "Iteration 3",
       "step": "model",
       "pipeline_stages": [
@@ -1313,6 +1313,69 @@
       "before": "Results had only been produced in the working folder",
       "after": "A fresh clone passed all seven stages and reproduced the verdict, every robustness figure, all 40 validation scores and every results table, apart from run IDs and folder paths",
       "why": "It shows the result depends on the committed code and recipe, not on leftovers in one folder."
+    },
+    {
+      "step": "deploy",
+      "what": "Main finding shows every model",
+      "before": "The chart plotted Full mix against Real only and nothing else",
+      "after": "Full mix, Synthetic pretraining, Real + synthetic and Real + augmented on one axis, each against Real only, with Full mix marked as the tested one",
+      "why": "A reader could not see how the other models compared. Synthetic pretraining has no line because it was descriptive and no interval was calculated."
+    },
+    {
+      "step": "deploy",
+      "what": "CRISP-DM cycle slider",
+      "before": "One static wheel of the latest state, missing iteration 3's trip back",
+      "after": "A slider walks iterations 1 to 3. Each stop shows that iteration's frozen result, its route back and what each step found",
+      "why": "The wheel hid how the project moved from one question to the next."
+    },
+    {
+      "step": "deploy",
+      "what": "Per-class chart readability",
+      "before": "Dots with close scores hid each other, and a fifth score column ran off the chart",
+      "after": "Close dots spread into lanes on the same linear axis, and the chart widens to fit every column",
+      "why": "A log scale would stretch only one end of the axis and distort distances, while lanes keep the axis honest."
+    },
+    {
+      "step": "deploy",
+      "what": "Animate button on Augmentation and Synthetic generator",
+      "before": "Sliders only moved by hand",
+      "after": "Animate walks every enabled slider in small random steps with the same random draw, until stopped",
+      "why": "It shows how the images respond to the settings."
+    },
+    {
+      "step": "deploy",
+      "what": "Interval chart and table readability",
+      "before": "Only the small dot and line had a tooltip, each row's numbers floated above its dot, and the earlier-sets table had no tooltips",
+      "after": "Rows are shaded with a guide from label to dot and a value column, the whole row shows a tooltip, and every cell of the earlier-sets table explains itself. The dot charts on the experiments page got the same shading and guides",
+      "why": "Rows were hard to follow across the chart, and labels and values gave no feedback on hover."
+    },
+    {
+      "step": "model",
+      "what": "Architecture and training diagrams",
+      "before": "The network was a table, and how each model was trained was only in the config",
+      "after": "A diagram of the shared network, the training loop, and what each model saw per batch, read from the config and run list",
+      "why": "A reader could not see that the models share one network and differ in their training images."
+    },
+    {
+      "step": "deploy",
+      "what": "Vote panel with coloured lines",
+      "before": "All six answers sat in a grid with nothing tying them to the vote",
+      "after": "The models surround the vote, a line from each takes the colour of its predicted label, and each label has its own colour. Each model name has its own colour and a tooltip saying what it trained on, and what the model saw now sits under the drawing",
+      "why": "It shows at a glance which models agree and what the vote chose."
+    },
+    {
+      "step": "deploy",
+      "what": "Failure timeline graph",
+      "before": "The timeline was a set of tables and four totals",
+      "after": "A graph puts all 30 failures in order, one lane per CRISP-DM step and one band per iteration, with a mark for how each ended",
+      "why": "It shows where failures clustered and how the project moved between steps."
+    },
+    {
+      "step": "deploy",
+      "what": "Dashboard updates reach the browser",
+      "before": "A browser could keep showing an old copy of a page after an update",
+      "after": "The server tells the browser to check for a newer copy on every load, and the Stage 2 and 3 headers now name arm P. The launcher opens the dashboard at its localhost address once the server answers",
+      "why": "An update to the CRISP-DM wheel did not appear until the cached page was replaced."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",

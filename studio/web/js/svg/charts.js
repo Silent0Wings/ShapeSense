@@ -11,8 +11,8 @@ function valueAxis(root, scale, values, top, bottom, format = String) {
   }
 }
 
-export function stackedBars({ rows, series, label, valueLabel }) {
-  const width = 620; const rowH = 26; const left = 80; const top = 6;
+export function stackedBars({ rows, series, label, valueLabel, left = 80 }) {
+  const width = 620; const rowH = 26; const top = 6;
   const bottom = top + rows.length * rowH + 2;
   const max = Math.max(...rows.map((r) => series.reduce((sum, k) => sum + (r.values[k.key] || 0), 0)));
   const scale = linear([0, max], [left, width - 14]);
@@ -120,27 +120,45 @@ export function dots({ rows, series, label, domain }) {
   return wrap;
 }
 
+// Dots that would overlap move to their own lane, so every arm stays visible on a linear axis.
+function dodge(xs, gap = 17) {
+  const lanes = xs.map(() => 0); const placed = [];
+  xs.map((x, k) => [x, k]).sort((a, b) => a[0] - b[0]).forEach(([x, k]) => {
+    const lane = [0, -1, 1, -2, 2, -3, 3].find((l) => !placed.some((p) => p.lane === l && x - p.x < gap)) ?? 0;
+    placed.push({ x, lane }); lanes[k] = lane;
+  });
+  return lanes;
+}
+
 // One row per item: dots joined by a range bar, with each exact value in its own column.
 export function scoreRows({ rows, series, label, domain }) {
-  const width = 780; const rowH = 38; const left = 104; const plotEnd = 556; const top = 30;
+  const left = 104; const plotEnd = 556; const top = 30; const laneH = 15;
   const columns = series.map((_, i) => 610 + i * (series.length > 3 ? 54 : 64));
-  const bottom = top + rows.length * rowH;
+  const width = Math.max(780, columns[columns.length - 1] + 14);
   const scale = linear(domain, [left, plotEnd]);
+  const layout = rows.map((row) => {
+    const lanes = dodge(series.map((item) => scale(row.values[item.key])));
+    return { lanes, rowH: Math.max(38, (2 * Math.max(...lanes.map(Math.abs)) + 1) * laneH + 10) };
+  });
+  const bottom = top + layout.reduce((sum, r) => sum + r.rowH, 0);
   const root = svgRoot(width, bottom + 34, label);
   valueAxis(root, scale, ticks(domain[0], domain[1], 5), top, bottom);
   series.forEach((item, i) => {
     root.append(s('circle', { cx: columns[i] - 22, cy: 13, r: 5, fill: item.color }),
       text(columns[i], 18, item.key, { 'text-anchor': 'end', class: 'title' }));
   });
+  let rowTop = top;
   rows.forEach((row, i) => {
-    const y = top + i * rowH + rowH / 2;
+    const { lanes, rowH } = layout[i];
+    const y = rowTop + rowH / 2;
+    rowTop += rowH;
     const values = series.map((item) => row.values[item.key]);
     const best = Math.max(...values);
     if (i) root.append(s('line', { class: 'grid-line', x1: 0, x2: width, y1: y - rowH / 2, y2: y - rowH / 2 }));
     root.append(text(left - 12, y + 5, row.label, { 'text-anchor': 'end', style: 'font-size:14px;fill:var(--text-primary)' }));
     root.append(s('line', { x1: scale(Math.min(...values)), x2: scale(best), y1: y, y2: y, stroke: 'var(--text-muted)', 'stroke-width': 3, 'stroke-linecap': 'round' }));
     series.forEach((item, k) => {
-      root.append(s('circle', { cx: scale(values[k]), cy: y, r: 7.5, fill: item.color, stroke: 'var(--surface-1)', 'stroke-width': 2 }));
+      root.append(s('circle', { cx: scale(values[k]), cy: y + lanes[k] * laneH, r: 7.5, fill: item.color, stroke: 'var(--surface-1)', 'stroke-width': 2 }));
       const isBest = values[k] === best;
       root.append(text(columns[k], y + 5, values[k].toFixed(1), { 'text-anchor': 'end',
         style: `font-size:14px;font-variant-numeric:tabular-nums;${isBest ? 'font-weight:700;fill:var(--text-primary)' : ''}` }));
@@ -151,19 +169,27 @@ export function scoreRows({ rows, series, label, domain }) {
   });
   const wrap = document.createElement('div');
   wrap.append(legend(series), root);
+  if (layout.some((r) => r.lanes.some(Boolean))) {
+    const hint = document.createElement('p');
+    hint.className = 'note';
+    hint.textContent = 'Dots with nearly the same score are spread up and down so each one shows. Only left and right position carries the score.';
+    wrap.append(hint);
+  }
   return wrap;
 }
 
 // Effect estimates with confidence intervals, a zero line and a required-gain line.
 export function ciChart({ rows, label, required }) {
-  const width = 620; const rowH = 44; const top = 18;
+  const width = 790; const rowH = 44; const top = 22; const plotEnd = 626;
   const left = Math.max(112, 12 + 6.6 * Math.max(...rows.map((r) => r.label.length)));
   const bottom = top + rows.length * rowH;
-  const all = rows.flatMap((r) => r.ci).concat([0, required ?? 0]);
+  const all = rows.flatMap((r) => r.ci ?? [r.delta]).concat([0, required ?? 0]);
   const lo = Math.min(...all) - .5; const hi = Math.max(...all) + .5;
-  const scale = linear([lo, hi], [left, width - 16]);
+  const scale = linear([lo, hi], [left, plotEnd]);
   const root = svgRoot(width, bottom + 28, label);
+  rows.forEach((_, i) => { if (i % 2 === 0) root.append(s('rect', { x: 0, y: top + i * rowH, width, height: rowH, rx: 4, fill: 'var(--surface-2)', opacity: .55 })); });
   valueAxis(root, scale, ticks(lo, hi, 7), top, bottom, (v) => (v > 0 ? `+${v}` : v));
+  root.append(text(width - 6, top - 7, 'gain and 95% range', { 'text-anchor': 'end' }));
   root.append(s('line', { class: 'axis-line', x1: scale(0), x2: scale(0), y1: top - 4, y2: bottom }));
   root.append(text(scale(0), top - 7, '0', { 'text-anchor': 'middle' }));
   if (required !== undefined) {
@@ -172,12 +198,22 @@ export function ciChart({ rows, label, required }) {
   }
   rows.forEach((row, i) => {
     const y = top + i * rowH + rowH / 2;
-    root.append(text(left - 8, y + 4, row.label, { 'text-anchor': 'end' }));
-    const whisk = s('line', { x1: scale(row.ci[0]), x2: scale(row.ci[1]), y1: y, y2: y, stroke: 'var(--series-1)', 'stroke-width': 2 });
-    const dot = s('circle', { cx: scale(row.delta), cy: y, r: 6.5, fill: 'var(--series-1)', stroke: 'var(--surface-1)', 'stroke-width': 2 });
-    const tip = `${row.label}: ${row.delta.toFixed(2)} points, CI [${row.ci[0].toFixed(2)}, ${row.ci[1].toFixed(2)}]`;
-    hover(whisk, tip); hover(dot, tip);
-    root.append(whisk, dot, text(scale(row.delta), y - 11, row.delta.toFixed(2), { 'text-anchor': 'middle' }));
+    root.append(text(left - 8, y + 4, row.label, { 'text-anchor': 'end', style: 'fill:var(--text-primary)' }));
+    root.append(s('line', { x1: left, x2: scale(row.ci ? row.ci[0] : row.delta) - 9, y1: y, y2: y, stroke: 'var(--text-muted)', 'stroke-dasharray': '1 5', 'stroke-linecap': 'round' }));
+    const color = row.muted ? 'var(--text-muted)' : 'var(--series-1)';
+    const dot = s('circle', { cx: scale(row.delta), cy: y, r: 6.5, fill: color, stroke: 'var(--surface-1)', 'stroke-width': 2 });
+    const tip = `${row.label}: ${row.delta.toFixed(2)} points, ${row.ci ? `CI [${row.ci[0].toFixed(2)}, ${row.ci[1].toFixed(2)}]` : 'no range calculated'}`;
+    hover(dot, tip);
+    if (row.ci) {
+      const whisk = s('line', { x1: scale(row.ci[0]), x2: scale(row.ci[1]), y1: y, y2: y, stroke: color, 'stroke-width': 2 });
+      hover(whisk, tip);
+      root.append(whisk);
+    }
+    root.append(dot, text(width - 6, y + 5, `${row.delta > 0 ? '+' : ''}${row.delta.toFixed(2)}  ${row.ci ? `[${row.ci[0].toFixed(2)}, ${row.ci[1].toFixed(2)}]` : 'no range'}`,
+      { 'text-anchor': 'end', style: 'font-size:13.5px;font-variant-numeric:tabular-nums;fill:var(--text-primary);white-space:pre' }));
+    const band = s('rect', { x: 0, y: y - rowH / 2, width, height: rowH, fill: 'transparent' });
+    hover(band, tip);
+    root.append(band);
   });
   return root;
 }
@@ -190,12 +226,13 @@ export function valueBars({ rows, label, unit = '', domain }) {
   const scale = linear(span, [left, right]);
   const bottom = top + rows.length * rowH;
   const root = svgRoot(width, bottom + (domain ? 24 : 6), label);
+  rows.forEach((_, i) => { if (i % 2 === 0) root.append(s('rect', { x: 0, y: top + i * rowH, width, height: rowH, rx: 4, fill: 'var(--surface-2)', opacity: .55 })); });
   if (domain) valueAxis(root, scale, ticks(span[0], span[1], 5), top, bottom);
   rows.forEach((row, i) => {
     const y = top + i * rowH + rowH / 2;
     const fill = row.mark ? 'var(--accent)' : 'var(--text-muted)';
     root.append(text(left - 12, y + 5, row.label, { 'text-anchor': 'end', style: 'font-size:13.5px;fill:var(--text-primary)' }));
-    if (domain) root.append(s('circle', { cx: scale(row.value), cy: y, r: 8, fill }));
+    if (domain) root.append(s('line', { x1: left, x2: scale(row.value) - 11, y1: y, y2: y, stroke: 'var(--text-muted)', 'stroke-dasharray': '1 5', 'stroke-linecap': 'round' }), s('circle', { cx: scale(row.value), cy: y, r: 8, fill }));
     else root.append(s('rect', { x: left, y: y - 8, width: Math.max(scale(row.value) - left, 2), height: 16, rx: 4, fill }));
     root.append(text(width - 4, y + 5, `${row.value}${unit}`, { 'text-anchor': 'end', style: 'font-size:14px;font-variant-numeric:tabular-nums;fill:var(--text-primary)' }));
     const band = s('rect', { x: 0, y: y - rowH / 2, width, height: rowH, fill: 'transparent' });

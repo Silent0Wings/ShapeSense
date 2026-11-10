@@ -2,6 +2,7 @@ import { get } from '../api.js';
 import { badge, card, el, errorBox, fmt, note, pageHead, stat, stats, table, tableView } from '../ui.js';
 import { lines, heatmap, dots } from '../svg/charts.js';
 import { select, sliderRow } from '../widgets/controls.js';
+import { networkDiagram, recipeBars, trainingFlow } from '../widgets/architecture.js';
 import { ARM_SERIES, boot } from './boot.js';
 
 function tuningCard(t) {
@@ -58,11 +59,16 @@ function compareCard(d) {
 boot('stage4', (main, d) => {
   main.append(pageHead({ eyebrow: 'Stage 4 · CRISP-DM modeling', title: 'Training',
     lede: 'One small CNN, the same step budget for every arm, five seeds per arm, plus runs that hold out a whole source. Settings were tuned on validation only.',
-    chips: ['one GPU', 'same steps per arm', 'early stopping on validation'] }));
+    chips: ['one GPU', 'same steps per arm', 'best epoch chosen on validation'] }));
   const info = d.benchmark; const seeds = d.seed.per_arm;
   main.append(card('Run setup', stats(stat('Steps per epoch', d.train.steps_per_epoch), stat('Max epochs', d.train.max_epochs), stat('Batch size', d.train.batch_size),
     stat('Heaviest stream', `${Math.round(info.images_per_s).toLocaleString()} img/s`, 'arm B loader'), stat('Model parameters', info.n_params?.toLocaleString() ?? '–')),
   el('div', { class: 'toolbar' }, d.checks.no_test_reads ? badge('good', 'No test reads in this stage') : badge('bad', 'Test split was read'))));
+  main.append(card('The network every model shares', networkDiagram(d.layers),
+    note('All five models use this same network. Bars get shorter as the image shrinks and wider as channels are added. They differ only in the images they trained on and their tuned settings. The logistic regression and linear SVM below are reference points, not these networks.')));
+  main.append(card('How each model was trained', trainingFlow(d.train, d.runs),
+    el('h3', { text: 'What each model saw in one batch' }), recipeBars(d.recipes, d.train.max_epochs),
+    note('Hover a bar for its count. Synthetic pretraining spends its first epochs on computer-generated images only, then continues on real images. The learning rate and dropout each model used are in the search table.')));
   main.append(el('div', { class: 'grid two' },
     card('Architecture', table(d.layers, [{ key: 'layer', label: 'Layer' }, { key: 'detail', label: 'Detail' }, { key: 'shape', label: 'Output', num: true }])),
     tuningCard(d.tuning)));

@@ -1,6 +1,6 @@
 import { post } from '../api.js';
 import { card, el, errorBox, note, pageHead, pixImg, singleFlight, stat, stats } from '../ui.js';
-import { classPicker, select, sliderRow } from '../widgets/controls.js';
+import { animateButton, classPicker, select, sliderRow } from '../widgets/controls.js';
 import { boot } from './boot.js';
 
 const deg = (v) => `±${v}°`;
@@ -19,7 +19,7 @@ const CLASS_RISK = ['nonuniform_scale', 'shear_deg'];
 boot('stage2', (main, d, meta) => {
   main.append(pageHead({ eyebrow: 'Stage 2 · CRISP-DM data preparation', title: 'Augmentation',
     lede: 'Every preview below runs the real Stage 2 code. Pick a class, then change the ranges and see how training images would be altered.',
-    chips: ['train side only', 'arms A1, B and A2', 'starts from the tuned settings', 'output is re-framed and binarised'] }));
+    chips: ['train side only', 'arms A1, B, A2 and P', 'starts from the tuned settings', 'output is re-framed and binarised'] }));
 
   let index = 0; let seed = 7; let count = 12;
   const original = el('div', {}); const variants = el('div', { class: 'tiles' }); const status = el('p', { class: 'note' });
@@ -52,12 +52,13 @@ boot('stage2', (main, d, meta) => {
   for (const [key, label, min, max, step, format] of SLIDERS) {
     sliders[key] = sliderRow({ label, min, max, step, value: d.defaults[key], format, note: ' ', onInput: () => { keepOrdered(key); refresh(); } });
   }
-  const reset = () => { for (const k of Object.keys(sliders)) sliders[k].set(d.defaults[k]); refresh(); };
+  const animation = animateButton({ sliders, onStep: keepOrdered, refresh });
+  const reset = () => { animation.stop(); for (const k of Object.keys(sliders)) sliders[k].set(d.defaults[k]); refresh(); };
   applyClassRules();
 
   main.append(el('div', { class: 'grid side' },
     card('Controls', ...Object.values(sliders).map((s) => s.root),
-      el('div', { class: 'toolbar' }, el('button', { type: 'button', text: 'New random draw', onclick: () => { seed += 100; refresh(); } }),
+      el('div', { class: 'toolbar' }, el('button', { type: 'button', text: 'New random draw', onclick: () => { seed += 100; refresh(); } }), animation.button,
         el('button', { type: 'button', class: 'ghost', text: 'Reset to config', onclick: reset }))),
     el('div', {},
       card('Original and augmented', picker.root,

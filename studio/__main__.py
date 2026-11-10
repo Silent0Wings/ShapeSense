@@ -9,7 +9,7 @@ from studio.settings import HOST, PORT
 
 
 def main() -> None:
-    print(f"ShapeSense Studio: http://{HOST}:{PORT}")
+    print(f"ShapeSense Studio: http://localhost:{PORT}")
     uvicorn.run(create_app(), host=HOST, port=PORT, log_level="warning")
 
 
