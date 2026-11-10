@@ -1,12 +1,13 @@
 // Draw a shape and see each exported model's answer. All scoring is on the server.
 // Every result slot is on screen from the start and only its values change, so
 // the layout never moves while drawing or clearing.
+import { ARM_NAMES } from '../plain.js';
 import { post } from '../api.js';
 import { createPad } from '../draw/pad.js';
 import { debounce, el, errorBox, latestOnly, note } from '../ui.js';
 
 const ARM_COLOR = { A0: 'var(--series-1)', A1: 'var(--series-2)', B: 'var(--series-3)', A2: 'var(--series-4)' };
-const ARM_LABEL = { A0: 'A0 · real only', A1: 'A1 · + augmentation', B: 'B · + synthetic', A2: 'A2 · clean + augmented + synthetic' };
+const ARM_LABEL = Object.fromEntries(Object.entries(ARM_NAMES).map(([key, name]) => [key, `${name} (${key})`]));
 const TOP_K = 3;
 const EMPTY = 'Draw a shape to see the prediction.';
 const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';

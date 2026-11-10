@@ -23,5 +23,4 @@ export const ARM_SERIES = [
   { key: 'B', label: 'Real + synthetic (B)', color: 'var(--series-3)' },
   { key: 'A2', label: 'Full mix (A2)', color: 'var(--series-4)' },
   { key: 'P', label: 'Synthetic pretraining (P)', color: 'var(--series-5)' },
-  { key: 'P', label: 'Synthetic pretraining (P)', color: 'var(--series-5)' },
 ];
