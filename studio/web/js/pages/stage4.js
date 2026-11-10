@@ -1,8 +1,8 @@
 import { get } from '../api.js';
 import { badge, card, el, errorBox, fmt, note, pageHead, stat, stats, table, tableView } from '../ui.js';
-import { lines, heatmap, dots } from '../svg/charts.js';
+import { lines, heatmap, scoreRows } from '../svg/charts.js';
 import { select, sliderRow } from '../widgets/controls.js';
-import { networkDiagram, recipeBars, trainingFlow } from '../widgets/architecture.js';
+import { networkExplorer, recipeBars, systemExplorer, trainingFlow } from '../widgets/architecture.js';
 import { ARM_SERIES, boot } from './boot.js';
 
 function tuningCard(t) {
@@ -50,10 +50,11 @@ function compareCard(d) {
     (acc[r.seed] ??= { label: `seed ${r.seed}`, values: {} }).values[r.arm] = r.val_macro_f1; return acc;
   }, {});
   const all = Object.values(rows);
+  const scores = all.flatMap((r) => Object.values(r.values));
   return card('Validation macro-F1 by arm and seed',
-    dots({ rows: all, series: ARM_SERIES, label: 'Validation macro-F1 by seed and arm', domain: [86, 98] }),
+    scoreRows({ rows: all, series: ARM_SERIES, label: 'Validation macro-F1 by seed and arm', domain: [Math.floor(Math.min(...scores)), Math.ceil(Math.max(...scores))] }),
     tableView(d.runs, [{ key: 'name', label: 'Run' }, { label: 'Val macro-F1', num: true, render: (r) => fmt(r.val_macro_f1) }, { key: 'best_epoch', label: 'Best epoch', num: true }, { key: 'epochs_run', label: 'Epochs run', num: true }, { label: 'Held-out source', render: (r) => r.holdout_source || '–' }]),
-    note('Selection used validation only. These are not test results.'));
+    note('The axis is zoomed to the range of these scores, and the highest score in each row is highlighted in that model\'s colour. Selection used validation only. These are not test results.'));
 }
 
 boot('stage4', (main, d) => {
@@ -64,8 +65,11 @@ boot('stage4', (main, d) => {
   main.append(card('Run setup', stats(stat('Steps per epoch', d.train.steps_per_epoch), stat('Max epochs', d.train.max_epochs), stat('Batch size', d.train.batch_size),
     stat('Heaviest stream', `${Math.round(info.images_per_s).toLocaleString()} img/s`, 'arm B loader'), stat('Model parameters', info.n_params?.toLocaleString() ?? '–')),
   el('div', { class: 'toolbar' }, d.checks.no_test_reads ? badge('good', 'No test reads in this stage') : badge('bad', 'Test split was read'))));
-  main.append(card('The network every model shares', networkDiagram(d.layers),
-    note('All five models use this same network. Bars get shorter as the image shrinks and wider as channels are added. They differ only in the images they trained on and their tuned settings. The logistic regression and linear SVM below are reference points, not these networks.')));
+  const dropouts = new Set(d.recipes.map((r) => r.dropout));
+  main.append(card('The network every model shares', networkExplorer(d.network, dropouts.size === 1 ? [...dropouts][0] : null),
+    note('Select any operation, or press Play to walk through them. In a block, each slab is one of its four operations, from Conv at the front to MaxPool at the back, and the purple slab is the one selected. Slabs shrink as the image gets smaller. All five models use this same network and differ only in the images they trained on and their tuned settings. The logistic regression and linear SVM below are reference points, not this network.')));
+  main.append(card('How a training run works on this machine', systemExplorer(d.train),
+    note('Select a step to read what it does.')));
   main.append(card('How each model was trained', trainingFlow(d.train, d.runs),
     el('h3', { text: 'What each model saw in one batch' }), recipeBars(d.recipes, d.train.max_epochs),
     note('Hover a bar for its count. Synthetic pretraining spends its first epochs on computer-generated images only, then continues on real images. The learning rate and dropout each model used are in the search table.')));

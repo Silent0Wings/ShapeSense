@@ -1332,7 +1332,7 @@
       "step": "deploy",
       "what": "Per-class chart readability",
       "before": "Dots with close scores hid each other, and a fifth score column ran off the chart",
-      "after": "Close dots spread into lanes on the same linear axis, and the chart widens to fit every column",
+      "after": "Close dots spread into lanes on the same linear axis, and the chart widens to fit every column. The validation chart by seed uses the same layout, with its axis zoomed to the scores. The winning score in each row sits on a pill in that model's colour",
       "why": "A log scale would stretch only one end of the axis and distort distances, while lanes keep the axis honest."
     },
     {
@@ -1353,7 +1353,7 @@
       "step": "model",
       "what": "Architecture and training diagrams",
       "before": "The network was a table, and how each model was trained was only in the config",
-      "after": "A diagram of the shared network, the training loop, and what each model saw per batch, read from the config and run list",
+      "after": "An interactive diagram of every operation in the shared network with worked pooling examples, a clickable view of the batch-preparation pool and training loop, and what each model saw per batch, read from the config and run list. Each slab in a block stands for one operation, and the selected one is highlighted",
       "why": "A reader could not see that the models share one network and differ in their training images."
     },
     {
@@ -1367,15 +1367,22 @@
       "step": "deploy",
       "what": "Failure timeline graph",
       "before": "The timeline was a set of tables and four totals",
-      "after": "A graph puts all 30 failures in order, one lane per CRISP-DM step and one band per iteration, with a mark for how each ended",
+      "after": "A graph puts all 30 failures in order, one lane per CRISP-DM step and one band per iteration, with a mark for how each ended. A slider walks the points and shows each as Situation, Task, Action and Result",
       "why": "It shows where failures clustered and how the project moved between steps."
     },
     {
       "step": "deploy",
       "what": "Dashboard updates reach the browser",
       "before": "A browser could keep showing an old copy of a page after an update",
-      "after": "The server tells the browser to check for a newer copy on every load, and the Stage 2 and 3 headers now name arm P. The launcher opens the dashboard at its localhost address once the server answers",
+      "after": "The server tells the browser to check for a newer copy on every load, and the Stage 2 and 3 headers now name arm P. The launcher opens the dashboard at its localhost address once the server answers. Pages now use the full width of the window",
       "why": "An update to the CRISP-DM wheel did not appear until the cached page was replaced."
+    },
+    {
+      "step": "deploy",
+      "what": "Section explaining the models and data",
+      "before": "The five model names and the kinds of training image were never defined in one place",
+      "after": "The home page shows a real, an augmented and a computer-generated example of a shape, and a card per model with what it tests and the make-up of its batches",
+      "why": "A new reader could not tell what the models were or what their training data meant."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",

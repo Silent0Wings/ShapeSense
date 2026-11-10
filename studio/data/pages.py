@@ -14,7 +14,8 @@ from studio.settings import ERRORS_ARM
 def _home() -> dict:
     return {"phases": phases(), "lights": lights.rows(), "verdict": lights.verdict(),
             "arms": arms.available(), "criterion": config()["success_criterion"],
-            "results": lights.iteration_results()}
+            "results": lights.iteration_results(), "recipes": architecture.recipes(), "max_epochs": config()["train"]["max_epochs"],
+            "augment_defaults": default_augment_values(), "synth_defaults": default_synth_values()}
 
 
 def _business() -> dict:
@@ -57,7 +58,7 @@ def _stage4() -> dict:
     status = read_json("status4") or {"metrics": {}, "checks": {}}
     return {"winners": read_json("winners"), "tuning": read_json("tuning"), "seed": read_json("seed_disagreement"),
             "baselines": read_json("baselines"), "benchmark": read_json("loader_benchmark"),
-            "runs": runs.summary(), "layers": architecture.layers(), "recipes": architecture.recipes(),
+            "runs": runs.summary(), "layers": architecture.layers(), "recipes": architecture.recipes(), "network": architecture.network(),
             "checks": status.get("checks", {}), "train": config()["train"]}
 
 
