@@ -1339,7 +1339,7 @@
       "step": "deploy",
       "what": "Animate button on Augmentation and Synthetic generator",
       "before": "Sliders only moved by hand",
-      "after": "Animate walks every enabled slider in small random steps with the same random draw, until stopped",
+      "after": "Animate walks every enabled slider in small random steps with the same random draw, until stopped. On Augmentation, directed lines run from the original image to every augmented copy, with more space between rows",
       "why": "It shows how the images respond to the settings."
     },
     {
