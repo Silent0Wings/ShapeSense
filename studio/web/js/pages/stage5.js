@@ -1,3 +1,4 @@
+import { armName, finding, nameArms } from '../plain.js';
 import { get } from '../api.js';
 import { badge, card, el, errorBox, fmt, note, pageHead, pixImg, signed, stat, stats, table, tableView } from '../ui.js';
 import { ciChart, heatmap, scoreRows } from '../svg/charts.js';
@@ -60,21 +61,22 @@ boot('stage5', (main, d, meta) => {
   main.append(card('Verdict', el('div', { class: 'hero' },
     el('span', { class: 'big', text: signed(v.delta) }),
     v.verdict === 'pass' ? badge('pass', 'Pass') : badge('fail', 'Fail'),
-    el('span', { text: `${v.label}, macro-F1 points, 95% CI [${fmt(v.ci[0])}, ${fmt(v.ci[1])}], reused test split` })),
+    el('span', { text: `${nameArms(v.label)}, macro-F1 points, 95% CI [${fmt(v.ci[0])}, ${fmt(v.ci[1])}], reused test split` })),
+  el('p', { class: 'finding', text: finding(v) }),
   el('p', { class: 'note', text: v.reasons.join('. ') }),
-  stats(...ARMS.map((a) => stat(`${a} ensemble`, fmt(m.ensembles[a].macro_f1, 1))),
+  stats(...ARMS.map((a) => stat(armName(a), fmt(m.ensembles[a].macro_f1, 1))),
     stat('Test reads', `${d.checks.test_reads} / ${d.checks.test_reads_expected}`, `extra: ${d.checks.extra_reads}`), stat('Expected half-width', fmt(d.power.expected_test_half_width), `limit ${d.power.limit_points}`))));
   main.append(card('Differences with confidence intervals',
     ciChart({ label: 'Macro-F1 differences with 95% confidence intervals', required: d.criterion.macro_f1_min_gain_points, rows: [
-      { label: v.label, delta: v.delta, ci: v.ci },
-      ...Object.entries(m.secondary).map(([label, s]) => ({ label, delta: s.delta, ci: s.ci })) ] }),
-    note(`Only ${v.label} is the primary test. The test split was read in iteration 1, so this is weaker evidence than the fresh holdout below. The source shortcut check fired, so same-source gaps need care.`)));
+      { label: nameArms(v.label), delta: v.delta, ci: v.ci },
+      ...Object.entries(m.secondary).map(([label, s]) => ({ label: nameArms(label), delta: s.delta, ci: s.ci })) ] }),
+    note(`Only ${nameArms(v.label)} is the primary test. The test split was read in iteration 1, so this is weaker evidence than the fresh holdout below. The source shortcut check fired, so same-source gaps need care.`)));
   if (d.fresh) {
     const f = d.fresh;
     main.append(card('Fresh holdout', el('div', { class: 'hero' },
       el('span', { class: 'big', text: signed(f.delta) }), f.verdict === 'pass' ? badge('pass', 'Pass') : badge('fail', 'Fail'),
-      el('span', { text: `${f.label}, macro-F1 points, 95% CI [${fmt(f.ci[0])}, ${fmt(f.ci[1])}], ${f.n.toLocaleString()} images` })),
-    stats(...ARMS.map((a) => stat(`${a} ensemble`, fmt(f.arms[a].macro_f1, 1)))),
+      el('span', { text: `${nameArms(f.label)}, macro-F1 points, 95% CI [${fmt(f.ci[0])}, ${fmt(f.ci[1])}], ${f.n.toLocaleString()} images` })),
+    stats(...ARMS.map((a) => stat(armName(a), fmt(f.arms[a].macro_f1, 1)))),
     scoreRows({ rows: d.fresh_per_class.map((r) => ({ label: r.class, values: Object.fromEntries(ARMS.map((a) => [a, Number(r[`f1_${a}`])])) })), series: ARM_SERIES, label: 'Fresh holdout per-class F1', domain: [85, 100] }),
     note('Images that never entered the catalog and informed no choice. They come from sources seen in training, and include no Quick, Draw! sketches because all local drawings were already used.')));
   }

@@ -1,4 +1,5 @@
 // The CRISP-DM wheel: six clickable steps, the forward loop and the feedback arrows.
+import { headline, nameArms } from '../plain.js';
 import { el } from '../ui.js';
 import { s, text } from '../svg/core.js';
 
@@ -49,7 +50,7 @@ const marker = (id, cls) => s('marker', { id, viewBox: '0 0 10 10', refX: 9, ref
 
 // `active` highlights one step; `focus` replaces the verdict in the centre.
 export function crispCycle({ phases, verdict, active, focus }) {
-  const centre = focus ?? { over: `${verdict ? verdict.label : 'Primary'} verdict`, big: verdict ? verdict.verdict.toUpperCase() : 'pending', under: 'Dashed: feedback arrows, including iteration 1' };
+  const centre = focus ?? { over: verdict ? nameArms(verdict.label) : 'Latest result', big: verdict ? headline(verdict) : 'Pending', under: 'Dashed: feedback arrows, including iteration 1' };
   const at = positions(phases.length);
   const root = s('svg', { class: 'cycle', viewBox: `0 0 ${W} ${H}`, role: 'group', 'aria-label': 'CRISP-DM cycle' },
     s('defs', {}, marker('forward', 'head'), marker('backward', '')));

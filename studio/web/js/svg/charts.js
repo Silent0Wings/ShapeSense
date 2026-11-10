@@ -156,7 +156,8 @@ export function scoreRows({ rows, series, label, domain }) {
 
 // Effect estimates with confidence intervals, a zero line and a required-gain line.
 export function ciChart({ rows, label, required }) {
-  const width = 620; const rowH = 44; const left = 112; const top = 18;
+  const width = 620; const rowH = 44; const top = 18;
+  const left = Math.max(112, 12 + 6.6 * Math.max(...rows.map((r) => r.label.length)));
   const bottom = top + rows.length * rowH;
   const all = rows.flatMap((r) => r.ci).concat([0, required ?? 0]);
   const lo = Math.min(...all) - .5; const hi = Math.max(...all) + .5;

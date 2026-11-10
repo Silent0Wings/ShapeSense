@@ -263,3 +263,9 @@ def test_tuning_selects_by_val(tmp_path):
     again = run_tuning(cfg, None, None, None, None, STEPS, tmp_path, trainer=fake_trainer)
     assert len(calls) == len(preset)
     assert again["winner"] == result["winner"]
+
+
+def test_train_log_columns():
+    from src.stage4_train.train import LOG_COLUMNS
+
+    assert "train_acc_trainmode" in LOG_COLUMNS and "train_acc" not in LOG_COLUMNS

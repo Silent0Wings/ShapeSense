@@ -18,8 +18,8 @@ export async function boot(name, render) {
 }
 
 export const ARM_SERIES = [
-  { key: 'A0', label: 'A0 · real only', color: 'var(--series-1)' },
-  { key: 'A1', label: 'A1 · + augmentation', color: 'var(--series-2)' },
-  { key: 'B', label: 'B · + synthetic', color: 'var(--series-3)' },
-  { key: 'A2', label: 'A2 · clean + augmented + synthetic', color: 'var(--series-4)' },
+  { key: 'A0', label: 'Real only (A0)', color: 'var(--series-1)' },
+  { key: 'A1', label: 'Real + augmented (A1)', color: 'var(--series-2)' },
+  { key: 'B', label: 'Real + synthetic (B)', color: 'var(--series-3)' },
+  { key: 'A2', label: 'Full mix (A2)', color: 'var(--series-4)' },
 ];

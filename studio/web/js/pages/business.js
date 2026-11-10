@@ -1,4 +1,5 @@
 import { post } from '../api.js';
+import { finding, verdictPicture } from '../plain.js';
 import { badge, card, debounce, el, errorBox, fmt, latestOnly, note, pageHead, signed, table } from '../ui.js';
 import { boot } from './boot.js';
 
@@ -15,10 +16,10 @@ boot('business', (main, data) => {
   }));
   main.append(el('div', { class: 'grid two' },
     card('The question and its four arms', table([
-      { arm: 'A0', data: 'Real images only', role: 'Control' },
-      { arm: 'A1', data: 'Real images plus class-safe augmentation', role: 'Isolates augmentation' },
-      { arm: 'B', data: 'A1 plus synthetic images in every batch', role: 'Iteration 1 primary hypothesis: B beats A1' },
-      { arm: 'A2', data: 'Clean real, augmented real and synthetic images in each batch', role: 'Iteration 2 primary hypothesis: A2 beats A0' },
+      { arm: 'Real only (A0)', data: 'Real images only', role: 'Control' },
+      { arm: 'Real + augmented (A1)', data: 'Real images plus class-safe augmentation', role: 'Isolates augmentation' },
+      { arm: 'Real + synthetic (B)', data: 'A1 plus synthetic images in every batch', role: 'Iteration 1 primary hypothesis: B beats A1' },
+      { arm: 'Full mix (A2)', data: 'Clean real, augmented real and synthetic images in each batch', role: 'Iteration 2 primary hypothesis: A2 beats A0' },
     ], [{ key: 'arm', label: 'Arm' }, { key: 'data', label: 'Training data' }, { key: 'role', label: 'Purpose' }])),
     card('The locked success rule', table([
       { rule: 'Macro-F1 gain (iteration 2: A2 over A0)', value: `at least ${c.macro_f1_min_gain_points} point` },
@@ -33,6 +34,7 @@ boot('business', (main, data) => {
     el('span', { class: 'big', text: signed(v.delta) }),
     v.verdict === 'pass' ? badge('pass', 'Criterion met') : badge('fail', 'Criterion not met'),
     el('span', { text: `points of macro-F1, 95% CI [${fmt(v.ci[0])}, ${fmt(v.ci[1])}]` })),
+    el('p', { class: 'finding', text: finding(v) }), verdictPicture(v, c.macro_f1_min_gain_points),
     el('p', { class: 'note', text: v.reasons.join('. ') })));
 
   const gain = numberField('Minimum gain (points)', c.macro_f1_min_gain_points, 0.1, () => refresh());
