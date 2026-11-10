@@ -59,7 +59,7 @@ code { font: 13px ui-monospace, Consolas, monospace; background: var(--surface-2
 #nav nav a[aria-current="page"] { background: var(--accent); color: var(--on-accent); font-weight: 600; }
 .nav-foot { margin-top: auto; }
 
-main { padding: 34px clamp(16px, 4vw, 48px) 64px; max-width: 1240px; width: 100%; }
+main { padding: 34px clamp(16px, 4vw, 48px) 64px; max-width: 2000px; width: 100%; }
 .page-head { margin-bottom: 22px; }
 .eyebrow { font-size: 12px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
 .lede { font-size: 16px; color: var(--text-secondary); max-width: 74ch; margin-top: 8px; }

@@ -11,6 +11,6 @@ boot('failures', (main, _data, meta) => {
   main.append(card('Where things stand', stats(stat('Overcome', count('Overcome')), stat('Partly', count('Partly')), stat('Still open', count('Still open')), stat('Verdict stands', count('Verdict stands'))),
     note('Smaller build issues are listed in plan_issues.md.')));
   main.append(card('The timeline as a graph', failureGraph(meta.failures, meta.phases),
-    note('Left to right is the order things happened, not calendar time, because the record has no dates. The thin line follows the project from one failure to the next. The number is the failure\'s ID. Select a mark to open it.')));
+    note('Left to right is the order things happened, not calendar time, because the record has no dates. The line follows the project from one failure to the next, and the number is the failure\'s ID. Move the slider or select a mark to read that point.')));
   main.append(failureLog(meta.failures, meta.phases));
 });

@@ -1,4 +1,5 @@
 import { crispProgress } from '../widgets/crisp-cycle.js';
+import { modelsExplainer } from '../widgets/models-explainer.js';
 import { failureLog, iterationLog } from '../widgets/findings.js';
 import { predictPanel } from '../widgets/predict-panel.js';
 import { get } from '../api.js';
@@ -21,6 +22,7 @@ boot('home', async (main, data, meta) => {
   if (data.verdict) main.append(card('The main finding', el('p', { class: 'finding', text: finding(data.verdict) }), verdictPicture(data.verdict, data.criterion.macro_f1_min_gain_points),
     note('The dot is the measured difference in macro-F1 points, the line is its uncertainty range, and the dashed line is the gain set in advance as the target. Real only trains on real images alone. Full mix adds augmented and computer-generated shapes.'),
     data.verdict.others?.length ? note(otherArmsNote) : null));
+  main.append(card('What the models are and what they trained on', modelsExplainer({ recipes: data.recipes, maxEpochs: data.max_epochs, classes: meta.classes, augmentDefaults: data.augment_defaults, synthDefaults: data.synth_defaults })));
   main.append(card('The CRISP-DM cycle', crispProgress({ phases: data.phases, iterations: meta.iterations, results: data.results }),
     note('Move the slider to walk through each trip round the cycle, and select a step to read what was found there. Dashed arrows are the trips back: the brightest one started the iteration shown.')));
   main.append(iterationLog(meta.iterations));

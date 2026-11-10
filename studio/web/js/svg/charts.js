@@ -160,8 +160,9 @@ export function scoreRows({ rows, series, label, domain }) {
     series.forEach((item, k) => {
       root.append(s('circle', { cx: scale(values[k]), cy: y + lanes[k] * laneH, r: 7.5, fill: item.color, stroke: 'var(--surface-1)', 'stroke-width': 2 }));
       const isBest = values[k] === best;
+      if (isBest) root.append(s('rect', { x: columns[k] - 44, y: y - 12, width: 50, height: 24, rx: 6, fill: item.color }));
       root.append(text(columns[k], y + 5, values[k].toFixed(1), { 'text-anchor': 'end',
-        style: `font-size:14px;font-variant-numeric:tabular-nums;${isBest ? 'font-weight:700;fill:var(--text-primary)' : ''}` }));
+        style: `font-size:14px;font-variant-numeric:tabular-nums;${isBest ? 'font-weight:700;fill:#111' : ''}` }));
     });
     const band = s('rect', { x: 0, y: y - rowH / 2, width, height: rowH, fill: 'transparent' });
     hover(band, `${row.label}: ${series.map((item, k) => `${item.key} ${values[k].toFixed(1)}`).join(', ')}`);
