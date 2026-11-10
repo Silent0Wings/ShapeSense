@@ -20,9 +20,10 @@ with its own settings tuned on validation only:
 
 Iteration 1 tested B against A1 and failed. Iteration 2 fixed what that result
 exposed and tested A2 against A0 on the test split and on a fresh holdout. It
-failed too. Iteration 3 is in progress: it asks which training mix survives
-damaged images, and when synthetic data helps, on a new sealed holdout. It has
-no results yet.
+failed too. Iteration 3 asked which training mix survives damaged images, on a
+new sealed holdout, and passed: A2 beat A0 by 9.20 macro-F1 points on damaged
+images, 95% CI [8.89, 9.53]. On clean images the gain is small, and the holdout
+uses sources seen in training.
 
 After iteration 3, the plan is an equal-weight "All models vote" option, then a
 frozen public dashboard if every gate in [`stages/stage_7.md`](stages/stage_7.md)
