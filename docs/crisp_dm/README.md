@@ -72,7 +72,7 @@ The pass rule: a gain of at least 1.0 macro-F1 point, a 95% CI excluding 0, and 
 | Data Preparation | Re-framing and binarising alone costs 0.3 to 1.1 points for the arms trained on it, so it is not the main source of errors. The transforms work together: all on scored 77.7 under damage, and no single transform passed 70.1 |
 | Modeling | Added arm P, grouped cross-validation in the search, and equal-real, real-fraction and training-length options. The 108 experiments are done, and every arm moves to 60 epochs with no early stopping |
 | Evaluation | Repaired before any result: bootstrap on near-duplicate groups, exact McNemar under 25 discordant pairs, corrected harm rule, Holm on one metric, real read accounting, checked caches |
-| Deployment | Not started. Planned after evaluation: iteration 3 report section, dashboard pages and re-export |
+| Deployment | Done. Exported all five arms, shipped A2_0 by the validation selection rule, added report Section L, the dashboard's sealed results and the All models vote. The public site, Stage 7, has not started |
 
 ### The sealed result
 
@@ -194,7 +194,7 @@ All 27 outside-review points are now handled. The last two, unequal real images 
 | Models run in the visitor's browser | No server to run, and drawings stay on the device |
 | The site is gated on a finished project, a Pass, a chosen license and written user approval | It must not publish a result that has not been earned |
 
-## Failures in iteration 3 so far
+## Failures in iteration 3
 
 Listed in full in the log and on the dashboard's Failure timeline.
 

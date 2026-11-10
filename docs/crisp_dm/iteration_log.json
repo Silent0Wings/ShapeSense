@@ -1299,6 +1299,20 @@
       "before": "One answer per model",
       "after": "An equal-weight average of every model's class probabilities on the Draw and predict page, with no claimed score",
       "why": "On held-apart validation, equal weights scored 95.59 and per-class weights 94.80, so equal weights stay. Validation was reused, so these are optimistic."
+    },
+    {
+      "step": "deploy",
+      "what": "Iteration 3 report section and dashboard results",
+      "before": "The report and dashboard stopped at iteration 2 and four arms",
+      "after": "Report Section L leads with the sealed result, and the dashboard shows arm P and the sealed robustness results",
+      "why": "The verdict has to be readable where people look for it, drawn from the recorded tables."
+    },
+    {
+      "step": "eval",
+      "what": "Clean-clone rehearsal",
+      "before": "Results had only been produced in the working folder",
+      "after": "A fresh clone passed all seven stages and reproduced the verdict, every robustness figure, all 40 validation scores and every results table, apart from run IDs and folder paths",
+      "why": "It shows the result depends on the committed code and recipe, not on leftovers in one folder."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",
