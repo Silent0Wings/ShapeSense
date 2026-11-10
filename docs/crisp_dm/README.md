@@ -184,6 +184,12 @@ Listed in full in the log and on the dashboard's Failure timeline.
 | The first experiment launch crashed with an invalid-handle error in the worker pool | Relaunched, then later replaced that pool | Partly: first blamed on code edits, but it came back without them |
 | The experiment run hung silently after 6 of 108 trials, found about 2 hours later | Relaunched, reusing finished trials, and added the 5-minute watcher | Partly: the cause is not known |
 | Image preparation made training about five times slower than the GPU allowed | Batches are now built by 7 processes | Overcome |
+| The search stopped at 66 of 191 trials with a GPU error | Confirmed the GPU worked and relaunched, reusing finished trials | Partly: the cause is not known |
+| The first shared worker pool had five bugs | Found and fixed by a code audit before they caused harm | Overcome |
+| GPU pixel conversion would have changed every result | Measured first, then used an exact lookup table | Overcome |
+| The GPU looked idle in Task Manager during training | Confirmed with `nvidia-smi` that training was on the RTX 3080 | Overcome |
+| Stage 6 could pass with a failed report check | A failed check now fails the stage | Overcome |
+| Report macro names broke for A2 and collided for hold-out runs | Digits spelled out, and hold-out runs named separately | Overcome |
 
 ## Decisions still open
 

@@ -792,6 +792,147 @@
           ]
         }
       ]
+    },
+    {
+      "id": "F23",
+      "group": "6. Iteration 3 so far",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The first shared worker pool had five bugs.",
+      "cause": "A crash during training left temporary files behind, a repeat cleanup could hide the real error, a reused file path could give a worker the wrong data, and a failed pool restart left a dead entry.",
+      "handled": "A code audit found and fixed all five before they caused harm. Tests passed and reruns matched exactly.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Auditing the worker pool",
+          "before": [
+            "untested pool code",
+            "code audit",
+            "five bugs found"
+          ],
+          "after": [
+            "all five fixed",
+            "tests passed",
+            "reruns matched"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F24",
+      "group": "6. Iteration 3 so far",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "Converting pixels on the GPU would have changed every result.",
+      "cause": "Dividing by 255 on the GPU rounds 126 of the 256 pixel values differently from the CPU. An outside report had recommended exactly that.",
+      "handled": "Measured it before using it, and used a lookup table of the exact CPU values instead.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Moving pixel conversion to the GPU",
+          "before": [
+            "GPU divides by 255",
+            "126 of 256 levels differ",
+            "results would change"
+          ],
+          "after": [
+            "lookup table of CPU values",
+            "values identical",
+            "results unchanged"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F25",
+      "group": "6. Iteration 3 so far",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The GPU looked idle in Windows Task Manager during training.",
+      "cause": "Task Manager's default GPU graphs do not include CUDA compute work, so the training GPU read 0% while it was busy.",
+      "handled": "Confirmed with nvidia-smi and the run records that training was on the RTX 3080. Its use swings between 0% and 96% as it waits for the next batch.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Checking which GPU trains the models",
+          "before": [
+            "Task Manager shows 0%",
+            "looks like the wrong GPU"
+          ],
+          "after": [
+            "nvidia-smi shows the training process",
+            "dedicated memory matches",
+            "right GPU confirmed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F26",
+      "group": "6. Iteration 3 so far",
+      "iteration": "Iteration 3",
+      "step": "deploy",
+      "pipeline_stages": [
+        6
+      ],
+      "failure": "Stage 6 could pass with a failed report check.",
+      "cause": "A failed number-traceability or attribution check still left the stage marked as passed, and its cache missed some inputs.",
+      "handled": "A failed check now fails the stage, and the cache tracks the whole config, the preprocessing code and the generator status.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Stage 6 checks",
+          "before": [
+            "check fails",
+            "stage still passes"
+          ],
+          "after": [
+            "check fails",
+            "stage fails",
+            "cache sees all inputs"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F27",
+      "group": "6. Iteration 3 so far",
+      "iteration": "Iteration 3",
+      "step": "deploy",
+      "pipeline_stages": [
+        6
+      ],
+      "failure": "Report macro names broke for arm A2 and collided for hold-out runs.",
+      "cause": "LaTeX macro names cannot contain digits, and runs such as A0_loso_0 got the same name as A0_0.",
+      "handled": "Digits are spelled out and hold-out runs get their own names. Existing macro names did not change.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Report macro names",
+          "before": [
+            "A2 keeps a digit",
+            "hold-out names collide"
+          ],
+          "after": [
+            "digits spelled out",
+            "names stay distinct"
+          ]
+        }
+      ]
     }
   ],
   "changes_note": "Every change to data, training or evaluation, filed under its CRISP-DM step.",
@@ -1026,6 +1167,34 @@
       "before": "Arm codes, a bare FAIL and a process title on the home page",
       "after": "Plain statement of the finding, names for the arms, the ten shapes, a picture of each verdict",
       "why": "A new reader could not tell what the project does or what it found. The wording is generated from the stored results."
+    },
+    {
+      "step": "data",
+      "what": "Hashing and near-duplicate grouping",
+      "before": "One file status call per file, and a slower bit count",
+      "after": "Directory scans, threaded reads and a NumPy bit count, with the same hashes and groups",
+      "why": "Every run pays for hashing. These do not change any result."
+    },
+    {
+      "step": "prep",
+      "what": "Augmentation and generator speed",
+      "before": "Ink positions and thin-line checks recomputed for every image",
+      "after": "Cached per stored image, with faster morphology and array steps",
+      "why": "The same stored images are augmented many times. Tests and reruns confirm identical output."
+    },
+    {
+      "step": "eval",
+      "what": "Bootstrap calculation",
+      "before": "One matrix product per damage level",
+      "after": "One combined product per block, with the same random draws",
+      "why": "Removes repeated work without changing any number."
+    },
+    {
+      "step": "model",
+      "what": "Long-job recovery",
+      "before": "No written rule for a job that crashed",
+      "after": "Check the log and GPU, record it, relaunch one copy, and stop after repeated failures",
+      "why": "A crash at 66 of 191 trials showed the gap."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",
