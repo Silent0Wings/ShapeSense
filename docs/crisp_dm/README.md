@@ -22,7 +22,7 @@ ShapeSense trains a small CNN to name ten 2D shapes from a 64×64 drawing. The r
 |---|---|
 | Iteration 1 | Closed. Verdict: fail |
 | Iteration 2 | Closed. Verdict: fail on both evaluation sets |
-| Iteration 3 | Open. Phases 0 to 5 are done, and Phase 6, the final retraining, is next |
+| Iteration 3 | Open. Phases 0 to 6 are done, and Phase 7, the sealed evaluation, is next |
 | Iteration 3 results | Validation experiments only. There is no verdict yet |
 | Sealed data | No sealed set has been read in iteration 3 |
 | Git | Branch `iteration-3`, local only, nothing pushed |
