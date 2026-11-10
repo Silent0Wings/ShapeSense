@@ -1383,6 +1383,13 @@
       "before": "The five model names and the kinds of training image were never defined in one place",
       "after": "The home page shows a real, an augmented and a computer-generated example of a shape, and a card per model with what it tests and the make-up of its batches",
       "why": "A new reader could not tell what the models were or what their training data meant."
+    },
+    {
+      "step": "model",
+      "what": "One config file per model",
+      "before": "Each model's full setup had to be pieced together from the shared config and its overrides",
+      "after": "configs/models holds one generated file per model with its network, training settings, batch mix, augmentation and generator ranges, and a test keeps them in step with the shared config",
+      "why": "A reader can see one model's whole setup in one place."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",
