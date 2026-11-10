@@ -22,9 +22,9 @@ ShapeSense trains a small CNN to name ten 2D shapes from a 64×64 drawing. The r
 |---|---|
 | Iteration 1 | Closed. Verdict: fail |
 | Iteration 2 | Closed. Verdict: fail on both evaluation sets |
-| Iteration 3 | Open. Phases 0 to 6 are done, and Phase 7, the sealed evaluation, is next |
-| Iteration 3 results | Validation experiments only. There is no verdict yet |
-| Sealed data | No sealed set has been read in iteration 3 |
+| Iteration 3 | Open. Phases 0 to 7 are done, and Phase 8, the report and dashboard, is next |
+| Iteration 3 verdict | **Pass.** A2 vs A0 on damaged images: +9.20 macro-F1 points, 95% CI [8.89, 9.53], no harmed class |
+| Sealed data | Read once per model in Phase 7: 92 reads of 92 expected |
 | Git | Branch `iteration-3`, local only, nothing pushed |
 
 ## What is next, in order
@@ -73,6 +73,26 @@ The pass rule: a gain of at least 1.0 macro-F1 point, a 95% CI excluding 0, and 
 | Modeling | Added arm P, grouped cross-validation in the search, and equal-real, real-fraction and training-length options. The 108 experiments are done, and every arm moves to 60 epochs with no early stopping |
 | Evaluation | Repaired before any result: bootstrap on near-duplicate groups, exact McNemar under 25 discordant pairs, corrected harm rule, Holm on one metric, real read accounting, checked caches |
 | Deployment | Not started. Planned after evaluation: iteration 3 report section, dashboard pages and re-export |
+
+### The sealed result
+
+**Pass.** Full mix (A2) against Real only (A0), averaged over 23 damage levels of fresh holdout 2, which had never been read: **+9.20 macro-F1 points, 95% CI [8.89, 9.53], no harmed class.** It also passes the stricter reading, where the interval's lower bound must clear the 1-point target. The interval clustered by source, which is coarse with three sources, is [3.89, 9.42].
+
+| Arm | Damaged macro-F1 | Clean macro-F1 |
+|---|---|---|
+| Real only (A0) | 75.6 | 97.8 |
+| Real + augmented (A1) | 82.6 | 98.3 |
+| Real + synthetic (B) | 83.2 | 98.0 |
+| Full mix (A2) | 84.8 | 98.5 |
+| Synthetic pretraining (P) | 84.3 | 98.0 |
+
+| Hypothesis | Sealed answer |
+|---|---|
+| A0 is weakest on rotated and noisy data | Yes, by a wide margin |
+| A1 improves robustness | Yes, +6.98 points over A0 |
+| A2 is best overall | Yes on damaged images (+2.22 over A1, +1.68 over B), though A2 vs A1 did not have the same sign on every seed. P is close behind A2, reported descriptively |
+
+Clean images still separate the arms only slightly: A2 vs A0 is +0.64, CI [0.19, 1.07]. The earlier evaluation sets, which had already been read, show no pass: the reused test split is +0.52, CI [-0.24, 1.22], and the first fresh holdout is +0.54, CI [0.10, 0.99]. The gain is in surviving damage, not in clean accuracy. Fresh holdout 2 uses sources seen in training, so this does not test new sources.
 
 ### What the validation experiments found
 
