@@ -30,7 +30,7 @@ ShapeSense trains a small CNN to name ten 2D shapes from a 64×64 drawing. The r
 ## What is next, in order
 
 1. **Finish iteration 3.** Write up the experiments, tune, retrain, evaluate once on sealed data, then report and close out..
-2. **Add "All models vote".** An equal-weight average of the exported models' class probabilities, with no retraining and no claimed score..
+2. **"All models vote" is built.** An equal-weight average of the exported models' class probabilities, with no retraining and no claimed score. Equal weights beat per-class weights on held-apart validation, 95.59 against 94.80..
 3. **Publish a frozen dashboard, if earned.** Stage 7 builds a static Vercel site with live ONNX models, only after all four gates in [`stages/stage_7.md`](../../stages/stage_7.md) are met, including written user approval.
 
 ## Iteration 1: does synthetic data help?
@@ -210,6 +210,9 @@ Listed in full in the log and on the dashboard's Failure timeline.
 | The GPU looked idle in Task Manager during training | Confirmed with `nvidia-smi` that training was on the RTX 3080 | Overcome |
 | Stage 6 could pass with a failed report check | A failed check now fails the stage | Overcome |
 | Report macro names broke for A2 and collided for hold-out runs | Digits spelled out, and hold-out runs named separately | Overcome |
+| Report Section K would have shown iteration 3 numbers | It now reads the frozen iteration 2 tables | Overcome |
+| The dashboard listed arm P twice | Removed the duplicate | Overcome |
+| The first vote comparison scored an absent class as zero | Halves balanced by class, and absent classes left out of the score | Overcome |
 
 ## Decisions still open
 
