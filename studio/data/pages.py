@@ -84,7 +84,7 @@ def _iteration1() -> dict:
 
 
 def _robustness() -> dict:
-    return {"results": read_json("robustness")}
+    return {"results": read_json("robustness"), "sealed": read_json("robust_sealed")}
 
 
 def _iteration2() -> dict:

@@ -34,7 +34,7 @@ def _status_lines() -> dict[str, str]:
                      + (f"Verdict: {verdict['verdict']}." if verdict else "No verdict yet.")),
         "data": f"{_image_total():,} images from four public sources, leak-free split.",
         "prep": "Class-safe augmentation and a synthetic generator, train side only.",
-        "model": ("Four arms, five seeds, tuned on validation only." if winner else "No trained runs yet."),
+        "model": ("Five arms, five seeds, tuned on validation only." if winner else "No trained runs yet."),
         "eval": (f"{verdict['label']}: {verdict['delta']:+.2f} points, CI [{verdict['ci'][0]:.2f}, "
                  f"{verdict['ci'][1]:.2f}]." if verdict else "Not evaluated yet."),
         "deploy": (f"ONNX bundle from {card.get('run_name')}, drawn shapes scored live."

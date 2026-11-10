@@ -31,7 +31,8 @@ DOCS: dict[str, str] = {
     "iteration1": "docs/crisp_dm/iteration_1_quickdraw_diamonds.json",
     "iteration_log": "docs/crisp_dm/iteration_log.json",
     "robustness": "docs/crisp_dm/iteration_2/robustness/results.json",
-    "winners": f"{_A}/stage4/tuning_iter2/winners.json",
+    "winners": f"{_A}/stage4/tuning_iter3/winners.json",
+    "robust_sealed": f"{_A}/stage5/robust_results.json",
     "fresh_metrics": f"{_A}/stage5/tables/fresh_metrics.csv",
     "fresh_per_class": f"{_A}/stage5/tables/fresh_per_class.csv",
     **{f"exp_{n}": f"docs/crisp_dm/iteration_3/experiments/{n}.json" for n in ("scarcity", "equal_real", "budget", "batchnorm", "preprocess", "one_transform_on", "val_vs_test")},
@@ -67,7 +68,7 @@ IMAGES: dict[str, str] = {
     "qa2": f"{_A}/stage2/qa/qa_sheet.png",
     "qa3": f"{_A}/stage3/qa/qa_sheet.png",
     "smoke_hexagon": f"{_A}/stage6/smoke_hexagon.png",
-    **{f"confusion_{arm}": f"{_A}/stage5/figures/confusion_{arm}.png" for arm in ("A0", "A1", "B", "A2")},
+    **{f"confusion_{arm}": f"{_A}/stage5/figures/confusion_{arm}.png" for arm in ("A0", "A1", "B", "A2", "P")},
     **{f"iter2_confusion_{arm}": f"docs/crisp_dm/iteration_2/figures/confusion_{arm}.png" for arm in ("A0", "A1", "B", "A2")},
     **{f"iter1_confusion_{arm}": f"docs/crisp_dm/iteration_1/figures/confusion_{arm}.png" for arm in ("A0", "A1", "B")},
 }
@@ -79,7 +80,7 @@ FILES: dict[str, tuple[str, str]] = {
 
 # The only prediction files that may be opened; each has one reader in studio.data.
 PREDICTION_FILES: dict[str, str] = {
-    **{arm: f"{_A}/stage5/predictions/ensemble_{arm}.npz" for arm in ("A0", "A1", "B", "A2")},
+    **{arm: f"{_A}/stage5/predictions/ensemble_{arm}.npz" for arm in ("A0", "A1", "B", "A2", "P")},
     "errors": f"{_A}/stage5/predictions/ensemble_A2_errors.npz",
 }
 

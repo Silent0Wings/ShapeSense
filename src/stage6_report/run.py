@@ -28,6 +28,7 @@ from typing import Any
 from src.common.config import REPO_ROOT, class_names, load_config, resolve
 from src.common.hashing import sha256_obj, sha256_path
 from src.common.status import StageNotReady
+from src.stage6_report.iteration3 import write_iteration3
 from src.stage6_report.snippets import write_snippets
 from src.stage6_report.traceability import check_report
 
@@ -79,6 +80,7 @@ def inputs(config: dict) -> dict[str, str]:
         "stage3_status": sha256_path(art / "stage3" / "status.json"),
         "standardize": sha256_path(resolve("src/stage1_freeze/standardize.py")),
         "stage4_runs": sha256_path(art / "stage4" / "status.json"),
+        "winners": sha256_path(art / "stage4" / "tuning_iter3" / "winners.json"),
         "stage5": sha256_path(art / "stage5"),
         "export_code": sha256_path(resolve("export/predict.py")),
         "config": sha256_obj(config),
@@ -219,6 +221,7 @@ def run(config: dict) -> dict:
     selection = {k: bundle["selection"].get(k) for k in ("run_name", "arm", "seed", "val_macro_f1")}
 
     snippets = write_snippets(config, art, export_dir)
+    iteration3 = write_iteration3(art)
 
     image_path = draw_hexagon(stage_dir / SMOKE_IMAGE_NAME)
     smoke = smoke_test(config, export_dir, image_path)
@@ -231,6 +234,7 @@ def run(config: dict) -> dict:
     outputs = [build["pdf"]] if build["ok"] else []
     outputs += [_rel(bundle[k]) for k in ("onnx", "standardize", "labels", "model_card")]
     outputs += [_rel(snippets["param_ranges"]), _rel(snippets["pipeline_facts"]), _rel(image_path)]
+    outputs += [_rel(path) for path in iteration3]
 
     checks = {
         "report_built": bool(build["ok"]),

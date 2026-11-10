@@ -55,25 +55,31 @@ function perClass(rows) {
 
 boot('stage5', (main, d, meta) => {
   main.append(pageHead({ eyebrow: 'Stage 5 · CRISP-DM evaluation', title: 'Evaluation',
-    lede: 'Each model read the sealed test split exactly once. Everything on this page comes from what Stage 5 saved, so this page never reads the split again.' }));
+    lede: 'Each model read each sealed set exactly once. Everything on this page comes from what Stage 5 saved, so this page never reads the data again.' }));
   if (!d.verdict) { main.append(card('Verdict', note('Stage 5 has not run yet.'))); return; }
-  const m = d.metrics; const v = d.verdict;
+  const m = d.metrics; const v = d.verdict; const r = m.robust;
   main.append(card('Verdict', el('div', { class: 'hero' },
     el('span', { class: 'big', text: signed(v.delta) }),
     v.verdict === 'pass' ? badge('pass', 'Pass') : badge('fail', 'Fail'),
-    el('span', { text: `${nameArms(v.label)}, macro-F1 points, 95% CI [${fmt(v.ci[0])}, ${fmt(v.ci[1])}], reused test split` })),
+    el('span', { text: `${nameArms(v.label)}, macro-F1 points, 95% CI [${fmt(v.ci[0])}, ${fmt(v.ci[1])}], ${r.levels.length} damage levels of ${r.n.toLocaleString()} never-read images` })),
   el('p', { class: 'finding', text: finding(v) }),
   el('p', { class: 'note', text: v.reasons.join('. ') }),
-  stats(...ARMS.map((a) => stat(armName(a), fmt(m.ensembles[a].macro_f1, 1))),
+  stats(...ARMS.map((a) => stat(armName(a), fmt(r.ensembles[a].perturbed_macro_f1, 1))),
     stat('Test reads', `${d.checks.test_reads} / ${d.checks.test_reads_expected}`, `extra: ${d.checks.extra_reads}`), stat('Expected half-width', fmt(d.power.expected_test_half_width), `limit ${d.power.limit_points}`))));
   main.append(card('Differences with confidence intervals',
     ciChart({ label: 'Macro-F1 differences with 95% confidence intervals', required: d.criterion.macro_f1_min_gain_points, rows: [
       { label: nameArms(v.label), delta: v.delta, ci: v.ci },
-      ...Object.entries(m.secondary).map(([label, s]) => ({ label: nameArms(label), delta: s.delta, ci: s.ci })) ] }),
-    note(`Only ${nameArms(v.label)} is the primary test. The test split was read in iteration 1, so this is weaker evidence than the fresh holdout below. The source shortcut check fired, so same-source gaps need care.`)));
+      ...Object.entries(r.secondary).map(([label, s]) => ({ label: nameArms(label), delta: s.delta, ci: s.ci })) ] }),
+    note(`Only ${nameArms(v.label)} is the primary test, averaged over the damage levels. Fresh holdout 2 had never been read. It uses sources seen in training, so same-source gaps need care.`)));
+  const earlier = [
+    ...Object.entries(r.clean).map(([label, s]) => ({ set: 'Fresh holdout 2, clean images', label: nameArms(label), delta: s.delta, ci: s.ci })),
+    { set: 'Reused test split (already read)', label: nameArms(v.label), delta: m.reused_test.delta, ci: m.reused_test.ci, verdict: m.reused_test.verdict },
+  ];
+  main.append(card('Clean images and earlier evaluation sets', table(earlier, [{ key: 'set', label: 'Data' }, { key: 'label', label: 'Comparison' }, { label: 'Change', num: true, render: (x) => signed(x.delta) }, { label: '95% CI', render: (x) => `[${fmt(x.ci[0])}, ${fmt(x.ci[1])}]` }, { label: 'Result', render: (x) => x.verdict ?? 'descriptive' }]),
+    note('These sets do not decide the verdict. The test split and the first fresh holdout had already been read, so they are weaker evidence.')));
   if (d.fresh) {
     const f = d.fresh;
-    main.append(card('Fresh holdout', el('div', { class: 'hero' },
+    main.append(card('First fresh holdout (already read)', el('div', { class: 'hero' },
       el('span', { class: 'big', text: signed(f.delta) }), f.verdict === 'pass' ? badge('pass', 'Pass') : badge('fail', 'Fail'),
       el('span', { text: `${nameArms(f.label)}, macro-F1 points, 95% CI [${fmt(f.ci[0])}, ${fmt(f.ci[1])}], ${f.n.toLocaleString()} images` })),
     stats(...ARMS.map((a) => stat(armName(a), fmt(f.arms[a].macro_f1, 1)))),
