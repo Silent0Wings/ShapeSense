@@ -1,5 +1,6 @@
 import { badge, card, el, note, pageHead, stat, stats, table } from '../ui.js';
 import { select } from '../widgets/controls.js';
+import { stageBrief, stageNav } from '../widgets/stage-brief.js';
 import { boot } from './boot.js';
 
 const STATE = {
@@ -13,6 +14,23 @@ boot('stage0', (main, d) => {
     eyebrow: 'Stage 0 · foundations for every CRISP-DM step', title: 'Infrastructure',
     lede: 'Rules that keep the experiment honest: a test split only one stage can read, import boundaries, and a cache that reruns a stage only when one of its inputs changed.',
     chips: ['run_pipeline.py', 'status.json per stage', 'import contracts'],
+  }));
+  const readers = Object.keys(d.access.callers);
+  const hashCount = (state) => d.hashes.filter((r) => r.state === state).length;
+  const readFinding = readers.length ? `Only ${readers.join(', ')} read the sealed test split, in ${d.access.total} logged reads.` : 'Nothing has read the sealed test split.';
+  main.append(stageBrief({
+    job: 'Keeps the experiment honest and repeatable, so each stage reruns only when something it depends on has changed.',
+    input: 'code and configuration',
+    process: 'enforces import boundaries, limits who can read sealed data, and reruns a stage only when its inputs changed',
+    output: 'a status for each stage',
+    finding: `${readFinding} The hash cache has ${hashCount('match')} inputs matching on disk, ${hashCount('changed')} changed and ${hashCount('recorded')} recorded only.`,
+    checks: [
+      { label: 'Import boundaries pass', ok: d.guards?.import_linter ?? null },
+      { label: 'Contract tests pass', ok: d.guards?.contract_tests ?? null },
+      { label: 'Code migration rebuild matches the original', ok: d.migration?.equal ?? null },
+      { label: 'Every stage passed', ok: d.lights.length ? d.lights.every((l) => l.status === 'passed') : null },
+      { label: 'Sealed test reads come from one caller only', ok: readers.length === 1 },
+    ],
   }));
   main.append(card('Status of each stage', el('div', { class: 'lights' }, d.lights.map((l) => el('a', { class: 'light', href: l.page },
     `${l.stage} · ${l.title}`, l.status === 'passed' ? badge('pass', 'Passed') : badge('fail', l.status))))));
@@ -59,4 +77,5 @@ boot('stage0', (main, d) => {
       select([{ value: 'all', label: 'Any state' }, { value: 'match', label: 'Matches' }, { value: 'changed', label: 'Changed' }, { value: 'recorded', label: 'Recorded only' }], 'all', (v) => { state = v; draw(); }, 'State')),
     holder,
     note('Only code, config and the train and val manifests are recomputed. The other inputs, which include the test manifest and whole image folders, are shown as recorded and are not reopened.')));
+  main.append(stageNav(0));
 });

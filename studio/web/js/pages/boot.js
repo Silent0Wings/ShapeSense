@@ -12,6 +12,8 @@ export async function boot(name, render) {
     await render(main, data, meta);
     const findings = pageFindings(name, meta.iterations);
     if (findings) main.append(findings);
+    const stageNav = main.querySelector(':scope > .stage-nav');
+    if (stageNav) main.append(stageNav);   // the links along the pipeline stay last
   } catch (error) {
     main.replaceChildren(errorBox(error));
   }

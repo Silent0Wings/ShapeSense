@@ -1426,6 +1426,13 @@
       "before": "A review of every screen found misleading headlines, faint model names, very long pages and colliding labels",
       "after": "The headline says the gain is on damaged images and gives the clean result, the Business page separates the iterations, the home page is about half as long, findings fold after their first sentence, model names and batch text pass contrast, chart labels no longer collide, and phone touch targets are larger",
       "why": "Readers should be able to trust and read the results on every screen."
+    },
+    {
+      "step": "deploy",
+      "what": "One explanation block per pipeline stage",
+      "before": "Each stage page showed its tools and tables in its own way, and most never stated the stage's point",
+      "after": "Every stage opens with the same block: its job, what goes in, what it does, what comes out, the key finding and the checks that show it worked, read from stored results, with links to the previous and next stage. Key results moved higher on Data freeze, Training and Evaluation, and Synthetic generator shows a real drawing beside a generated one",
+      "why": "Each stage should explain itself clearly to a reader new to the project."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",

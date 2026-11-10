@@ -38,20 +38,23 @@ def _stage1() -> dict:
             "source_check": read_json("source_classifier"), "fd": read_json("fd_check"),
             "shortcut": read_text("shortcut_notice"), "iteration": read_json("iteration1"),
             "duplicates": samples.largest_groups("train", 8), "pool": _pool_note(),
-            "ratios": config()["split"]["ratios"], "contact_sheets": 5}
+            "ratios": config()["split"]["ratios"], "contact_sheets": 5,
+            "checks": (read_json("status1") or {}).get("checks", {})}
 
 
 def _stage2() -> dict:
     return {"defaults": default_augment_values(), "no_shear": list(no_shear_classes()),
             "rotate_limits": (tuned().get("taxonomy") or {}).get("rotate_limit_deg", {}),
             "qa_review": read_text("qa_review2"), "pool": _pool_note(),
-            "blur_sigma": config()["augment"]["blur_sigma"]}
+            "blur_sigma": config()["augment"]["blur_sigma"],
+            "checks": (read_json("status2") or {}).get("checks", {})}
 
 
 def _stage3() -> dict:
     return {"defaults": default_synth_values(), "ranges": read_json("param_ranges"),
             "margins": config()["taxonomy"]["ambiguity_margins"],
-            "qa_review": read_text("qa_review3")}
+            "qa_review": read_text("qa_review3"),
+            "checks": (read_json("status3") or {}).get("checks", {})}
 
 
 def _stage4() -> dict:
