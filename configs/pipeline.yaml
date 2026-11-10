@@ -140,7 +140,8 @@ train:
   tuned: true                # iteration 2: chosen by src/stage4_train/search.py
   device: cuda               # auto | cpu | cuda; cuda fails loudly when no GPU is visible
   num_threads: 2             # torch CPU threads per run (scales sublinearly)
-  parallel_runs: 2           # independent runs trained at once; 8 GB RTX 3080 Laptop:
+  prep_workers: 7            # CPU processes preparing each run's batches (iteration 3); results do not depend on it
+  parallel_runs: 1           # iteration 3: one run at a time, so the batch processes are not nested; 8 GB RTX 3080 Laptop:
                              # the parent keeps GPU memory after the benchmark, so 3 workers
                              # (4 GPU processes) filled the VRAM and stalled (2026-11-08);
                              # each run stays deterministic from (arm, seed)

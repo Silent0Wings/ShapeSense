@@ -161,7 +161,7 @@ def run_job(spec: dict) -> dict:
     return train_one(spec["run_name"], spec["arm"], spec["seed"], config, train_store, val_store,
                      transform, generate, spec["hparams"], run_dir,
                      steps_per_epoch=spec["steps_per_epoch"], val_image_ids=ids,
-                     excluded_classes=excluded)
+                     excluded_classes=excluded, prep_workers=int(config["train"].get("prep_workers", 0)))
 
 
 def run_sweep(config: dict, steps_per_epoch: int, hparams: dict, loso: bool, *,

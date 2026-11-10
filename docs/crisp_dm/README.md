@@ -115,6 +115,8 @@ All 27 outside-review points are now handled. The last two, unequal real images 
 | Arm P is reported descriptively, outside the corrected comparisons | Its value was unknown when the test was pre-registered |
 | All arms move to a longer training budget only if each tested arm gains at least 0.5 points | One shared budget keeps arms comparable |
 | Every arm trains for 60 epochs with no early stopping | That rule was met: A0 gained 1.99, A1 0.51 and A2 0.71 points |
+| Batches are built by 7 CPU processes, one training run at a time, with one random generator per step | Image preparation was about 80% of each step. An epoch fell from about 20 seconds to about 2.3, and scores are identical at any process count |
+| The 108 validation experiments are not retrained after that change | They measured the design questions. Their random image stream differs from later runs, which is recorded as a deviation |
 | The final vote uses equal weights | Nothing to tune or overfit. Per-class weights rely on differences that are mostly noise |
 | Per-class weights are adopted only if they win by at least 0.5 points on held-apart validation, and the user agrees | They have to earn the added complexity |
 | "All models vote" claims no score | Proving it better needs a new pre-registered iteration |
@@ -145,8 +147,9 @@ Listed in full in the log and on the dashboard's Failure timeline.
 | Failure | Handling | State |
 |---|---|---|
 | A time limit killed the second holdout build and left a partial folder | Deleted it and rebuilt with no limit | Overcome |
-| The first experiment launch crashed while the training code was being edited | Relaunched with no edits during start-up | Overcome |
+| The first experiment launch crashed with an invalid-handle error in the worker pool | Relaunched, then later replaced that pool | Partly: first blamed on code edits, but it came back without them |
 | The experiment run hung silently after 6 of 108 trials, found about 2 hours later | Relaunched, reusing finished trials, and added the 5-minute watcher | Partly: the cause is not known |
+| Image preparation made training about five times slower than the GPU allowed | Batches are now built by 7 processes | Overcome |
 
 ## Decisions still open
 

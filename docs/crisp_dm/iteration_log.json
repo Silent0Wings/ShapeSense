@@ -675,9 +675,9 @@
         4
       ],
       "failure": "The first launch of the validation experiments crashed.",
-      "cause": "The training code was being edited while the workers started, and the worker pool broke with an invalid-handle error.",
-      "handled": "Relaunched with no edits during start-up. Training code is left alone while workers start.",
-      "state": "Overcome",
+      "cause": "The worker pool broke with an invalid-handle error. It was first blamed on the training code being edited during start-up, but the same error came back later with no edits, in the way Python starts pool workers on demand on Windows.",
+      "handled": "Relaunched at first. Training later replaced that pool with one that starts every worker at once and turns a stalled batch into an error.",
+      "state": "Partly",
       "visual": [
         {
           "kind": "flow",
@@ -704,8 +704,8 @@
         4
       ],
       "failure": "The 108-trial experiment run hung silently after 6 trials.",
-      "cause": "Not established. The workers waited for work while the parent waited for results, with no error in the log, and nothing was watching for a stall.",
-      "handled": "Found about 2 hours 17 minutes later, on a status request. Stopped that job and relaunched it with the finished trials reused. Long jobs now run with a stall watcher checked every 5 minutes.",
+      "cause": "Not established. The workers waited for work while the parent waited for results, with no error in the log, and nothing was watching for a stall. It used the same on-demand worker pool as F19, but that link is not proven.",
+      "handled": "Found about 2 hours 17 minutes later, on a status request. Stopped that job and relaunched it with the finished trials reused. Long jobs now run with a stall watcher checked every 5 minutes. Training later stopped using that worker pool.",
       "state": "Partly",
       "visual": [
         {
@@ -721,6 +721,38 @@
             "finished trials reused",
             "checked every 5 minutes"
           ]
+        }
+      ]
+    },
+    {
+      "id": "F21",
+      "group": "6. Iteration 3 so far",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "Image preparation made training about five times slower than the GPU allowed.",
+      "cause": "Augmentation and synthetic drawing ran on one CPU core, on the training thread, taking about 80% of every step while the GPU waited.",
+      "handled": "Batches are now built by 7 processes, so an epoch fell from about 20 seconds to about 2.3. Validation scores were identical at different process counts.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Seconds per epoch for arm B",
+          "unit": " s",
+          "rows": [
+            {
+              "label": "One core",
+              "value": 20.0,
+              "mark": true
+            },
+            {
+              "label": "Seven processes",
+              "value": 2.3
+            }
+          ],
+          "caption": "Measured on real short training runs, 49 steps per epoch."
         }
       ]
     }
@@ -929,6 +961,13 @@
       "before": "30 epochs with early stopping",
       "after": "60 epochs with no early stopping, for every arm",
       "why": "The pre-registered rule: each tested arm gained at least 0.5 validation points (A0 1.99, A1 0.51, A2 0.71)."
+    },
+    {
+      "step": "model",
+      "what": "Batch preparation",
+      "before": "One random generator per epoch, batches built on the training thread, two runs at once",
+      "after": "One generator per step, batches built by 7 processes, one run at a time",
+      "why": "Image preparation was about 80% of a step. The batches are the same at any process count, but differ from the stream the validation experiments used."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",
