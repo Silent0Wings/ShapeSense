@@ -90,9 +90,9 @@ Three seeds, on validation images only. These answer the questions below, but no
 | Does re-framing alone cause errors? | Not much. It keeps shape proportions, and arms trained on it lost 0.3 to 1.1 points |
 | Do validation and test differ in balance? | No. Class shares differ by 1.1% in total and source shares by 0.9% |
 
-### Speeding up training
+### Optimization steps (Modeling)
 
-All of this sits under Modeling.
+A speed change is registered here as an optimization step once measurement shows it helped. Candidates that are not built or not proven stay listed as candidates.
 
 | Step | Evidence | Result |
 |---|---|---|
@@ -102,7 +102,19 @@ All of this sits under Modeling.
 | Replaced the worker pool | The old pool failed with an invalid-handle error on Windows | Workers start together, and a stalled batch raises an error |
 | Trained one run at a time | Nested pools were the setup that had hung | The GPU is not shared between runs |
 | Investigated the remaining slow epochs | The CPU was 99% busy in slow epochs and 90% in fast ones, with temperature unchanged | Windows Defender used about 2 cores, and other programs used several more |
-| Still open | Caching per-image work and sending smaller batches should not change results | Not built or measured. Other options would change results, so they are not used |
+
+Candidates, audited against measurements on 2026-11-09. None is applied yet, and none should be applied while a search runs, because workers reload the transform code for every trial.
+
+| Candidate | Measured size | Assessment |
+|---|---|---|
+| Cache each stored image's ink points and thin-line flag | About 18% of the transform's time, from a profile | Worth trying. Should not change results |
+| Keep one worker pool across trials | 16 seconds of about 220 per trial are outside the epochs, about 7% | Worth trying |
+| Reduce other CPU load on the machine | Slow epochs had the CPU at 99%, and an epoch ranges from 2 to 6 seconds | Largest effect. Needs a user decision on Defender exclusions |
+| Send batches as 1 MB of bytes | Saves at most about 3 ms of a roughly 69 ms step | Small |
+| Stop syncing with the GPU on every step | Not measured. The GPU is only 38 to 63% busy | Probably small |
+| Cache validation images on the GPU | Conversion is 43 ms of a roughly 3.4 second epoch | About 1% |
+| Skip the training-curve plot | 0.57 seconds per trial | Negligible, and the dashboard uses it |
+| Mixed precision or relaxed determinism | Not measured | Not used, because they change results or repeatability |
 
 All 27 outside-review points are now handled. The last two, unequal real images per step and BatchNorm statistics, were closed by these measurements.
 
