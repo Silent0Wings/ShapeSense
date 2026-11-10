@@ -763,6 +763,35 @@
           "caption": "Measured on real 60-epoch search trials, 49 steps per epoch. The one-core figure comes from the same arm type on short runs."
         }
       ]
+    },
+    {
+      "id": "F22",
+      "group": "6. Iteration 3 so far",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The search stopped at 66 of 191 trials with a GPU error.",
+      "cause": "Not established. cuDNN reported an execution failure during a training step. It happened around the time other programs were being closed, and no GPU driver error appears in the system log.",
+      "handled": "Confirmed the GPU still worked, stopped the leftover process and relaunched. The 66 finished trials carried over.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "A GPU error during the search",
+          "before": [
+            "66 trials done",
+            "cuDNN execution failure",
+            "search stopped"
+          ],
+          "after": [
+            "GPU check passed",
+            "relaunched",
+            "finished trials reused"
+          ]
+        }
+      ]
     }
   ],
   "changes_note": "Every change to data, training or evaluation, filed under its CRISP-DM step.",
