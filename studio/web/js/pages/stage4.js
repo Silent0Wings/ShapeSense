@@ -67,21 +67,20 @@ boot('stage4', (main, d) => {
   el('div', { class: 'toolbar' }, d.checks.no_test_reads ? badge('good', 'No test reads in this stage') : badge('bad', 'Test split was read'))));
   const dropouts = new Set(d.recipes.map((r) => r.dropout));
   main.append(card('The network every model shares', networkExplorer(d.network, dropouts.size === 1 ? [...dropouts][0] : null),
-    note('Select any operation, or press Play to walk through them. In a block, each slab is one of its four operations, from Conv at the front to MaxPool at the back, and the purple slab is the one selected. Slabs shrink as the image gets smaller. All five models use this same network and differ only in the images they trained on and their tuned settings. The logistic regression and linear SVM below are reference points, not this network.')));
+    note('Select any operation, or press Play to walk through them. In a block, each slab is one of its four operations, from Conv at the front to MaxPool at the back, and the purple slab is the one selected. Slabs shrink as the image gets smaller. All five models use this same network and differ only in the images they trained on and their tuned settings. The logistic regression and linear SVM below are reference points, not this network.'),
+    tableView(d.layers, [{ key: 'layer', label: 'Layer' }, { key: 'detail', label: 'Detail' }, { key: 'shape', label: 'Output', num: true }], 'Show the layers as a table')));
   main.append(card('How a training run works on this machine', systemExplorer(d.train),
     note('Select a step to read what it does.')));
   main.append(card('How each model was trained', trainingFlow(d.train, d.runs),
     el('h3', { text: 'What each model saw in one batch' }), recipeBars(d.recipes, d.train.max_epochs),
     note('Hover a bar for its count. Synthetic pretraining spends its first epochs on computer-generated images only, then continues on real images. The learning rate and dropout each model used are in the search table.')));
-  main.append(el('div', { class: 'grid two' },
-    card('Architecture', table(d.layers, [{ key: 'layer', label: 'Layer' }, { key: 'detail', label: 'Detail' }, { key: 'shape', label: 'Output', num: true }])),
-    tuningCard(d.tuning)));
   if (d.winners) {
     main.append(card('Search on validation (iteration 3)', table(Object.entries(d.winners.winners).map(([arm, w]) => ({ arm, mean: w.mean_val_macro_f1, seeds: w.val_macro_f1_by_seed.map((v) => fmt(v, 1)).join(', '), trials: d.winners.trials_per_arm[arm], lr: w.hparams.lr, dropout: w.hparams.dropout })),
       [{ key: 'arm', label: 'Arm' }, { label: 'Mean val macro-F1', num: true, render: (r) => fmt(r.mean, 2) }, { key: 'seeds', label: 'Seeds 0, 1, 2' }, { key: 'lr', label: 'Learning rate', num: true }, { key: 'dropout', label: 'Dropout', num: true }, { key: 'trials', label: 'Trials', num: true }]),
     note('Each arm got its own learning-rate and dropout tuning. A0 has no augmentation settings to search, so it had fewer trials.')));
   }
   main.append(compareCard(d));
+  main.append(tuningCard(d.tuning));
   main.append(runsCard(d));
   main.append(el('div', { class: 'grid two' },
     card('Seed agreement', stats(...Object.entries(seeds).map(([arm, s]) => stat(`${arm}: seeds disagree`, `${fmt(s.mean_pairwise_disagreement * 100, 1)}%`))), note('Share of validation images where two seeds of the same arm predict different classes. A robustness number, not the power check.')),

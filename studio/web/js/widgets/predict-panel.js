@@ -24,7 +24,7 @@ function resultSlot(arm, colorOf) {
   const answer = el('strong', { text: '–' });
   const rows = Array.from({ length: TOP_K }, probRow);
   const latency = el('p', { class: 'note', style: 'margin:6px 0 0', text: '– ms' });
-  const root = el('div', { class: arm === 'vote' ? 'result vote' : 'result' }, el('h3', { text: ARM_LABEL[arm], style: `color:${ARM_COLOR[arm]}`, 'data-tip': ARM_TIPS[arm] }), answer, rows.map((r) => r.root), latency);
+  const root = el('div', { class: arm === 'vote' ? 'result vote' : 'result' }, el('h3', { 'data-tip': ARM_TIPS[arm] }, el('span', { class: 'arm-swatch', style: `background:${ARM_COLOR[arm]}` }), ARM_LABEL[arm]), answer, rows.map((r) => r.root), latency);
   return {
     root,
     show(result, tally = '') {
@@ -88,14 +88,14 @@ export function predictPanel({ arms, labels, compact = false }) {
   const seenSize = compact ? 96 : 128;
   const seen = el('img', { class: 'pix', src: BLANK, alt: '', width: seenSize, height: seenSize, 'data-tip': 'Your drawing after the same standardization as the training images.' });
   const chips = Object.fromEntries(labels.map((name) => {
-    const dots = arms.length > 1 ? arms.map((arm) => [arm, el('i', {})]) : [];
+    const dots = arms.length > 1 ? arms.map((arm) => [arm, el('i', { hidden: true })]) : [];
     return [name, { node: el('span', { class: 'label-chip' }, el('span', { class: 'label-swatch', style: `background:${colorOf(name)}` }), dots.map(([, dot]) => dot), name), dots }];
   }));
   function markChips(results = []) {
     for (const [name, chip] of Object.entries(chips)) {
       const picked = results.filter((r) => !r.not_sure && r.label === name).map((r) => r.arm);
       chip.node.classList.toggle('on', picked.length > 0);
-      chip.dots.forEach(([arm, dot]) => { dot.style.background = picked.includes(arm) ? ARM_COLOR[arm] : 'transparent'; });
+      chip.dots.forEach(([arm, dot]) => { dot.hidden = !picked.includes(arm); dot.style.background = picked.includes(arm) ? ARM_COLOR[arm] : 'transparent'; });
     }
   }
   const message = el('div', { class: 'panel-msg' }, note(EMPTY));

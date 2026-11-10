@@ -42,10 +42,16 @@ def iteration_results() -> dict[int, dict]:
     return out
 
 
+def _clean_gain(metrics: dict) -> dict | None:
+    """Full mix against Real only on clean images. Older records may not have it, so it is optional."""
+    row = ((metrics.get("robust") or {}).get("clean") or {}).get("A2 vs A0")
+    return None if row is None else {"label": "A2 vs A0", "delta": row["delta"], "ci": row["ci"]}
+
+
 def verdict() -> dict | None:
     status = read_json("status5")
     if status is None or "verdict" not in status.get("metrics", {}):
         return None
     m = status["metrics"]
     return {"verdict": m["verdict"], "delta": m["delta"], "ci": m["ci"], "reasons": m["reasons"],
-            "label": m["primary"]["label"], "others": _other_arms(m)}
+            "label": m["primary"]["label"], "others": _other_arms(m), "clean": _clean_gain(m)}

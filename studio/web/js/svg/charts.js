@@ -36,10 +36,19 @@ export function stackedBars({ rows, series, label, valueLabel, left = 80 }) {
 }
 
 export function heatmap({ cells, xLabels, yLabels, label, cellText, tip, onClick, size = 44, marked, xTitle, yTitle }) {
-  const left = 78; const top = 24;
+  const left = 78;
+  // Column names wider than a cell are turned upright so neighbouring names cannot collide.
+  const longest = Math.max(...xLabels.map((x) => String(x).length));
+  const tilt = longest * 5.3 > size;
+  const top = tilt ? Math.ceil(longest * 5.3) + 14 : 24;
   const width = left + xLabels.length * size + 10; const height = top + yLabels.length * size + 50;
   const root = svgRoot(width, height, label);
-  xLabels.forEach((x, i) => root.append(text(left + (i + .5) * size, top - 8, x, { 'text-anchor': 'middle' })));
+  xLabels.forEach((x, i) => {
+    const cx = left + (i + .5) * size;
+    root.append(tilt
+      ? text(cx + 4, top - 8, x, { 'text-anchor': 'start', transform: `rotate(-90 ${cx + 4} ${top - 8})` })
+      : text(cx, top - 8, x, { 'text-anchor': 'middle' }));
+  });
   yLabels.forEach((y, j) => root.append(text(left - 8, top + (j + .5) * size + 4, y, { 'text-anchor': 'end' })));
   for (const cell of cells) {
     const x = left + cell.x * size; const y = top + cell.y * size;
@@ -67,7 +76,11 @@ export function lines({ series, xs, label, yLabel, marker, xLabels, xTitle = 'ep
     root.append(s('line', { class: 'grid-line', x1: left, x2: width - right, y1: y(v), y2: y(v) }),
       text(left - 6, y(v) + 4, v, { 'text-anchor': 'end' }));
   }
-  if (xLabels) xs.forEach((v, i) => root.append(text(x(v), bottom + 15, xLabels[i], { 'text-anchor': 'middle', style: 'font-size:10.5px' })));
+  if (xLabels) {
+    // The first and last names hang inward from their points so they stay inside the chart.
+    const anchor = (i) => (i === 0 ? 'start' : i === xs.length - 1 ? 'end' : 'middle');
+    xs.forEach((v, i) => root.append(text(x(v), bottom + 15, xLabels[i], { 'text-anchor': anchor(i), style: 'font-size:10.5px' })));
+  }
   else for (const v of ticks(xs[0], xs[xs.length - 1], 6)) root.append(text(x(v), bottom + 15, v, { 'text-anchor': 'middle' }));
   root.append(text((left + width - right) / 2, height - 4, xTitle, { 'text-anchor': 'middle' }));
   root.append(text(12, (top + bottom) / 2, yLabel, { 'text-anchor': 'middle', transform: `rotate(-90 12 ${(top + bottom) / 2})` }));

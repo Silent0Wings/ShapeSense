@@ -43,7 +43,14 @@ async function synth(b, meta) {
     tileRow('Generated images', made.items.map((item, k) => tile(item.image, `sample ${k + 1}`, 'Drawn by the synthetic generator.'))));
 }
 
-async function curve(b) {
+// Iteration 3 is the live one. An earlier failure reads the frozen record of its own iteration.
+const LIVE_ITERATION = 3;
+const FROZEN_VERDICT = { 1: 'iteration1', 2: 'iteration2' };
+const iterationNumber = (label) => Number((label.match(/\d+/) || [0])[0]);
+
+async function curve(b, meta) {
+  // Frozen iteration records keep no per-epoch log, so an earlier run's curve is not drawn from the live folder.
+  if (meta.iteration < LIVE_ITERATION) return note('The per-epoch log of this run is not kept in the frozen record, so no curve is drawn.');
   const { log } = await get(`/api/stage4/run/${b.run}`);
   const values = log.map((r) => r.val_macro_f1);
   const worst = Math.max(...values.slice(1).map((v, i) => values[i] - v));
@@ -51,12 +58,14 @@ async function curve(b) {
     note(`Largest drop between two epochs in this run: ${worst.toFixed(1)} points.`));
 }
 
-async function verdict(b) {
-  const d = await page(b.source);
+async function verdict(b, meta) {
+  const source = b.source === 'stage5' && FROZEN_VERDICT[meta.iteration] ? FROZEN_VERDICT[meta.iteration] : b.source;
+  const d = await page(source);
   const m = d.metrics;
-  const rows = b.source === 'stage5'
-    ? [{ label: 'Test split', delta: m.delta, ci: m.ci }, { label: 'Fresh holdout', delta: d.fresh.delta, ci: d.fresh.ci }]
-    : [{ label: m.primary.label, delta: m.delta, ci: m.ci }, ...Object.entries(m.secondary).map(([label, x]) => ({ label, delta: x.delta, ci: x.ci }))];
+  const fresh = d.fresh ?? m.fresh_holdout;
+  const rows = source === 'iteration1'
+    ? [{ label: m.primary.label, delta: m.delta, ci: m.ci }, ...Object.entries(m.secondary).map(([label, x]) => ({ label, delta: x.delta, ci: x.ci }))]
+    : [{ label: 'Test split', delta: m.delta, ci: m.ci }, { label: 'Fresh holdout', delta: fresh.delta, ci: fresh.ci }];
   return ciChart({ rows, label: b.title, required: b.required });
 }
 
@@ -73,4 +82,4 @@ function block(b, meta) {
   return el('div', { class: 'visual-block' }, el('h3', { text: b.title }), host, b.caption ? note(b.caption) : null);
 }
 
-export const failureVisual = (blocks, meta) => blocks.map((b) => block(b, meta));
+export const failureVisual = (blocks, meta, iteration) => blocks.map((b) => block(b, { ...meta, iteration: iterationNumber(iteration) }));
