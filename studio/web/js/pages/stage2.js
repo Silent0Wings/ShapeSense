@@ -1,6 +1,7 @@
 import { post } from '../api.js';
 import { card, el, errorBox, note, pageHead, pixImg, singleFlight, stat, stats } from '../ui.js';
 import { animateButton, classPicker, select, sliderRow } from '../widgets/controls.js';
+import { fanLines } from '../widgets/fan-lines.js';
 import { boot } from './boot.js';
 
 const deg = (v) => `±${v}°`;
@@ -22,8 +23,9 @@ boot('stage2', (main, d, meta) => {
     chips: ['train side only', 'arms A1, B, A2 and P', 'starts from the tuned settings', 'output is re-framed and binarised'] }));
 
   let index = 0; let seed = 7; let count = 12;
-  const original = el('div', {}); const variants = el('div', { class: 'tiles' }); const status = el('p', { class: 'note' });
+  const original = el('div', {}); const variants = el('div', { class: 'tiles fan-tiles' }); const status = el('p', { class: 'note' });
   const sliders = {};
+  const fan = fanLines();
   const keepOrdered = (key) => {
     const lo = sliders.scale_lo; const hi = sliders.scale_hi;
     if (lo.get() > hi.get()) (key === 'scale_lo' ? hi.set(lo.get()) : lo.set(hi.get()));
@@ -39,6 +41,7 @@ boot('stage2', (main, d, meta) => {
       const out = await post('/api/augment', { label, index, seed, n: count, values: body });
       original.replaceChildren(pixImg(out.original, { alt: 'Original image', size: 192, tip: 'The training image before augmentation.' }));
       variants.replaceChildren(...out.variants.map((b64, i) => el('div', { class: 'tile' }, pixImg(b64, { alt: `Variant ${i + 1}`, size: 96, tip: 'One independent random draw of this image.' }))));
+      fan.draw(original.firstChild, [...variants.children]);
       const cap = d.rotate_limits[meta.classes[label]];
       status.textContent = `Source: ${out.source}. Each tile is an independent draw.${cap ? ` Rotation for this class is capped at ±${cap}°.` : ''}`;
     } catch (error) { variants.replaceChildren(errorBox(error)); }
@@ -65,7 +68,7 @@ boot('stage2', (main, d, meta) => {
         el('div', { class: 'toolbar' },
           el('button', { type: 'button', class: 'ghost', text: 'Next image', onclick: () => { index += 1; refresh(); } }),
           select([{ value: '6', label: '6 variants' }, { value: '12', label: '12 variants' }, { value: '24', label: '24 variants' }, { value: '48', label: '48 variants' }], '12', (v) => { count = Number(v); refresh(); }, 'Variants')),
-        el('div', { class: 'compare' },
+        el('div', { class: 'compare fan' }, fan.root,
           el('div', {}, el('h3', { style: 'margin-top:0', text: 'Original' }), original),
           el('div', { style: 'flex:1;min-width:0' }, el('h3', { style: 'margin-top:0', text: 'Augmented' }), variants)),
         status),
