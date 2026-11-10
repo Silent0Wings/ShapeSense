@@ -1,3 +1,4 @@
+import { armName } from '../plain.js';
 import { card, el, fmt, note, pageHead, table, tableView } from '../ui.js';
 import { heatmap, lines, scoreRows } from '../svg/charts.js';
 import { classPicker, select } from '../widgets/controls.js';
@@ -42,11 +43,11 @@ boot('robustness', (main, d) => {
   if (!r) { main.append(card('Results', note('Run python -m robustness.run first.'))); return; }
   main.append(card('The two validation sets', el('img', { class: 'sheet', src: '/img/robustness_examples', alt: 'One square and one star under every perturbation' }),
     note(`${r.n_images.toLocaleString()} images, perturbed once with seed ${r.seed} and saved to disk. Each column is one perturbation. The test split and the fresh holdout stay sealed, so these are not test results. Validation also guided tuning, so clean scores run slightly high.`)));
-  main.append(card('Current against new validation', table(ARMS.map((arm) => ({ arm, ...r.families[arm] })), [{ key: 'arm', label: 'Arm' },
+  main.append(card('Current against new validation', table(ARMS.map((arm) => ({ arm, ...r.families[arm] })), [{ label: 'Arm', render: (r) => armName(r.arm) },
     { label: 'Clean accuracy %', num: true, render: (x) => pm(x.clean) }, { label: 'Rotated drop', num: true, render: (x) => pm(x.rotated_drop) }, { label: 'Noisy drop', num: true, render: (x) => pm(x.noisy_drop) }]),
   note(`Drop is clean accuracy minus perturbed accuracy, in points, averaged over a family's levels. Lower is better. Mean ± std over ${r.training_seeds.length} training seeds.`)));
   main.append(card('Accuracy by severity', el('div', { class: 'grid two', style: 'margin:0' }, FAMILIES.map(([family, title]) => familyChart(r, family, title)))));
-  main.append(card('Drop by perturbation family', table(ARMS.map((arm) => ({ arm, ...r.families[arm] })), [{ key: 'arm', label: 'Arm' },
+  main.append(card('Drop by perturbation family', table(ARMS.map((arm) => ({ arm, ...r.families[arm] })), [{ label: 'Arm', render: (r) => armName(r.arm) },
     ...FAMILIES.slice(1).map(([family, title]) => ({ label: title, num: true, render: (x) => pm(x[`${family}_drop`]) }))])));
   main.append(rotationDetail(r));
   main.append(card('Every level', tableView(r.sets, [{ key: 'name', label: 'Set' }, { key: 'level', label: 'Level' },

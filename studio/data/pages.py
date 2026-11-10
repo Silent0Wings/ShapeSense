@@ -13,7 +13,7 @@ from studio.settings import ERRORS_ARM
 
 def _home() -> dict:
     return {"phases": phases(), "lights": lights.rows(), "verdict": lights.verdict(),
-            "arms": arms.available()}
+            "arms": arms.available(), "criterion": config()["success_criterion"]}
 
 
 def _business() -> dict:
@@ -79,7 +79,7 @@ def _stage6() -> dict:
 
 def _iteration1() -> dict:
     status = read_json("iter1_status") or {"metrics": {}, "checks": {}}
-    return {"metrics": status["metrics"], "checks": status["checks"], "per_class": read_csv("iter1_per_class"),
+    return {"criterion": config()["success_criterion"], "metrics": status["metrics"], "checks": status["checks"], "per_class": read_csv("iter1_per_class"),
             "comparisons": read_csv("iter1_comparisons"), "table_metrics": read_csv("iter1_metrics")}
 
 
@@ -89,7 +89,7 @@ def _robustness() -> dict:
 
 def _iteration2() -> dict:
     status = read_json("iter2_status") or {"metrics": {}, "checks": {}}
-    return {"metrics": status["metrics"], "checks": status["checks"], "per_class": read_csv("iter2_per_class"),
+    return {"criterion": config()["success_criterion"], "metrics": status["metrics"], "checks": status["checks"], "per_class": read_csv("iter2_per_class"),
             "comparisons": read_csv("iter2_comparisons"), "fresh_per_class": read_csv("iter2_fresh_per_class")}
 
 

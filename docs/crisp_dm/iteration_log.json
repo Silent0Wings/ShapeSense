@@ -990,6 +990,13 @@
       "before": "9 of the 200 search runs repeated a finished trial with identical settings",
       "after": "Those 9 reuse the finished result, so 191 runs train",
       "why": "Identical settings give the same result, so training them again adds nothing. No trial limit changes."
+    },
+    {
+      "step": "deploy",
+      "what": "Dashboard wording",
+      "before": "Arm codes, a bare FAIL and a process title on the home page",
+      "after": "Plain statement of the finding, names for the arms, the ten shapes, a picture of each verdict",
+      "why": "A new reader could not tell what the project does or what it found. The wording is generated from the stored results."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",

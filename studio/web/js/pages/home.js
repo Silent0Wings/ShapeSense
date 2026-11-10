@@ -1,15 +1,25 @@
 import { crispCycle } from '../widgets/crisp-cycle.js';
 import { failureLog, iterationLog } from '../widgets/findings.js';
 import { predictPanel } from '../widgets/predict-panel.js';
-import { badge, card, el, note, pageHead } from '../ui.js';
+import { get } from '../api.js';
+import { finding, verdictPicture } from '../plain.js';
+import { badge, card, el, note, pageHead, pixImg } from '../ui.js';
 import { boot } from './boot.js';
 
-boot('home', (main, data, meta) => {
+async function shapeRow(classes) {
+  const samples = await Promise.all(classes.map((_, label) => get(`/api/samples?label=${label}&split=train&n=1`)));
+  return el('div', { class: 'tiles' }, samples.map((s, i) => el('div', { class: 'tile' }, pixImg(s.items[0].image, { alt: classes[i], size: 72 }), classes[i])));
+}
+
+boot('home', async (main, data, meta) => {
   main.append(pageHead({
-    eyebrow: 'Shape classification project',
-    title: 'From business question to a live model',
-    lede: 'Ten shape classes, four public datasets and one question: does synthetic training data help a small CNN? Follow the CRISP-DM steps below, see what each trip round the cycle found, or draw a shape and see the models answer.',
+    eyebrow: 'ShapeSense',
+    title: 'Draw a shape, and a small AI model names it',
+    lede: 'ShapeSense trains a small neural network to recognise ten shapes, and tests which kinds of training data make it better.',
   }));
+  main.append(card('The ten shapes', await shapeRow(meta.classes), el('p', {}, el('a', { class: 'cta', href: 'live.html', text: 'Try drawing a shape' }))));
+  if (data.verdict) main.append(card('The main finding', el('p', { class: 'finding', text: finding(data.verdict) }), verdictPicture(data.verdict, data.criterion.macro_f1_min_gain_points),
+    note('The dot is the measured difference in macro-F1 points, the line is its uncertainty range, and the dashed line is the gain set in advance as the target. Real only trains on real images alone. Full mix adds augmented and computer-generated shapes.')));
   main.append(card('The CRISP-DM cycle', crispCycle({ phases: data.phases, verdict: data.verdict }),
     note('Select a step to open it. Dashed arrows are the trips back round the loop: iteration 1 went from Modeling to Data Preparation, and iteration 2 from Evaluation to Data Preparation.')));
   main.append(iterationLog(meta.iterations));

@@ -246,3 +246,29 @@ def test_fit_loop_exhaustion_still_returns_image(monkeypatch):
     out = fn(render_reference("circle", size), labels["circle"], np.random.default_rng(0))
     assert out.shape == (size, size)
     assert out.dtype == np.uint8
+
+
+def test_nonuniform_factors_continuous(monkeypatch):
+    """Per-axis stretch is a continuous range, not just the two end values."""
+    from src.common.config import load_config
+    module = importlib.import_module("src.stage2_augment.transform")
+
+    config = copy.deepcopy(load_config())
+    config["augment"]["nonuniform_scale"] = 0.1
+    seen = []
+    real = module.compose_affine
+
+    def spy(rot, shear, factors, orient):
+        seen.extend(float(f) for f in factors)
+        return real(rot, shear, factors, orient)
+
+    monkeypatch.setattr(module, "compose_affine", spy)
+    image = np.full((64, 64), 255, dtype=np.uint8)
+    image[20:44, 20] = image[20:44, 43] = image[20, 20:44] = image[43, 20:44] = 0
+    triangle = list(config["taxonomy"]["classes"].values()).index("triangle")
+    rng = np.random.default_rng(0)
+    transform = module.build_transform(config)
+    for _ in range(20):
+        transform(image, triangle, rng)
+    assert len({round(f, 6) for f in seen}) > 2
+    assert all(0.9 <= f <= 1.1 for f in seen)
