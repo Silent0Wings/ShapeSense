@@ -25,9 +25,9 @@ new sealed holdout, and passed: A2 beat A0 by 9.20 macro-F1 points on damaged
 images, 95% CI [8.89, 9.53]. On clean images the gain is small, and the holdout
 uses sources seen in training.
 
-After iteration 3, the plan is an equal-weight "All models vote" option, then a
-frozen public dashboard if every gate in [`stages/stage_7.md`](stages/stage_7.md)
-is met.
+The studio also offers an equal-weight "All models vote" option, with no claimed
+score. The last step is a frozen public dashboard, which starts only when every
+gate in [`stages/stage_7.md`](stages/stage_7.md) is met.
 
 **Start with [`docs/crisp_dm/README.md`](docs/crisp_dm/README.md)**, the record
 of each iteration and every decision. The detailed findings are in

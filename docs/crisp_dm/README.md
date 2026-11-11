@@ -219,7 +219,7 @@ Listed in full in the log and on the dashboard's Failure timeline.
 For the user:
 
 - Which dashboard readability improvements to build.
-- Whether to push.
+- Whether to push. Local working notes, the planning notes under `ignore/` and the backup folder's `.gitkeep` were purged from every commit on 2026-11-10, so no commit carries them.
 
 For the team:
 
