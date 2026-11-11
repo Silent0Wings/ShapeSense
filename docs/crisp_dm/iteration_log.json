@@ -1433,6 +1433,20 @@
       "before": "Each stage page showed its tools and tables in its own way, and most never stated the stage's point",
       "after": "Every stage opens with the same block: its job, what goes in, what it does, what comes out, the key finding and the checks that show it worked, read from stored results, with links to the previous and next stage. Key results moved higher on Data freeze, Training and Evaluation, and Synthetic generator shows a real drawing beside a generated one",
       "why": "Each stage should explain itself clearly to a reader new to the project."
+    },
+    {
+      "step": "deploy",
+      "what": "Final audit on 2026-11-10",
+      "before": "The work had not been checked as a whole since the last screen review, and the README still listed the All models vote option as future work",
+      "after": "All 535 tests and both guards pass, all seven stages are passed and cached, the test access log is unchanged at 157 reads, and the shipped model is the A2 export byte for byte. The README now says the vote option exists. Stage 7 gates G1 and G2 hold; G3 (a license for the team's code and weights) and G4 (the user's written approval to publish) are still open",
+      "why": "The solution should be confirmed complete before any public deployment."
+    },
+    {
+      "step": "deploy",
+      "what": "Files that should never have been tracked purged from history",
+      "before": "Two local working notes, the to-do list and nine planning notes under ignore/, and the CPU-run backup folder's .gitkeep were tracked although the ignore rules or project rules exclude them, and so was the local triage file plan_issues.md. One note quoted the attribution text the commit guard bans. Seven early research and setup notes (docs/setup.md, docs/goal.md, reports/ and research_notes/) and 18 unused images and source files (15 sample images, two unused banner and icon images, and a Paint project file) were also tracked, and a few lines referred to local working notes",
+      "after": "On 2026-11-10 they were removed from every commit on every branch and tag and kept on disk untracked, with .gitignore rules for plan_issues.md and the backup folder. The removed notes and images are kept locally under ignore/purged_files/, and the lines that referred to local working notes were reworded in every commit. The four commits that touched only these files were dropped. All remaining commits pass the commit guard's message, identity and content checks",
+      "why": "Nothing outside the ignore and project rules should be published if the branches are pushed."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",

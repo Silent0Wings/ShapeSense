@@ -54,3 +54,7 @@ ignore/
 
 # Frozen copy of iteration 1 results (CRISP-DM iteration 2 keeps them untouched)
 archive/
+
+# Local working notes and backups (never committed)
+plan_issues.md
+artifacts/stage4_cpu_recipe_2880473b/
