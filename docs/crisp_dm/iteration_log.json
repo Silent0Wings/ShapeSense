@@ -1447,6 +1447,20 @@
       "before": "Two local working notes, the to-do list and nine planning notes under ignore/, and the CPU-run backup folder's .gitkeep were tracked although the ignore rules or project rules exclude them, and so was the local triage file plan_issues.md. One note quoted the attribution text the commit guard bans. Seven early research and setup notes (docs/setup.md, docs/goal.md, reports/ and research_notes/) and 18 unused images and source files (15 sample images, two unused banner and icon images, and a Paint project file) were also tracked, and a few lines referred to local working notes",
       "after": "On 2026-11-10 they were removed from every commit on every branch and tag and kept on disk untracked, with .gitignore rules for plan_issues.md and the backup folder. The removed notes and images are kept locally under ignore/purged_files/, and the lines that referred to local working notes were reworded in every commit. The four commits that touched only these files were dropped. All remaining commits pass the commit guard's message, identity and content checks",
       "why": "Nothing outside the ignore and project rules should be published if the branches are pushed."
+    },
+    {
+      "step": "deploy",
+      "what": "Frozen copy of the dashboard built and checked on 2026-11-11",
+      "before": "Stage 7 had not started: no static site existed, and gates G3 and G4 were open",
+      "after": "The user allowed a protected preview before G3 and G4 (decision D0) and chose to build it in a separate folder, ShapeSense_Deployed, instead of deployment/. One script read this repository once at commit f3b3bdb (main), without writing to it, and copied the pages, the allowlisted records, the five arm models and captured page data; no sealed split, per-image prediction, confusion count or error image was read or copied, and the test access log stayed at 157 lines. The models run in the browser through ONNX Runtime Web 1.31.1. The preprocessing port matches standardize.py byte for byte on 502 non-sealed drawings, samples and edge cases, and the browser logits match onnxruntime within 1e-4 (largest difference 9.5e-6) with the same answers and vote. Every page passes in light, dark and phone views with no request to /api or outside the site, and the screen baseline was reviewed and approved by the user. Each build records its file hashes in frozen.sha256",
+      "why": "Stage 7 asks for one frozen, checked copy of the dashboard before anything is published."
+    },
+    {
+      "step": "deploy",
+      "what": "Frozen site published on 2026-11-11 at https://shapesense-ten.vercel.app",
+      "before": "The site was deployed behind Vercel Authentication. No license covered the team's code and model weights (G3), and there was no written approval to publish (G4)",
+      "after": "G3: the user chose the MIT license for the team's code and CC BY 4.0 for the five model weights; the site's attribution page states both, next to the dataset sources and licenses. G4: on 2026-11-11 the user approved in writing publishing the site built from commit f3b3bdb (main). The attribution text change made a second freeze; the first freeze's manifest is kept. The public site serves exactly the 408 files in its frozen.sha256 and passed every check again without a login",
+      "why": "Stage 7 gates G1 to G4 hold, so the frozen site can be public; R18 asks for the freeze and the publication to be recorded here."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",
