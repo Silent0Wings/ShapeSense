@@ -1,0 +1,38 @@
+{
+  "stage": "stage3",
+  "owner": "",
+  "run_id": "2026-11-10T04:11:41-05:00/250afe",
+  "inputs": {
+    "code": "sha256:30d1b8fc0cf257b9501150dd389714b43e56522a715953f3ba6c57baf53eb673",
+    "common": "sha256:001df580f4b9ac0ac6d3536b950fe5e8db08167a0fa6b57c76662ce35c46e457",
+    "config.synth": "sha256:b20ac48e149cf9613d3514131b176a27212f85e9300f1c44c4ef2cc40e5f6b1b",
+    "taxonomy": "sha256:38aed29524418d859a6d657fee98cd1ecfc2de905df8a49da58d843dbaeaa5ed",
+    "image_size": "sha256:a68b412c4282555f15546cf6e1fc42893b7e07f271557ceb021821098dd66c1b"
+  },
+  "outputs": [
+    "artifacts\\stage3\\qa\\qa_sheet.png",
+    "artifacts\\stage3\\param_ranges.json"
+  ],
+  "metrics": {
+    "throughput_img_s": 5929.7,
+    "throughput_target_img_s": 2000,
+    "margins_in_force": {
+      "ellipse_min_axis_ratio": 1.2,
+      "rectangle_min_side_ratio": 1.2,
+      "diamond_min_angle_offset_deg": 10.0,
+      "star_inner_ratio_max": 0.6
+    },
+    "qa": "pending_review"
+  },
+  "checks": {
+    "throughput_ok": true,
+    "margins_from_config": true
+  },
+  "status": "passed",
+  "finished_at": "2026-11-10T04:14:23-05:00",
+  "output_hashes": {
+    "artifacts\\stage3\\qa\\qa_sheet.png": "sha256:096d56b752fbf38eb9c92598e3d2123c99767dbc3f3e863d7ac5f8fcb9c8d7c7",
+    "artifacts\\stage3\\param_ranges.json": "sha256:666ebd50d1780a662a03f87acad7a7be337e2331708687eddd0711d690a682b5"
+  },
+  "started_at": "2026-11-10T04:14:18-05:00"
+}

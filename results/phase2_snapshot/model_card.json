@@ -1,0 +1,30 @@
+{
+  "run_name": "A2_0",
+  "arm": "A2",
+  "seed": 0,
+  "val_macro_f1": 95.98830107394024,
+  "selection": "validation macro-F1",
+  "input": {
+    "name": "image",
+    "dtype": "float32",
+    "shape": [
+      "batch",
+      1,
+      64,
+      64
+    ],
+    "scale": "uint8 / 255",
+    "background": "white = 1.0",
+    "ink": "black = 0.0",
+    "preprocess": "standardize.py -> uint8 64x64"
+  },
+  "output": {
+    "name": "logits",
+    "dtype": "float32",
+    "shape": [
+      "batch",
+      10
+    ],
+    "meaning": "logits in labels.json index order"
+  }
+}

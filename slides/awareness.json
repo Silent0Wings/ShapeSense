@@ -1,0 +1,7 @@
+{
+  "G_QD": "Knew it: maker, ~50M drawings, 345 categories, formats, CC BY 4.0, row field order",
+  "G_RE": "Partly: recalled the 8 class names only faintly; count, size, license unknown",
+  "G_EK": "Knew it: 9 classes, 90,000 PNG, 200x200, CC BY 4.0, file-name pattern",
+  "G_FR": "Did not know it: per-user folders only; classes, size and license unknown",
+  "AWARENESS_TAKEAWAY": "Both models knew the two best-documented sources well and invented nothing with confidence. Gemini was also re-run sandboxed, with no access to our files; it knew less there, so that clean run is the one reported."
+}

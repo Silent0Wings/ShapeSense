@@ -1,0 +1,1004 @@
+{
+  "benchmark": "Pipeline vs. Direct LLM Prediction (Stage 5)",
+  "date": "2026-11-19",
+  "sample_file": "results/direct_llm_prediction/sample_ids.csv",
+  "fewshot_examples_file": "results/direct_llm_prediction/fewshot_example_ids.csv",
+  "blind_id_map_file": "results/direct_llm_prediction/blind_id_map.csv",
+  "n_test_images": 200,
+  "n_fewshot_train_examples": 50,
+  "cnn_checkpoint": "A2_0 (exported ONNX in ShapeSense_Deployed/snapshot/models/A2/model.onnx; full 2,776-image test Macro F1 = 96.25)",
+  "models": {
+    "trained_cnn_a2_0": {
+      "n": 200,
+      "correct": 195,
+      "accuracy_pct": 97.5,
+      "macro_f1_points": 97.5,
+      "per_class": {
+        "circle": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 100.0,
+          "f1": 100.0
+        },
+        "ellipse": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 95.0,
+          "f1": 97.44
+        },
+        "triangle": {
+          "n": 20,
+          "precision": 95.24,
+          "recall": 100.0,
+          "f1": 97.56
+        },
+        "square": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 100.0,
+          "f1": 100.0
+        },
+        "rectangle": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 95.0,
+          "f1": 97.44
+        },
+        "pentagon": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 100.0,
+          "f1": 100.0
+        },
+        "hexagon": {
+          "n": 20,
+          "precision": 94.74,
+          "recall": 90.0,
+          "f1": 92.31
+        },
+        "octagon": {
+          "n": 20,
+          "precision": 90.48,
+          "recall": 95.0,
+          "f1": 92.68
+        },
+        "star": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 100.0,
+          "f1": 100.0
+        },
+        "diamond": {
+          "n": 20,
+          "precision": 95.24,
+          "recall": 100.0,
+          "f1": 97.56
+        }
+      },
+      "per_source": {
+        "mendeley_elkorchi": {
+          "correct": 88,
+          "n": 88,
+          "accuracy_pct": 100.0
+        },
+        "kaggle_reevald": {
+          "correct": 46,
+          "n": 46,
+          "accuracy_pct": 100.0
+        },
+        "github_handdrawn": {
+          "correct": 37,
+          "n": 39,
+          "accuracy_pct": 94.87
+        },
+        "quickdraw": {
+          "correct": 24,
+          "n": 27,
+          "accuracy_pct": 88.89
+        }
+      },
+      "confusion_matrix_labels": [
+        "circle",
+        "ellipse",
+        "triangle",
+        "square",
+        "rectangle",
+        "pentagon",
+        "hexagon",
+        "octagon",
+        "star",
+        "diamond"
+      ],
+      "confusion_matrix": [
+        [
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          19,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          19,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          18,
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          19,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20
+        ]
+      ],
+      "top_confusions": [
+        {
+          "true": "hexagon",
+          "pred": "octagon",
+          "count": 2
+        },
+        {
+          "true": "ellipse",
+          "pred": "triangle",
+          "count": 1
+        },
+        {
+          "true": "rectangle",
+          "pred": "diamond",
+          "count": 1
+        },
+        {
+          "true": "octagon",
+          "pred": "hexagon",
+          "count": 1
+        }
+      ]
+    },
+    "claude_opus_5_5_medium": {
+      "n": 200,
+      "correct": 185,
+      "accuracy_pct": 92.5,
+      "macro_f1_points": 92.55,
+      "per_class": {
+        "circle": {
+          "n": 20,
+          "precision": 94.12,
+          "recall": 80.0,
+          "f1": 86.49
+        },
+        "ellipse": {
+          "n": 20,
+          "precision": 78.26,
+          "recall": 90.0,
+          "f1": 83.72
+        },
+        "triangle": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 100.0,
+          "f1": 100.0
+        },
+        "square": {
+          "n": 20,
+          "precision": 95.0,
+          "recall": 95.0,
+          "f1": 95.0
+        },
+        "rectangle": {
+          "n": 20,
+          "precision": 95.0,
+          "recall": 95.0,
+          "f1": 95.0
+        },
+        "pentagon": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 95.0,
+          "f1": 97.44
+        },
+        "hexagon": {
+          "n": 20,
+          "precision": 84.21,
+          "recall": 80.0,
+          "f1": 82.05
+        },
+        "octagon": {
+          "n": 20,
+          "precision": 82.61,
+          "recall": 95.0,
+          "f1": 88.37
+        },
+        "star": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 100.0,
+          "f1": 100.0
+        },
+        "diamond": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 95.0,
+          "f1": 97.44
+        }
+      },
+      "per_source": {
+        "mendeley_elkorchi": {
+          "correct": 87,
+          "n": 88,
+          "accuracy_pct": 98.86
+        },
+        "kaggle_reevald": {
+          "correct": 41,
+          "n": 46,
+          "accuracy_pct": 89.13
+        },
+        "github_handdrawn": {
+          "correct": 36,
+          "n": 39,
+          "accuracy_pct": 92.31
+        },
+        "quickdraw": {
+          "correct": 21,
+          "n": 27,
+          "accuracy_pct": 77.78
+        }
+      },
+      "confusion_matrix_labels": [
+        "circle",
+        "ellipse",
+        "triangle",
+        "square",
+        "rectangle",
+        "pentagon",
+        "hexagon",
+        "octagon",
+        "star",
+        "diamond"
+      ],
+      "confusion_matrix": [
+        [
+          16,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          18,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          19,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          19,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          19,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          16,
+          4,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          19,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          19
+        ]
+      ],
+      "top_confusions": [
+        {
+          "true": "circle",
+          "pred": "ellipse",
+          "count": 4
+        },
+        {
+          "true": "hexagon",
+          "pred": "octagon",
+          "count": 4
+        },
+        {
+          "true": "ellipse",
+          "pred": "circle",
+          "count": 1
+        },
+        {
+          "true": "ellipse",
+          "pred": "hexagon",
+          "count": 1
+        },
+        {
+          "true": "square",
+          "pred": "rectangle",
+          "count": 1
+        },
+        {
+          "true": "rectangle",
+          "pred": "ellipse",
+          "count": 1
+        },
+        {
+          "true": "pentagon",
+          "pred": "hexagon",
+          "count": 1
+        },
+        {
+          "true": "octagon",
+          "pred": "hexagon",
+          "count": 1
+        },
+        {
+          "true": "diamond",
+          "pred": "square",
+          "count": 1
+        }
+      ]
+    },
+    "gemini_4_neon_medium": {
+      "n": 200,
+      "correct": 188,
+      "accuracy_pct": 94.0,
+      "macro_f1_points": 93.97,
+      "per_class": {
+        "circle": {
+          "n": 20,
+          "precision": 94.12,
+          "recall": 80.0,
+          "f1": 86.49
+        },
+        "ellipse": {
+          "n": 20,
+          "precision": 82.61,
+          "recall": 95.0,
+          "f1": 88.37
+        },
+        "triangle": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 100.0,
+          "f1": 100.0
+        },
+        "square": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 95.0,
+          "f1": 97.44
+        },
+        "rectangle": {
+          "n": 20,
+          "precision": 95.0,
+          "recall": 95.0,
+          "f1": 95.0
+        },
+        "pentagon": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 100.0,
+          "f1": 100.0
+        },
+        "hexagon": {
+          "n": 20,
+          "precision": 94.12,
+          "recall": 80.0,
+          "f1": 86.49
+        },
+        "octagon": {
+          "n": 20,
+          "precision": 82.61,
+          "recall": 95.0,
+          "f1": 88.37
+        },
+        "star": {
+          "n": 20,
+          "precision": 100.0,
+          "recall": 100.0,
+          "f1": 100.0
+        },
+        "diamond": {
+          "n": 20,
+          "precision": 95.24,
+          "recall": 100.0,
+          "f1": 97.56
+        }
+      },
+      "per_source": {
+        "mendeley_elkorchi": {
+          "correct": 88,
+          "n": 88,
+          "accuracy_pct": 100.0
+        },
+        "kaggle_reevald": {
+          "correct": 42,
+          "n": 46,
+          "accuracy_pct": 91.3
+        },
+        "github_handdrawn": {
+          "correct": 37,
+          "n": 39,
+          "accuracy_pct": 94.87
+        },
+        "quickdraw": {
+          "correct": 21,
+          "n": 27,
+          "accuracy_pct": 77.78
+        }
+      },
+      "confusion_matrix_labels": [
+        "circle",
+        "ellipse",
+        "triangle",
+        "square",
+        "rectangle",
+        "pentagon",
+        "hexagon",
+        "octagon",
+        "star",
+        "diamond"
+      ],
+      "confusion_matrix": [
+        [
+          16,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          19,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          19,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          19,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          16,
+          4,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          19,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20
+        ]
+      ],
+      "top_confusions": [
+        {
+          "true": "circle",
+          "pred": "ellipse",
+          "count": 4
+        },
+        {
+          "true": "hexagon",
+          "pred": "octagon",
+          "count": 4
+        },
+        {
+          "true": "ellipse",
+          "pred": "circle",
+          "count": 1
+        },
+        {
+          "true": "square",
+          "pred": "rectangle",
+          "count": 1
+        },
+        {
+          "true": "rectangle",
+          "pred": "diamond",
+          "count": 1
+        },
+        {
+          "true": "octagon",
+          "pred": "hexagon",
+          "count": 1
+        }
+      ]
+    }
+  },
+  "pairwise": {
+    "opus_vs_gemini_agreement_pct": 96.0,
+    "cnn_vs_opus_agreement_pct": 93.0,
+    "cnn_vs_gemini_agreement_pct": 95.5,
+    "cnn_right_opus_wrong": [
+      "T142",
+      "T103",
+      "T175",
+      "T055",
+      "T162",
+      "T117",
+      "T031",
+      "T111",
+      "T072",
+      "T039",
+      "T080",
+      "T178"
+    ],
+    "opus_right_cnn_wrong": [
+      "T154",
+      "T091"
+    ],
+    "cnn_right_gemini_wrong": [
+      "T142",
+      "T103",
+      "T175",
+      "T055",
+      "T117",
+      "T176",
+      "T039",
+      "T080"
+    ],
+    "gemini_right_cnn_wrong": [
+      "T154"
+    ]
+  },
+  "any_model_misclassified_count": 18,
+  "misclassified_examples": [
+    {
+      "blind_id": "T017",
+      "batch": "batch_01",
+      "image_id": "quickdraw_hexagon_016024",
+      "source_id": "quickdraw",
+      "true_label": "hexagon",
+      "trained_cnn": "octagon",
+      "claude_opus": "octagon",
+      "gemini_4_neon": "octagon"
+    },
+    {
+      "blind_id": "T031",
+      "batch": "batch_02",
+      "image_id": "quickdraw_square_017034",
+      "source_id": "quickdraw",
+      "true_label": "square",
+      "trained_cnn": "square",
+      "claude_opus": "rectangle",
+      "gemini_4_neon": "square"
+    },
+    {
+      "blind_id": "T039",
+      "batch": "batch_02",
+      "image_id": "quickdraw_hexagon_016467",
+      "source_id": "quickdraw",
+      "true_label": "hexagon",
+      "trained_cnn": "hexagon",
+      "claude_opus": "octagon",
+      "gemini_4_neon": "octagon"
+    },
+    {
+      "blind_id": "T055",
+      "batch": "batch_03",
+      "image_id": "kaggle_reevald_circle_003863",
+      "source_id": "kaggle_reevald",
+      "true_label": "circle",
+      "trained_cnn": "circle",
+      "claude_opus": "ellipse",
+      "gemini_4_neon": "ellipse"
+    },
+    {
+      "blind_id": "T063",
+      "batch": "batch_04",
+      "image_id": "quickdraw_octagon_016715",
+      "source_id": "quickdraw",
+      "true_label": "octagon",
+      "trained_cnn": "hexagon",
+      "claude_opus": "hexagon",
+      "gemini_4_neon": "hexagon"
+    },
+    {
+      "blind_id": "T069",
+      "batch": "batch_04",
+      "image_id": "quickdraw_hexagon_016174",
+      "source_id": "quickdraw",
+      "true_label": "hexagon",
+      "trained_cnn": "octagon",
+      "claude_opus": "octagon",
+      "gemini_4_neon": "octagon"
+    },
+    {
+      "blind_id": "T072",
+      "batch": "batch_04",
+      "image_id": "mendeley_elkorchi_pentagon_011682",
+      "source_id": "mendeley_elkorchi",
+      "true_label": "pentagon",
+      "trained_cnn": "pentagon",
+      "claude_opus": "hexagon",
+      "gemini_4_neon": "pentagon"
+    },
+    {
+      "blind_id": "T080",
+      "batch": "batch_04",
+      "image_id": "quickdraw_hexagon_016151",
+      "source_id": "quickdraw",
+      "true_label": "hexagon",
+      "trained_cnn": "hexagon",
+      "claude_opus": "octagon",
+      "gemini_4_neon": "octagon"
+    },
+    {
+      "blind_id": "T091",
+      "batch": "batch_05",
+      "image_id": "github_handdrawn_rectangle_001081",
+      "source_id": "github_handdrawn",
+      "true_label": "rectangle",
+      "trained_cnn": "diamond",
+      "claude_opus": "rectangle",
+      "gemini_4_neon": "diamond"
+    },
+    {
+      "blind_id": "T103",
+      "batch": "batch_06",
+      "image_id": "kaggle_reevald_circle_003718",
+      "source_id": "kaggle_reevald",
+      "true_label": "circle",
+      "trained_cnn": "circle",
+      "claude_opus": "ellipse",
+      "gemini_4_neon": "ellipse"
+    },
+    {
+      "blind_id": "T111",
+      "batch": "batch_06",
+      "image_id": "github_handdrawn_rectangle_001517",
+      "source_id": "github_handdrawn",
+      "true_label": "rectangle",
+      "trained_cnn": "rectangle",
+      "claude_opus": "ellipse",
+      "gemini_4_neon": "rectangle"
+    },
+    {
+      "blind_id": "T117",
+      "batch": "batch_06",
+      "image_id": "github_handdrawn_ellipse_000020",
+      "source_id": "github_handdrawn",
+      "true_label": "ellipse",
+      "trained_cnn": "ellipse",
+      "claude_opus": "hexagon",
+      "gemini_4_neon": "circle"
+    },
+    {
+      "blind_id": "T142",
+      "batch": "batch_08",
+      "image_id": "kaggle_reevald_circle_003882",
+      "source_id": "kaggle_reevald",
+      "true_label": "circle",
+      "trained_cnn": "circle",
+      "claude_opus": "ellipse",
+      "gemini_4_neon": "ellipse"
+    },
+    {
+      "blind_id": "T154",
+      "batch": "batch_08",
+      "image_id": "github_handdrawn_ellipse_000585",
+      "source_id": "github_handdrawn",
+      "true_label": "ellipse",
+      "trained_cnn": "triangle",
+      "claude_opus": "ellipse",
+      "gemini_4_neon": "ellipse"
+    },
+    {
+      "blind_id": "T162",
+      "batch": "batch_09",
+      "image_id": "github_handdrawn_ellipse_000979",
+      "source_id": "github_handdrawn",
+      "true_label": "ellipse",
+      "trained_cnn": "ellipse",
+      "claude_opus": "circle",
+      "gemini_4_neon": "ellipse"
+    },
+    {
+      "blind_id": "T175",
+      "batch": "batch_09",
+      "image_id": "kaggle_reevald_circle_003963",
+      "source_id": "kaggle_reevald",
+      "true_label": "circle",
+      "trained_cnn": "circle",
+      "claude_opus": "ellipse",
+      "gemini_4_neon": "ellipse"
+    },
+    {
+      "blind_id": "T176",
+      "batch": "batch_09",
+      "image_id": "quickdraw_square_017022",
+      "source_id": "quickdraw",
+      "true_label": "square",
+      "trained_cnn": "square",
+      "claude_opus": "square",
+      "gemini_4_neon": "rectangle"
+    },
+    {
+      "blind_id": "T178",
+      "batch": "batch_09",
+      "image_id": "kaggle_reevald_diamond_004285",
+      "source_id": "kaggle_reevald",
+      "true_label": "diamond",
+      "trained_cnn": "diamond",
+      "claude_opus": "square",
+      "gemini_4_neon": "diamond"
+    }
+  ]
+}

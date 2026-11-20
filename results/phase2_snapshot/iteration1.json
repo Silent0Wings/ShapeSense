@@ -1,0 +1,112 @@
+{
+  "split": "validation",
+  "classes": [
+    "circle",
+    "ellipse",
+    "triangle",
+    "square",
+    "rectangle",
+    "pentagon",
+    "hexagon",
+    "octagon",
+    "star",
+    "diamond"
+  ],
+  "runs": {
+    "A0_0": {
+      "arm": "A0",
+      "seed": 0,
+      "macro_f1": 87.61664824297749,
+      "diamond_f1": 80.36363636363636,
+      "recall_by_source": {
+        "kaggle_reevald": {
+          "recall": 100.0,
+          "n": 150
+        },
+        "quickdraw": {
+          "recall": 93.42105263157895,
+          "n": 76
+        }
+      },
+      "quickdraw_diamonds_predicted_as": {
+        "diamond": 71,
+        "star": 2,
+        "pentagon": 1,
+        "triangle": 1,
+        "circle": 1
+      }
+    },
+    "A0_2": {
+      "arm": "A0",
+      "seed": 2,
+      "macro_f1": 85.14925977802973,
+      "diamond_f1": 90.12875536480686,
+      "recall_by_source": {
+        "kaggle_reevald": {
+          "recall": 96.66666666666667,
+          "n": 150
+        },
+        "quickdraw": {
+          "recall": 85.52631578947368,
+          "n": 76
+        }
+      },
+      "quickdraw_diamonds_predicted_as": {
+        "diamond": 65,
+        "rectangle": 7,
+        "square": 2,
+        "triangle": 1,
+        "circle": 1
+      }
+    },
+    "A1_0": {
+      "arm": "A1",
+      "seed": 0,
+      "macro_f1": 89.15422307028912,
+      "diamond_f1": 82.37885462555066,
+      "recall_by_source": {
+        "kaggle_reevald": {
+          "recall": 94.66666666666667,
+          "n": 150
+        },
+        "quickdraw": {
+          "recall": 59.210526315789465,
+          "n": 76
+        }
+      },
+      "quickdraw_diamonds_predicted_as": {
+        "diamond": 45,
+        "triangle": 16,
+        "ellipse": 8,
+        "square": 3,
+        "rectangle": 2,
+        "pentagon": 1,
+        "hexagon": 1
+      }
+    },
+    "A1_2": {
+      "arm": "A1",
+      "seed": 2,
+      "macro_f1": 87.68570832535116,
+      "diamond_f1": 72.0,
+      "recall_by_source": {
+        "kaggle_reevald": {
+          "recall": 82.0,
+          "n": 150
+        },
+        "quickdraw": {
+          "recall": 51.31578947368421,
+          "n": 76
+        }
+      },
+      "quickdraw_diamonds_predicted_as": {
+        "diamond": 39,
+        "rectangle": 17,
+        "triangle": 9,
+        "ellipse": 9,
+        "hexagon": 1,
+        "square": 1
+      }
+    }
+  }
+}

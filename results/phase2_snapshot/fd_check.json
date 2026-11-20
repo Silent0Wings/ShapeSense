@@ -1,0 +1,38 @@
+{
+  "source_id -> domain": {
+    "n_groups": 4,
+    "n_violations": 0,
+    "holds": true,
+    "examples": []
+  },
+  "source_id -> license": {
+    "n_groups": 4,
+    "n_violations": 0,
+    "holds": true,
+    "examples": []
+  },
+  "(source_id, original_label) -> label_id": {
+    "n_groups": 21,
+    "n_violations": 0,
+    "holds": true,
+    "examples": []
+  },
+  "label_id -> label_name": {
+    "n_groups": 10,
+    "n_violations": 0,
+    "holds": true,
+    "examples": []
+  },
+  "image_id -> (path, split)": {
+    "n_groups": 18000,
+    "n_violations": 0,
+    "holds": true,
+    "examples": []
+  },
+  "source_id -> (native_width, native_height)": {
+    "n_groups": 4,
+    "n_violations": 0,
+    "holds": true,
+    "examples": []
+  }
+}

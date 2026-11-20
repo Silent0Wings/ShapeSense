@@ -1,0 +1,40 @@
+{
+  "stage": "stage2",
+  "owner": "",
+  "run_id": "2026-11-10T04:11:41-05:00/250afe",
+  "inputs": {
+    "code": "sha256:f010901464a3e5a16e8e20a3da3bb510f2b0defb78cf8fc3f7ab07c93e0931f0",
+    "common": "sha256:001df580f4b9ac0ac6d3536b950fe5e8db08167a0fa6b57c76662ce35c46e457",
+    "config.augment": "sha256:b77fff1547d7157624307bab4d624e9dbe40c52bde06d53711c21336686ba988",
+    "taxonomy": "sha256:38aed29524418d859a6d657fee98cd1ecfc2de905df8a49da58d843dbaeaa5ed",
+    "train_manifest": "sha256:66565a3ddd492f95fb992d80b8b8ebee3622015ed18ba28f8a5cd57e629f2fba"
+  },
+  "outputs": [
+    "artifacts/stage2/qa/qa_sheet.png"
+  ],
+  "metrics": {
+    "rules_in_force": {
+      "disabled_for": [
+        "circle",
+        "ellipse",
+        "square",
+        "rectangle",
+        "diamond"
+      ],
+      "disabled_transforms": [
+        "shear",
+        "non_uniform_scale"
+      ]
+    },
+    "qa": "pending_review"
+  },
+  "checks": {
+    "disable_list_from_config": true
+  },
+  "status": "passed",
+  "finished_at": "2026-11-10T04:14:18-05:00",
+  "output_hashes": {
+    "artifacts/stage2/qa/qa_sheet.png": "sha256:fc91e38e6df21aff6cc542b074945f4fe263f4276747e58bcb3c99be957b11cf"
+  },
+  "started_at": "2026-11-10T04:14:17-05:00"
+}

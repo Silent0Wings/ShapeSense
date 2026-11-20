@@ -1,0 +1,46 @@
+group,kind,arm,n,accuracy_pct,note
+github_handdrawn,source,A0,451,90.2,
+kaggle_reevald,source,A0,750,99.5,
+mendeley_elkorchi,source,A0,1122,99.6,
+quickdraw,source,A0,453,87.2,
+github_handdrawn,source,A1,451,94.0,
+kaggle_reevald,source,A1,750,98.3,
+mendeley_elkorchi,source,A1,1122,100.0,
+quickdraw,source,A1,453,87.4,
+github_handdrawn,source,B,451,92.2,
+kaggle_reevald,source,B,750,97.5,
+mendeley_elkorchi,source,B,1122,100.0,
+quickdraw,source,B,453,88.1,
+github_handdrawn,source,A2,451,94.2,
+kaggle_reevald,source,A2,750,98.0,
+mendeley_elkorchi,source,A2,1122,100.0,
+quickdraw,source,A2,453,87.6,
+github_handdrawn,source,P,451,94.7,
+kaggle_reevald,source,P,750,97.5,
+mendeley_elkorchi,source,P,1122,100.0,
+quickdraw,source,P,453,87.9,
+render,domain,A0,1872,99.5,
+sketch,domain,A0,904,88.7,
+render,domain,A1,1872,99.3,
+sketch,domain,A1,904,90.7,
+render,domain,B,1872,99.0,
+sketch,domain,B,904,90.2,
+render,domain,A2,1872,99.2,
+sketch,domain,A2,904,90.9,
+render,domain,P,1872,99.0,
+sketch,domain,P,904,91.3,
+github_handdrawn,held-out source,A0,302,63.9,unseen-source generalization (A0_loso_handdrawn_0)
+github_handdrawn,held-out source,A1,302,66.9,unseen-source generalization (A1_loso_handdrawn_0)
+github_handdrawn,held-out source,B,302,69.9,unseen-source generalization (B_loso_handdrawn_0)
+github_handdrawn,held-out source,A2,302,71.9,unseen-source generalization (A2_loso_handdrawn_0)
+github_handdrawn,held-out source,P,302,65.6,unseen-source generalization (P_loso_handdrawn_0)
+github_handdrawn,held-out source,A0,302,63.6,unseen-source generalization (A0_loso_handdrawn_1)
+github_handdrawn,held-out source,A1,302,69.9,unseen-source generalization (A1_loso_handdrawn_1)
+github_handdrawn,held-out source,B,302,71.5,unseen-source generalization (B_loso_handdrawn_1)
+github_handdrawn,held-out source,A2,302,72.2,unseen-source generalization (A2_loso_handdrawn_1)
+github_handdrawn,held-out source,P,302,67.2,unseen-source generalization (P_loso_handdrawn_1)
+github_handdrawn,held-out source,A0,302,69.5,unseen-source generalization (A0_loso_handdrawn_2)
+github_handdrawn,held-out source,A1,302,69.5,unseen-source generalization (A1_loso_handdrawn_2)
+github_handdrawn,held-out source,B,302,69.5,unseen-source generalization (B_loso_handdrawn_2)
+github_handdrawn,held-out source,A2,302,71.5,unseen-source generalization (A2_loso_handdrawn_2)
+github_handdrawn,held-out source,P,302,69.5,unseen-source generalization (P_loso_handdrawn_2)

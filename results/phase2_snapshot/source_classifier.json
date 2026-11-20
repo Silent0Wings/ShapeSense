@@ -1,0 +1,109 @@
+{
+  "classes": {
+    "circle": {
+      "label_id": 0,
+      "sources": [
+        "kaggle_reevald",
+        "mendeley_elkorchi",
+        "quickdraw"
+      ],
+      "n_train": 1751,
+      "n_val": 374,
+      "accuracy": 0.9358288770053476,
+      "majority_source": "mendeley_elkorchi",
+      "majority_rate": 0.3983957219251337
+    },
+    "triangle": {
+      "label_id": 2,
+      "sources": [
+        "github_handdrawn",
+        "kaggle_reevald",
+        "mendeley_elkorchi",
+        "quickdraw"
+      ],
+      "n_train": 2351,
+      "n_val": 577,
+      "accuracy": 0.8388214904679376,
+      "majority_source": "github_handdrawn",
+      "majority_rate": 0.2564991334488735
+    },
+    "square": {
+      "label_id": 3,
+      "sources": [
+        "kaggle_reevald",
+        "mendeley_elkorchi",
+        "quickdraw"
+      ],
+      "n_train": 1749,
+      "n_val": 376,
+      "accuracy": 0.9441489361702128,
+      "majority_source": "mendeley_elkorchi",
+      "majority_rate": 0.39893617021276595
+    },
+    "rectangle": {
+      "label_id": 4,
+      "sources": [
+        "github_handdrawn",
+        "kaggle_reevald"
+      ],
+      "n_train": 1399,
+      "n_val": 300,
+      "accuracy": 0.8333333333333334,
+      "majority_source": "kaggle_reevald",
+      "majority_rate": 0.5
+    },
+    "hexagon": {
+      "label_id": 6,
+      "sources": [
+        "mendeley_elkorchi",
+        "quickdraw"
+      ],
+      "n_train": 1047,
+      "n_val": 227,
+      "accuracy": 0.986784140969163,
+      "majority_source": "mendeley_elkorchi",
+      "majority_rate": 0.6651982378854625
+    },
+    "octagon": {
+      "label_id": 7,
+      "sources": [
+        "mendeley_elkorchi",
+        "quickdraw"
+      ],
+      "n_train": 1048,
+      "n_val": 226,
+      "accuracy": 0.995575221238938,
+      "majority_source": "mendeley_elkorchi",
+      "majority_rate": 0.668141592920354
+    },
+    "star": {
+      "label_id": 8,
+      "sources": [
+        "mendeley_elkorchi",
+        "quickdraw"
+      ],
+      "n_train": 979,
+      "n_val": 276,
+      "accuracy": 0.9891304347826086,
+      "majority_source": "mendeley_elkorchi",
+      "majority_rate": 0.7282608695652174
+    }
+  },
+  "skipped_classes": [
+    "ellipse",
+    "pentagon",
+    "diamond"
+  ],
+  "n_val_evaluated": 2356,
+  "pooled_accuracy": 0.91723259762309,
+  "pooled_majority_rate": 0.466893039049236,
+  "gain_points": 45.03395585738539,
+  "trigger_points": 10.0,
+  "shortcut_detected": true,
+  "features": "16x16 mean-pooled pixels / 255",
+  "model": "LogisticRegression(max_iter=1000)",
+  "splits_used": [
+    "train",
+    "val"
+  ]
+}

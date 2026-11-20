@@ -1,0 +1,22 @@
+{
+  "n_batches": 100,
+  "batch_size": 256,
+  "n_real": 213,
+  "n_syn": 43,
+  "total_s": 13.39225799991982,
+  "batches_per_s": 8.664565070567107,
+  "images_per_s": 2218.1286580651795,
+  "mean_batch_ms": 115.41260200086981,
+  "per_step_s": 0.1339225799991982,
+  "mean_step_ms": 18.509977998328395,
+  "arm": "B",
+  "device": "cuda",
+  "num_threads": 2,
+  "parallel_runs": 1,
+  "steps_per_epoch": 49,
+  "max_epochs": 60,
+  "n_params": 242250,
+  "est_run_s": 393.7323851976427,
+  "n_runs_budget": 46,
+  "est_all_runs_s": 18111.689719091566
+}
