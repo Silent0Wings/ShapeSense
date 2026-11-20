@@ -33,6 +33,13 @@ Stage folders: `0_data_discovery` (optional), `1_data_integration`,
 `2_data_preparation/{cleaning,transformation,feature_selection}`, `3_modeling`,
 `4_testing`, `5_direct_llm_prediction`, `6_verification/dataset_awareness`.
 
+**Claude Code session pairs.** Files named `NN_pNNN-<title>.md` in the `claude_opus/` folders are the 144 prompts
+from the Claude Code sessions of 2026-11-07 to 2026-11-20, one file per prompt, in the template above. Their
+answers were rewritten by subagents for more detail and are not the original model output; each file says so in
+its header. Pairs about stage work sit in that stage's folder; pairs about verification are in
+`6_verification/claude_opus/`, and pairs about project setup, tooling and course paperwork are in
+`7_meta_and_other/claude_opus/`. The full list is in [claude_code_session_pairs.md](claude_code_session_pairs.md).
+
 [failure_search_prompts.md](failure_search_prompts.md) restates each of the 31 failures on the Failure
 timeline as a research question for an LLM to search, for example: when does real + synthetic training lose
 to real data alone, and why?

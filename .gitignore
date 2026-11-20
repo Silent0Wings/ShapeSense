@@ -65,3 +65,5 @@ results/llm_comparison/README.md
 
 scripts/*.zip
 *.zip
+docs/notes/pairs/
+docs/notes/session_history_*.md
