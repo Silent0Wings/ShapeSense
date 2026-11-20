@@ -14,15 +14,20 @@ Full details: [docs/source.md](../docs/source.md).
 
 ## One-file download
 
-The four sources are also packed into one archive, attached to the GitHub release `data_set`:
+The whole `data_set/` folder is packed into one archive, attached to the GitHub release `data_set`:
 
-- Download: https://github.com/Silent0Wings/ShapeSense/releases/download/data_set/shapesense_raw_sources_v1.zip
-- Size: 285,695,841 bytes (157,350 files)
-- SHA-256: `e06fcbabacda920a9fe7109513094e5bdc7274fbce97f7cf30af01567531cf6e`
+- Download: https://github.com/Silent0Wings/ShapeSense/releases/download/data_set/shapesense_data_set_v1.zip
+- Size: 329,220,587 bytes (214,857 files)
+- SHA-256: `a61fed163171f6c0668b97476c1a9320a3affc6741816abf331939240aac33ab`
 
-It unpacks to `data_set/` with the folder names Stage 1 expects: `2D geometric shapes dataset/`, `kaggle_reevald/`,
-`github_handdrawn/`, `quickdraw/` and `quickdraw_repo/`. It leaves out `kaggle_dinesh/` (excluded source), `unified/`
-(built by Stage 1) and the fresh holdouts (built by the project scripts). Rebuild it with `scripts/make_data_zip.bat`.
+It unpacks to `data_set/` and holds every folder the pipeline reads: the four raw sources (`2D geometric shapes
+dataset/`, `kaggle_reevald/`, `github_handdrawn/`, `quickdraw/`, with `quickdraw_repo/`), the built `unified/` dataset
+that Stage 0 compares a fresh rebuild against, the sealed `fresh_holdout/` and `fresh_holdout_2/` that Stage 5 reads,
+and `kaggle_dinesh/`, which the Stage 1 audit samples even though the source is excluded from training. Rebuild it
+with `scripts/make_data_zip.bat`.
+
+An earlier asset, `shapesense_raw_sources_v1.zip`, holds only the four raw sources. Stage 0 fails with it because
+`unified/` is missing; do not use it for a pipeline run.
 
 The release's automatic "Source code" archives (`archive/refs/tags/data_set.zip` and `.tar.gz`) contain the
 repository code at that tag, not the data.
