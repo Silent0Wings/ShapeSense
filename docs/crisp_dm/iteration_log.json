@@ -1045,6 +1045,35 @@
           ]
         }
       ]
+    },
+    {
+      "id": "F32",
+      "group": "7. Course requirements",
+      "iteration": "Course requirements",
+      "step": "prep",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The first feature-selection runs scored at chance on validation.",
+      "cause": "On the GPU, PyTorch's area resize read the wrong pixels of the validation tensor. Its channel axis, added by numpy's [:, None], has stride 0, and the CUDA kernel mishandles it. The CPU kernel is correct, and training batches have normal strides, so the models trained well (98% training accuracy) but validated at about 10% macro F1. Measured on 2026-11-20 with PyTorch 2.14.1+cu130: the GPU and CPU outputs differed by up to 1.0.",
+      "handled": "The resize wrapper rebuilds plain strides before resizing, and GPU and CPU logits now agree within 2e-5. The five broken runs are kept in artifacts/improvement/invalid_area_kernel/ and feature selection was rerun. The existing arms are unaffected: they never resize, and convolution handles the tensor correctly.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Why validation looked like chance",
+          "before": [
+            "Validation tensor, channel stride 0",
+            "GPU area resize",
+            "wrong pixels, about 10% F1"
+          ],
+          "after": [
+            "Plain strides rebuilt",
+            "GPU area resize",
+            "matches CPU within 2e-5"
+          ]
+        }
+      ]
     }
   ],
   "changes_note": "Every change to data, training or evaluation, filed under its CRISP-DM step.",
@@ -1447,6 +1476,20 @@
       "before": "Two local working notes, the to-do list and nine planning notes under ignore/, and the CPU-run backup folder's .gitkeep were tracked although the ignore rules or project rules exclude them, and so was the local triage file plan_issues.md. One note quoted the attribution text the commit guard bans. Seven early research and setup notes (docs/setup.md, docs/goal.md, reports/ and research_notes/) and 18 unused images and source files (15 sample images, two unused banner and icon images, and a Paint project file) were also tracked, and a few lines referred to local working notes",
       "after": "On 2026-11-10 they were removed from every commit on every branch and tag and kept on disk untracked, with .gitignore rules for plan_issues.md and the backup folder. The removed notes and images are kept locally under ignore/purged_files/, and the lines that referred to local working notes were reworded in every commit. The four commits that touched only these files were dropped. All remaining commits pass the commit guard's message, identity and content checks",
       "why": "Nothing outside the ignore and project rules should be published if the branches are pushed."
+    },
+    {
+      "step": "eval",
+      "what": "Course improvement table: a raw baseline and one retrain per data preparation step",
+      "before": "No model had been trained before data preparation, so the course table (baseline, cleaning, transformation, feature selection) was empty. Every existing model, including the HOG and pixel baselines, trained on cleaned and standardized images",
+      "after": "scripts/improvement_table.py replays Stage 1 to recover each image's raw file (train and val fingerprints match the frozen manifests) and trains the same CNN, with the same settings and seeds 0-4, on raw images that are only resized. It scores every row on the same 2,776 test images in one logged Stage 5 read. Test macro F1: baseline 89.13, + cleaning 89.63 (+0.50, within the seed spread), + standardization 94.64 (+5.51), + augmentation and synthetic shapes 95.83 (+6.70), + 48 px input 96.31 (+7.19). Results are in results/improvement_table.csv",
+      "why": "The course asks for a baseline before any data preparation and the change in the metric after each step."
+    },
+    {
+      "step": "prep",
+      "what": "Feature selection: input resolution chosen on validation",
+      "before": "No feature selection step. Input fixed at 64 px",
+      "after": "The A2 recipe was trained at 32, 48 and 64 px on validation only (3 seeds): 95.85, 95.90 and 95.80. 48 px won by less than the seed spread. It was then trained on 5 seeds and scored 96.31 on test (+0.48 over 64 px, higher on 4 of 5 seeds). The deployed model stays the 64 px A2",
+      "why": "The course asks for a feature selection step. For a CNN the input representation is the feature choice, and resolution changes no labels."
     }
   ],
   "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",

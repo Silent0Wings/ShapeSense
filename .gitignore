@@ -58,3 +58,7 @@ archive/
 # Local working notes and backups (never committed)
 plan_issues.md
 artifacts/stage4_cpu_recipe_2880473b/
+results/llm_comparison/README.md
+
+# Course deliverables: results tables must be public (overrides the global *.csv ignore)
+!results/**/*.csv
