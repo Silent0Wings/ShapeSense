@@ -1,0 +1,649 @@
+{
+  "stage": "stage4",
+  "owner": "",
+  "run_id": "2026-11-10T04:11:41-05:00/250afe",
+  "inputs": {
+    "train_manifest": "sha256:66565a3ddd492f95fb992d80b8b8ebee3622015ed18ba28f8a5cd57e629f2fba",
+    "val_manifest": "sha256:890a4838d1811e0c17d0ca97940a5c547da6a52e975c1734609ea7fa46c5cb3c",
+    "taxonomy": "sha256:38aed29524418d859a6d657fee98cd1ecfc2de905df8a49da58d843dbaeaa5ed",
+    "source_classifier": "sha256:09f90dd2447dba59e3c6e44956a0ecd8ca6e88303d8235f51906533dc4f32555",
+    "config.runs": "sha256:c080effcaab8fa0ec3e1a2883e0e0a328077f293b6349486b167b9ca5ee5aa4a",
+    "config.arms": "sha256:e7c888fd579ad73a695bc9f6cd18a5ce3f1b939f5760c742a1a74d2ab5acaa6b",
+    "config.train": "sha256:a80740e3a0fb81e072f709d10527c7f63e964e5a7ebaeda0c23e0c1b28ff011e",
+    "config.synthetic_fraction": "sha256:221764976efe04132774d96b0253cc31434c5261737469324f222621baf34b20",
+    "config.seed_set": "sha256:7f2c5f390b0c7e30e5a644380decea0554bbb62cfc03eff193d13a8c1a117708",
+    "config.augment": "sha256:b77fff1547d7157624307bab4d624e9dbe40c52bde06d53711c21336686ba988",
+    "config.synth": "sha256:b20ac48e149cf9613d3514131b176a27212f85e9300f1c44c4ef2cc40e5f6b1b",
+    "code.stage4_train": "sha256:0ccb43b38cdbebbde4ae9dc9f194b0e5814142b2c3d51cfd8e7c5213ab1ea5af",
+    "code.stage2_augment": "sha256:f010901464a3e5a16e8e20a3da3bb510f2b0defb78cf8fc3f7ab07c93e0931f0",
+    "code.stage3_synth": "sha256:30d1b8fc0cf257b9501150dd389714b43e56522a715953f3ba6c57baf53eb673",
+    "code.common": "sha256:001df580f4b9ac0ac6d3536b950fe5e8db08167a0fa6b57c76662ce35c46e457"
+  },
+  "outputs": [
+    "artifacts\\stage4\\baselines\\baselines.json",
+    "artifacts\\stage4\\loader_benchmark.json",
+    "artifacts\\stage4\\tuning.json",
+    "artifacts\\stage4\\seed_disagreement.json",
+    "artifacts\\stage4\\A0_0\\model.pt",
+    "artifacts\\stage4\\A0_1\\model.pt",
+    "artifacts\\stage4\\A0_2\\model.pt",
+    "artifacts\\stage4\\A1_0\\model.pt",
+    "artifacts\\stage4\\A1_1\\model.pt",
+    "artifacts\\stage4\\A1_2\\model.pt",
+    "artifacts\\stage4\\B_0\\model.pt",
+    "artifacts\\stage4\\B_1\\model.pt",
+    "artifacts\\stage4\\B_2\\model.pt",
+    "artifacts\\stage4\\A0_3\\model.pt",
+    "artifacts\\stage4\\A0_4\\model.pt",
+    "artifacts\\stage4\\A1_3\\model.pt",
+    "artifacts\\stage4\\A1_4\\model.pt",
+    "artifacts\\stage4\\B_3\\model.pt",
+    "artifacts\\stage4\\B_4\\model.pt",
+    "artifacts\\stage4\\A2_0\\model.pt",
+    "artifacts\\stage4\\A2_1\\model.pt",
+    "artifacts\\stage4\\A2_2\\model.pt",
+    "artifacts\\stage4\\A2_3\\model.pt",
+    "artifacts\\stage4\\A2_4\\model.pt",
+    "artifacts\\stage4\\P_0\\model.pt",
+    "artifacts\\stage4\\P_1\\model.pt",
+    "artifacts\\stage4\\P_2\\model.pt",
+    "artifacts\\stage4\\P_3\\model.pt",
+    "artifacts\\stage4\\P_4\\model.pt",
+    "artifacts\\stage4\\A0_loso_handdrawn_0\\model.pt",
+    "artifacts\\stage4\\A1_loso_handdrawn_0\\model.pt",
+    "artifacts\\stage4\\B_loso_handdrawn_0\\model.pt",
+    "artifacts\\stage4\\A2_loso_handdrawn_0\\model.pt",
+    "artifacts\\stage4\\P_loso_handdrawn_0\\model.pt",
+    "artifacts\\stage4\\A0_loso_handdrawn_1\\model.pt",
+    "artifacts\\stage4\\A1_loso_handdrawn_1\\model.pt",
+    "artifacts\\stage4\\B_loso_handdrawn_1\\model.pt",
+    "artifacts\\stage4\\A2_loso_handdrawn_1\\model.pt",
+    "artifacts\\stage4\\P_loso_handdrawn_1\\model.pt",
+    "artifacts\\stage4\\A0_loso_handdrawn_2\\model.pt",
+    "artifacts\\stage4\\A1_loso_handdrawn_2\\model.pt",
+    "artifacts\\stage4\\B_loso_handdrawn_2\\model.pt",
+    "artifacts\\stage4\\A2_loso_handdrawn_2\\model.pt",
+    "artifacts\\stage4\\P_loso_handdrawn_2\\model.pt"
+  ],
+  "metrics": {
+    "steps_per_epoch": 49,
+    "hparams": {
+      "lr": 0.003,
+      "dropout": 0.2
+    },
+    "arm_hparams": {
+      "A0": {
+        "lr": 0.003,
+        "dropout": 0.2
+      },
+      "A1": {
+        "lr": 0.003,
+        "dropout": 0.2
+      },
+      "B": {
+        "lr": 0.003,
+        "dropout": 0.2
+      },
+      "A2": {
+        "lr": 0.003,
+        "dropout": 0.2
+      },
+      "P": {
+        "lr": 0.003,
+        "dropout": 0.2
+      }
+    },
+    "tuning_grid": [
+      {
+        "lr": 0.0003,
+        "dropout": 0.2,
+        "val_macro_f1": 93.40392015454346,
+        "best_epoch": 48
+      },
+      {
+        "lr": 0.0003,
+        "dropout": 0.4,
+        "val_macro_f1": 92.87961640069013,
+        "best_epoch": 51
+      },
+      {
+        "lr": 0.001,
+        "dropout": 0.2,
+        "val_macro_f1": 94.57087309882091,
+        "best_epoch": 53
+      },
+      {
+        "lr": 0.001,
+        "dropout": 0.4,
+        "val_macro_f1": 94.61597880304396,
+        "best_epoch": 54
+      },
+      {
+        "lr": 0.003,
+        "dropout": 0.2,
+        "val_macro_f1": 95.30557932686976,
+        "best_epoch": 47
+      },
+      {
+        "lr": 0.003,
+        "dropout": 0.4,
+        "val_macro_f1": 95.26131774691041,
+        "best_epoch": 55
+      }
+    ],
+    "runs": [
+      {
+        "name": "A0_0",
+        "arm": "A0",
+        "seed": 0,
+        "best_epoch": 48,
+        "val_macro_f1": 94.13662577394521,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A0_1",
+        "arm": "A0",
+        "seed": 1,
+        "best_epoch": 50,
+        "val_macro_f1": 94.31387704434208,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A0_2",
+        "arm": "A0",
+        "seed": 2,
+        "best_epoch": 44,
+        "val_macro_f1": 94.10608663372241,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A1_0",
+        "arm": "A1",
+        "seed": 0,
+        "best_epoch": 58,
+        "val_macro_f1": 95.23819891462986,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A1_1",
+        "arm": "A1",
+        "seed": 1,
+        "best_epoch": 55,
+        "val_macro_f1": 95.283726807084,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A1_2",
+        "arm": "A1",
+        "seed": 2,
+        "best_epoch": 52,
+        "val_macro_f1": 95.09276951345097,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "B_0",
+        "arm": "B",
+        "seed": 0,
+        "best_epoch": 55,
+        "val_macro_f1": 95.14040369753471,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.16796875,
+        "holdout_source": null
+      },
+      {
+        "name": "B_1",
+        "arm": "B",
+        "seed": 1,
+        "best_epoch": 51,
+        "val_macro_f1": 95.04531945038019,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.16796875,
+        "holdout_source": null
+      },
+      {
+        "name": "B_2",
+        "arm": "B",
+        "seed": 2,
+        "best_epoch": 41,
+        "val_macro_f1": 94.98086492065121,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.16796875,
+        "holdout_source": null
+      },
+      {
+        "name": "A0_3",
+        "arm": "A0",
+        "seed": 3,
+        "best_epoch": 54,
+        "val_macro_f1": 94.62495544616229,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A0_4",
+        "arm": "A0",
+        "seed": 4,
+        "best_epoch": 47,
+        "val_macro_f1": 94.48137864035459,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A1_3",
+        "arm": "A1",
+        "seed": 3,
+        "best_epoch": 60,
+        "val_macro_f1": 95.33006796303033,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "A1_4",
+        "arm": "A1",
+        "seed": 4,
+        "best_epoch": 51,
+        "val_macro_f1": 95.38056938919549,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": null
+      },
+      {
+        "name": "B_3",
+        "arm": "B",
+        "seed": 3,
+        "best_epoch": 57,
+        "val_macro_f1": 95.1875995144166,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.16796875,
+        "holdout_source": null
+      },
+      {
+        "name": "B_4",
+        "arm": "B",
+        "seed": 4,
+        "best_epoch": 58,
+        "val_macro_f1": 95.25439560161807,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.16796875,
+        "holdout_source": null
+      },
+      {
+        "name": "A2_0",
+        "arm": "A2",
+        "seed": 0,
+        "best_epoch": 59,
+        "val_macro_f1": 95.98830107394024,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.12109375,
+        "holdout_source": null
+      },
+      {
+        "name": "A2_1",
+        "arm": "A2",
+        "seed": 1,
+        "best_epoch": 57,
+        "val_macro_f1": 95.79481721742017,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.12109375,
+        "holdout_source": null
+      },
+      {
+        "name": "A2_2",
+        "arm": "A2",
+        "seed": 2,
+        "best_epoch": 45,
+        "val_macro_f1": 95.60852595697288,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.12109375,
+        "holdout_source": null
+      },
+      {
+        "name": "A2_3",
+        "arm": "A2",
+        "seed": 3,
+        "best_epoch": 53,
+        "val_macro_f1": 95.7496483491981,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.12109375,
+        "holdout_source": null
+      },
+      {
+        "name": "A2_4",
+        "arm": "A2",
+        "seed": 4,
+        "best_epoch": 60,
+        "val_macro_f1": 95.9490289597519,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.12109375,
+        "holdout_source": null
+      },
+      {
+        "name": "P_0",
+        "arm": "P",
+        "seed": 0,
+        "best_epoch": 47,
+        "val_macro_f1": 95.10485146740906,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.11666666666666667,
+        "holdout_source": null
+      },
+      {
+        "name": "P_1",
+        "arm": "P",
+        "seed": 1,
+        "best_epoch": 54,
+        "val_macro_f1": 95.17425175534571,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.11666666666666667,
+        "holdout_source": null
+      },
+      {
+        "name": "P_2",
+        "arm": "P",
+        "seed": 2,
+        "best_epoch": 54,
+        "val_macro_f1": 95.23147276006924,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.11666666666666667,
+        "holdout_source": null
+      },
+      {
+        "name": "P_3",
+        "arm": "P",
+        "seed": 3,
+        "best_epoch": 49,
+        "val_macro_f1": 95.25430328055984,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.11666666666666667,
+        "holdout_source": null
+      },
+      {
+        "name": "P_4",
+        "arm": "P",
+        "seed": 4,
+        "best_epoch": 57,
+        "val_macro_f1": 95.3356439958107,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.11666666666666667,
+        "holdout_source": null
+      },
+      {
+        "name": "A0_loso_handdrawn_0",
+        "arm": "A0",
+        "seed": 0,
+        "best_epoch": 46,
+        "val_macro_f1": 96.65720717708584,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A1_loso_handdrawn_0",
+        "arm": "A1",
+        "seed": 0,
+        "best_epoch": 47,
+        "val_macro_f1": 97.57316048569226,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "B_loso_handdrawn_0",
+        "arm": "B",
+        "seed": 0,
+        "best_epoch": 58,
+        "val_macro_f1": 97.04003746098377,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.16796875,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A2_loso_handdrawn_0",
+        "arm": "A2",
+        "seed": 0,
+        "best_epoch": 55,
+        "val_macro_f1": 97.4650809324986,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.12109375,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "P_loso_handdrawn_0",
+        "arm": "P",
+        "seed": 0,
+        "best_epoch": 59,
+        "val_macro_f1": 97.41865399723247,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.11666666666666667,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A0_loso_handdrawn_1",
+        "arm": "A0",
+        "seed": 1,
+        "best_epoch": 35,
+        "val_macro_f1": 96.8188102797677,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A1_loso_handdrawn_1",
+        "arm": "A1",
+        "seed": 1,
+        "best_epoch": 36,
+        "val_macro_f1": 97.58860361117192,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "B_loso_handdrawn_1",
+        "arm": "B",
+        "seed": 1,
+        "best_epoch": 60,
+        "val_macro_f1": 97.42974167234105,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.16796875,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A2_loso_handdrawn_1",
+        "arm": "A2",
+        "seed": 1,
+        "best_epoch": 48,
+        "val_macro_f1": 97.4681833063172,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.12109375,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "P_loso_handdrawn_1",
+        "arm": "P",
+        "seed": 1,
+        "best_epoch": 49,
+        "val_macro_f1": 97.39943755408491,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.11666666666666667,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A0_loso_handdrawn_2",
+        "arm": "A0",
+        "seed": 2,
+        "best_epoch": 35,
+        "val_macro_f1": 96.54516451725408,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A1_loso_handdrawn_2",
+        "arm": "A1",
+        "seed": 2,
+        "best_epoch": 53,
+        "val_macro_f1": 97.71880304214619,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.0,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "B_loso_handdrawn_2",
+        "arm": "B",
+        "seed": 2,
+        "best_epoch": 50,
+        "val_macro_f1": 97.25712512623191,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.16796875,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "A2_loso_handdrawn_2",
+        "arm": "A2",
+        "seed": 2,
+        "best_epoch": 48,
+        "val_macro_f1": 97.46449824866959,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.12109375,
+        "holdout_source": "github_handdrawn"
+      },
+      {
+        "name": "P_loso_handdrawn_2",
+        "arm": "P",
+        "seed": 2,
+        "best_epoch": 51,
+        "val_macro_f1": 97.16113474256777,
+        "epochs_run": 60,
+        "realized_synthetic_share": 0.11666666666666667,
+        "holdout_source": "github_handdrawn"
+      }
+    ],
+    "real_draws_per_step": {
+      "A0": 256,
+      "A1": 256,
+      "B": 213,
+      "A2": 225,
+      "P": 256
+    },
+    "synthetic_per_step": {
+      "A0": 0,
+      "A1": 0,
+      "B": 43,
+      "A2": 31,
+      "P": 0
+    },
+    "equal_compute_note": "B substitutes 30% of each batch: ~0.7 x batch_size real draws per step vs batch_size for A1 at the same step budget (Decision 13)",
+    "loso_required": true,
+    "loso_holdout_source": "github_handdrawn",
+    "baselines": {
+      "logreg_pixels": {
+        "features": "pixels",
+        "hog_pixels_per_cell": null,
+        "best_C": 0.01,
+        "val_macro_f1": 77.74203480855985,
+        "grid": {
+          "0.01": 77.74203480855985,
+          "0.1": 76.18233001714786,
+          "1.0": 75.52063896992681
+        },
+        "n_train": 6000
+      },
+      "svm_hog": {
+        "features": "hog",
+        "hog_pixels_per_cell": 8,
+        "best_C": 1.0,
+        "val_macro_f1": 82.53716320853333,
+        "grid": {
+          "0.01": 76.77621965475868,
+          "0.1": 81.5740206701818,
+          "1.0": 82.53716320853333
+        },
+        "n_train": 6000
+      }
+    },
+    "loader_benchmark": {
+      "per_step_s": 0.1339225799991982,
+      "images_per_s": 2218.1286580651795,
+      "est_run_s": 393.7323851976427,
+      "est_all_runs_s": 18111.689719091566,
+      "n_runs_budget": 46
+    },
+    "seed_disagreement": {
+      "A0": 0.029301170627882223,
+      "A1": 0.018126995388435617,
+      "B": 0.01908478183753104,
+      "A2": 0.018162468960624335,
+      "P": 0.017914153955303297
+    }
+  },
+  "checks": {
+    "same_steps_every_run": true,
+    "all_runs_present": true,
+    "test_reads_this_run": 0,
+    "no_test_reads": true
+  },
+  "status": "passed",
+  "finished_at": "2026-11-10T05:26:04-05:00",
+  "output_hashes": {
+    "artifacts\\stage4\\baselines\\baselines.json": "sha256:38e951fd2e5eed38597b41f2256f7f4e71d18528e4997944c4e7d7c27a64332c",
+    "artifacts\\stage4\\loader_benchmark.json": "sha256:ec739cb5e6171de32ec7b1e22e90f70111839bd6e7099a67c1b3ac2a2b0556c7",
+    "artifacts\\stage4\\tuning.json": "sha256:535b86e30d7474ce1558c1dc5a2596f557708d05801fccabde5fd4eab37e0bf0",
+    "artifacts\\stage4\\seed_disagreement.json": "sha256:50202ad77a562ea2a2348d60f81b64c31610f78a5207114080f3f247ae9bb5e2",
+    "artifacts\\stage4\\A0_0\\model.pt": "sha256:fd50ae9c1a07c9c258b0759dab94eb36a3b4df097d2598b91aa43b60a95f88e3",
+    "artifacts\\stage4\\A0_1\\model.pt": "sha256:d659450e892aaf4c90db6dccbc6fe877bbaafd115988997b3e29fad70cc6e5d3",
+    "artifacts\\stage4\\A0_2\\model.pt": "sha256:93a70171c0693b795ec8cc9b1fcdf7dbaeae705c2fb4de58bf66ecc659064f2a",
+    "artifacts\\stage4\\A1_0\\model.pt": "sha256:eefbbac679766fa2a90cf37aaf6758577ba422ddbe29cd1f6cf36d888233085c",
+    "artifacts\\stage4\\A1_1\\model.pt": "sha256:4d3179483d2c1847f4ccb06b6f4d2081b00e0b08ae5905102a0b669ee5521a23",
+    "artifacts\\stage4\\A1_2\\model.pt": "sha256:0c3887d6af699f2ba410a173714eea55751a758d5c8c771cdcf47621854d5cab",
+    "artifacts\\stage4\\B_0\\model.pt": "sha256:34c1f791b630efe6332c9237cbb37d7b78ba0c70d6389bca9123395029ba04d6",
+    "artifacts\\stage4\\B_1\\model.pt": "sha256:853cc74e67023a64d639ed68a81c6ffdec22ff9e2664dd8dc8c4b8d2cd90c0cb",
+    "artifacts\\stage4\\B_2\\model.pt": "sha256:36b266bbf143e2de12e866dc5ed5d82f8b5ad72cbe8e0f7a1f99fbb29b995e1a",
+    "artifacts\\stage4\\A0_3\\model.pt": "sha256:ad0958ca4eb2a50d707ca148f5f5fb4ca3319e278f8318e7b48977d967686709",
+    "artifacts\\stage4\\A0_4\\model.pt": "sha256:48c880cc66837a86dc111cca3685a41290b059acc015e21c384139a0d7f6fb8d",
+    "artifacts\\stage4\\A1_3\\model.pt": "sha256:6815c667c8a00452b73b9e81ce156b7dafb7f01ef36e349095d4963d19fbd751",
+    "artifacts\\stage4\\A1_4\\model.pt": "sha256:b58a82089a3252bce9656c18cbe370cb172593060957e7636f358df22a76979d",
+    "artifacts\\stage4\\B_3\\model.pt": "sha256:f2a9823d0daf2c46bab07db8c219e40341b299c59d97eab3621682a8b619bf89",
+    "artifacts\\stage4\\B_4\\model.pt": "sha256:45941f8c805aeaf5f30e0936f7d622ece76fd7462db14ff1d9b1a79938b2c081",
+    "artifacts\\stage4\\A2_0\\model.pt": "sha256:523dd06549e3fee23436c085b3e6e4471dc391020b41b98bd5a2cabc58e8b7c7",
+    "artifacts\\stage4\\A2_1\\model.pt": "sha256:2ad9a2fb9d2e3dc3f7fd2d35e822fc8a6aa212d9aa1d1122eb8185ea5e00f22d",
+    "artifacts\\stage4\\A2_2\\model.pt": "sha256:58983c2e27b5aca57f3fb6bd88180b1ccc202f86a99e085e75e6c48b8c40fe18",
+    "artifacts\\stage4\\A2_3\\model.pt": "sha256:b91128a298dac0f8ed9d51e870d887a7925aebead85d4c7412137d31d9ff58ec",
+    "artifacts\\stage4\\A2_4\\model.pt": "sha256:1b8fe220f9eb2d9d0381d324807237f93757419dcb66bea1a2d38211ee00ada2",
+    "artifacts\\stage4\\P_0\\model.pt": "sha256:f4fd6a230a460749f30da7bca37954265e2ba4103ea6f236a720d8e377a4d0b3",
+    "artifacts\\stage4\\P_1\\model.pt": "sha256:6978ab897e52de4d47f853e7c64a22e4bc419dda03e163d5665331c82638bb4e",
+    "artifacts\\stage4\\P_2\\model.pt": "sha256:d7bd800b67b779363c909e03e23c197e1b2a26d2ace7524454313f760ee53a70",
+    "artifacts\\stage4\\P_3\\model.pt": "sha256:cd3ccaf1bf1eea2a57ddd5e41331c96cb2b7c0617fa1c4482442f66faf8c5670",
+    "artifacts\\stage4\\P_4\\model.pt": "sha256:a7c5336f45a77ece88501c56157869e5a26423e2a634ab13c1c8a9be99397c6b",
+    "artifacts\\stage4\\A0_loso_handdrawn_0\\model.pt": "sha256:c9f9c164f11aa28938377d6b3e712d2af2d2425460c87d3f5035c9b3ff277286",
+    "artifacts\\stage4\\A1_loso_handdrawn_0\\model.pt": "sha256:e4a1acf636495e8ef92a58f205e39b63ccda4a3dfc8317b5a9c54891e9a9613f",
+    "artifacts\\stage4\\B_loso_handdrawn_0\\model.pt": "sha256:4a44d5be3060ea1ef429cb147d0423c7dc7df9eeb7e5baa3d565844e685e861e",
+    "artifacts\\stage4\\A2_loso_handdrawn_0\\model.pt": "sha256:1f3a215a70f4843e9db7c3468252f432d628acfd384634ed48422305a1c50726",
+    "artifacts\\stage4\\P_loso_handdrawn_0\\model.pt": "sha256:4cac30503738bebbc5ace788a5f9ec9984e5d01d938e54de7f1791a10593ef12",
+    "artifacts\\stage4\\A0_loso_handdrawn_1\\model.pt": "sha256:712e14b7fe71276a8be2fe880d9ae3b452f1ff95af83f308094fd4a03f7c243d",
+    "artifacts\\stage4\\A1_loso_handdrawn_1\\model.pt": "sha256:dfcdcb248e36732383436226f897567a9b8949e65f24c23a91d720f2d40243b0",
+    "artifacts\\stage4\\B_loso_handdrawn_1\\model.pt": "sha256:9ea26fc9c3c99eaab71bbccf5406b2c8fc938d3401d53c284d0dda00abaf528a",
+    "artifacts\\stage4\\A2_loso_handdrawn_1\\model.pt": "sha256:fa3d64223adc8995dffb8b4e9282fa97afa8a69461469e80807f27a95fbcd2e6",
+    "artifacts\\stage4\\P_loso_handdrawn_1\\model.pt": "sha256:dd872b33c74ea06b10c20e5ed03792ad658f67fd44a3a6f77b7183f13c230bb1",
+    "artifacts\\stage4\\A0_loso_handdrawn_2\\model.pt": "sha256:8b7f313baa24e3627e6f96f8d9f3ad0b74a6d314e8038f8fc50e73043f0012c1",
+    "artifacts\\stage4\\A1_loso_handdrawn_2\\model.pt": "sha256:7e4c38f2f3369f0e975d813b221c0e315e8ad3daf099ca03bd49ff61b4606cd8",
+    "artifacts\\stage4\\B_loso_handdrawn_2\\model.pt": "sha256:70c3c22adf7908c5f96b809bfd84f1eaef3bacea5de60aec3bcd72bc97f0c3d8",
+    "artifacts\\stage4\\A2_loso_handdrawn_2\\model.pt": "sha256:7490c3627274d233021dd3b072e61ee257a9b0bdd8c7305fb786c734f2ce617e",
+    "artifacts\\stage4\\P_loso_handdrawn_2\\model.pt": "sha256:cb0151807aa1364b489568f342f0eb32e7c5288e65d2cb4618aaf544eb72d7df"
+  },
+  "started_at": "2026-11-10T04:14:23-05:00"
+}

@@ -1,0 +1,53 @@
+{
+  "equal": true,
+  "compared": [
+    "catalog_content",
+    "rows",
+    "class_counts",
+    "phash_groups",
+    "metadata_content"
+  ],
+  "differences": {},
+  "before": {
+    "catalog_content": "sha256:134f7294ff926ac883776654bf6f55f01abdb121bf3c300d9b5b5193625776c6",
+    "catalog_file": "sha256:a2f0a4b2e85f22975881b5ec194207cff03243bc382c86647163adf12e06307b",
+    "rows": 18500,
+    "class_counts": {
+      "0": 2500,
+      "1": 1000,
+      "2": 3500,
+      "3": 2500,
+      "4": 2000,
+      "5": 1000,
+      "6": 1500,
+      "7": 1500,
+      "8": 1500,
+      "9": 1500
+    },
+    "phash_groups": "sha256:ca15685abd1edc1f544af9e7ab843cd48a3ddc86279fe5a46345007ca0aa6aa6",
+    "phash_group_count": 296,
+    "metadata_content": "sha256:ad1f66a06cf661ac6df7b2a4ec98c4b13eb81f1a55ae51da49e04f427a3747ac"
+  },
+  "after": {
+    "catalog_content": "sha256:134f7294ff926ac883776654bf6f55f01abdb121bf3c300d9b5b5193625776c6",
+    "catalog_file": "sha256:72882b7d75a5f53b6361d40da881dad928b246fa5505d890238d5ecaaa90201f",
+    "rows": 18500,
+    "class_counts": {
+      "0": 2500,
+      "1": 1000,
+      "2": 3500,
+      "3": 2500,
+      "4": 2000,
+      "5": 1000,
+      "6": 1500,
+      "7": 1500,
+      "8": 1500,
+      "9": 1500
+    },
+    "phash_groups": "sha256:ca15685abd1edc1f544af9e7ab843cd48a3ddc86279fe5a46345007ca0aa6aa6",
+    "phash_group_count": 296,
+    "metadata_content": "sha256:ad1f66a06cf661ac6df7b2a4ec98c4b13eb81f1a55ae51da49e04f427a3747ac"
+  },
+  "catalog_file_identical": false,
+  "note": "before = data_set\\unified (pulled data); after = rebuild by src/stage1_freeze/build_unified_dataset.py into artifacts\\stage0\\rebuild"
+}

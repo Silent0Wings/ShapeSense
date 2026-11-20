@@ -38,6 +38,27 @@ The full plan is [`implementation.md`](implementation.md); each stage owner
 has a brief in [`stages/`](stages/). This README takes a new teammate from a
 fresh copy of the repository to a running pipeline.
 
+## COMP 333 final project: LLM-assisted pipeline
+
+- **Team 14:** Yahya Belgharbi, Fiacre Byiringiro, Damiano Confuorti, Jananaa Mahathevan,
+  Yash Dilipkumar Nathani, Ray Ntukanyagwe
+- **Topic:** recognizing hand-drawn and printed 2D shapes (10-class image classification)
+- **Metric:** macro F1
+- **LLMs:** Claude Opus 5.5 (`claude-opus-5-5`, medium effort), Gemini 4 Neon (`gemini-4-neon-medium`)
+- **Colab:** <https://colab.research.google.com/github/Silent0Wings/ShapeSense/blob/main/notebooks/shapesense_pipeline.ipynb>
+  (opens the notebook from this repository; it needs a GPU runtime and the `data_set/` folder, see the notebook's section 2)
+- **Improvement table:** [results/improvement_table.csv](results/improvement_table.csv) (baseline, cleaning, transformation, feature selection)
+- **Requirements, answered:** [docs/course_requirements_answers.md](docs/course_requirements_answers.md)
+- **Live site:** <https://shapesense-ten.vercel.app>
+
+| Folder | Contents |
+|---|---|
+| [`data/`](data/) | Links and licenses for the four sources (the images are too large for the repository) |
+| [`prompts/`](prompts/) | Prompts and LLM responses by stage and by LLM |
+| [`notebooks/`](notebooks/) | Copy of the final Colab notebook |
+| [`results/`](results/) | Improvement table, Phase 2 results, LLM comparison, verification |
+| [`slides.pdf`](slides.pdf) | Presentation slides (source: [`slides/slides.html`](slides/slides.html)) |
+
 ## 1. Prerequisites
 
 - Windows 10/11 (macOS/Linux also work; commands below are PowerShell).

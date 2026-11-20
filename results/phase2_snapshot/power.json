@@ -1,0 +1,19 @@
+{
+  "n_val": 2819,
+  "n_test": 2776,
+  "factor": 1.0077151946580287,
+  "half_width_val": 0.7589473196456644,
+  "expected_test_half_width": 0.7648027459519199,
+  "limit_points": 1.0,
+  "underpowered": false,
+  "delta_val": 1.1391750987004485,
+  "ci_val": [
+    0.38511472771017613,
+    1.903009367001505
+  ],
+  "n_boot": 2000,
+  "ci_level": 0.95,
+  "before_first_test_read": true,
+  "access_log_reads_at_power_check": 0,
+  "run_id": "2026-11-10T05:27:17-05:00/933815"
+}

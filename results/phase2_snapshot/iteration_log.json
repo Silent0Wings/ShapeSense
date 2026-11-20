@@ -1,0 +1,1644 @@
+{
+  "note": "One entry per trip round the CRISP-DM cycle. Findings go under the step where they were found. Never rewrite a closed iteration.",
+  "iterations": [
+    {
+      "id": 1,
+      "title": "Quick, Draw! diamonds are mostly not rhombi",
+      "status": "closed",
+      "trigger": "A modeling result on validation sent the project back to Data Preparation.",
+      "route": "Modeling → Data Preparation",
+      "decision": "All Quick, Draw! diamonds excluded by rule before the split; every model retrained.",
+      "findings": {
+        "data": "Review sheets showed most Quick, Draw! diamonds are gems, cones, shields or scribbles, which contradicts the class definition.",
+        "prep": "500 drawings removed by rule. The split was re-frozen at 12,405 / 2,819 / 2,776.",
+        "model": "On validation, augmented models rejected those drawings (A1 recall 51 to 59%) while A0 memorized their style (86 to 93%).",
+        "eval": "Left in, this label noise would have penalized the arms that learn the real shape. Removed before any test read."
+      }
+    },
+    {
+      "id": 2,
+      "title": "Augmentation lost to no augmentation",
+      "status": "closed",
+      "trigger": "The Stage 5 verdict was fail, and A0, with no augmentation, scored highest. A validation-only investigation (16 trainings) found the cause, reported in docs/crisp_dm/iteration_2/investigation/report.md.",
+      "route": "Evaluation → Data Preparation",
+      "decision": "Fix the transform defects, tune augmentation and generator on validation, add arm A2 (clean real + augmented real + synthetic), retrain and re-evaluate as a separately reported experiment, pre-registered in docs/crisp_dm/iteration_2/preregistration.md and scored on the reused test split and a fresh 4,500-image holdout. The iteration 1 verdict stands.",
+      "findings": {
+        "business": "The locked question was B vs A1. The result raises a different question: whether this augmentation design suits these classes at all. Iteration 2 answer: with the transform fixed and every arm tuned, the pre-registered A2 vs A0 test failed on both the reused test split and the fresh holdout, so more training variety did not measurably help on images from the sources it trained on. The unseen-source check is descriptive only.",
+        "data": "Measured: orientation carries class information in some sources. reevald squares and rectangles are 92 to 95% axis-aligned, Quick, Draw! squares 73 to 85%, El Korchi squares are randomly oriented. A0 is a template matcher: its accuracy on rotated validation falls from 93.65 at 0° to 60.9 at 45°, while A1 stays at 89 to 91. The source also gives the class away (source classifier 91.7% against 46.7%).",
+        "prep": "Measured on validation, three seeds, not on test: A1 with rotation off reached 93.15 macro-F1 and with ±15° reached 93.17, against 91.69 for A0 and 90.03 for A1 with ±180°. Every augmentation and generator range had been set by hand. Two real defects found and fixed: augmented shapes came out about 6 px too small (51 px against 57 px real), and 1-px strokes broke into pieces after warping. The synthetic stroke was 2 px against 3.1 px real. No bug was found in labels or batching.",
+        "model": "Tuning covered only learning rate and dropout, on A1, and A0 reused A1's winner. A1 is still improving when the 30-epoch budget ends (60 epochs reached 92.11 and 92.38, against 90.44 and 90.71). Early stopping is fragile at learning rate 0.003: validation scores can swing by 30 points between epochs. The loss, polarity and class weighting were checked and are correct. After tuning on validation, mean macro-F1 was A2 95.17, A1 94.77, B 94.20, A0 92.61. Trials per arm: A0 6, A1 30, B 22, A2 18.",
+        "eval": "Test macro-F1: A0 93.88, A1 90.86, B 90.50. B vs A1 was -0.36, 95% CI [-1.17, 0.41]: fail. Augmentation hurt rectangle, diamond and square and helped octagon and hexagon. On an unseen source the picture reverses: on held-out Hand-Drawn triangles and rectangles (validation) A0 averaged 53.5% accuracy, A1 66.4%, B 71.8%, so A0's lead is specific to sources it trained on. Iteration 2 result: A2 vs A0 is +0.06 points on the reused test split, CI [-0.69, 0.83], and +0.08 on the fresh 4,500-image holdout, CI [-0.41, 0.57]: fail on both. After fixing the transform, every arm reached about the same test macro-F1 (A0 95.3, A1 95.2, B 95.3, A2 95.4). On unseen Hand-Drawn triangles and rectangles, mean accuracy was A0 66.6, A1 74.5, B 72.6, A2 73.8.",
+        "deploy": "On drawn shapes, A1 and B can call a square a rectangle while A0 is right. That matches the test pattern but is informal evidence only. Iteration 2 exported A2_2 by the validation selection rule (validation macro-F1 95.46), and the studio serves all four arms live. The 60-drawing check is still open."
+      }
+    },
+    {
+      "id": 3,
+      "title": "Repair the evaluation and test robustness",
+      "status": "closed",
+      "trigger": "Iteration 2 failed on both evaluation sets, and two outside code reviews left 13 points that could not be fixed without changing recorded code or a frozen analysis. The validation robustness check suggested augmented arms survive damage better.",
+      "route": "Evaluation → Business Understanding",
+      "decision": "Pre-registered in docs/crisp_dm/iteration_3/preregistration.md: A2 vs A0 on perturbed copies of a new, never-read 4,500-image holdout, with the evaluation repaired first.",
+      "findings": {
+        "business": "The question moves from clean accuracy on familiar sources to survival under damage, and to when synthetic data helps. Hypotheses, not results: A0 weakest under damage, A1 better, A2 best; B helps most when real data is scarce; synthetic pretraining recovers any domain gap. Validation answers from Phase 4, three seeds, not a verdict: A0 was weakest under damage, A1 better, and A2 highest on clean and damaged images. Synthetic images added nothing over augmentation alone when real data was scarce. Pretraining on synthetic images gave the best score at 10% and 25% of the real images, but not with all of them. Sealed result: the pre-registered test passed. The full training mix (A2) held up far better than real images alone (A0) on damaged images.",
+        "data": "Built fresh holdout 2: 4,500 never-read images, ten classes, 300 per source and class. The build first reproduced the first holdout's manifest byte for byte, so its images could be excluded without opening them. Validation and test are balanced: their class shares differ by 1.1% in total and their source shares by 0.9%, from aggregate counts only, so the mix of classes and sources does not explain why validation and test disagreed.",
+        "eval": "Repaired before any iteration 3 result: cluster bootstrap on near-duplicate groups, exact McNemar under 25 discordant pairs, one named generator per analysis, Holm on bootstrap p-values, Bonferroni-corrected harm rule, real read accounting, checked error and prediction caches, and a class-count check. The robustness code moved into Stage 5. Phase 7, one read per model. Primary test on 23 damage levels of the never-read fresh holdout 2: A2 vs A0 +9.20 macro-F1 points, 95% CI [8.89, 9.53], no harmed class: PASS, and it also passes the stricter reading. The source-clustered interval is [3.89, 9.42]. Macro-F1 on damaged images: A0 75.6, A1 82.6, B 83.2, A2 84.8, P 84.3. Secondary, Holm-corrected, all p = 0.004: A1 vs A0 +6.98, B vs A0 +7.52, A2 vs A1 +2.22, A2 vs B +1.68. A2 vs A1 did not have the same sign on every seed. On clean images of the same holdout the gains are small: A2 vs A0 +0.64, CI [0.19, 1.07]. Macro-F1 clean: A0 97.8, A1 98.3, B 98.0, A2 98.5, P 98.0. Contaminated evidence, reported as descriptive: reused test split A2 vs A0 +0.52, CI [-0.24, 1.22], fail; first fresh holdout +0.54, CI [0.10, 0.99], fail. Sealed reads 92 of 92 expected, none unaccounted for, and the earlier 65 access-log lines are unchanged. A clean-clone rehearsal passed all seven stages and reproduced the verdict, every robustness figure, all 40 validation scores and every results table, apart from run IDs and folder paths.",
+        "prep": "Validation, three seeds. Re-framing and binarising alone costs little: macro-F1 falls 0.3 points for A1, 0.6 for B, 1.1 for A2 and 2.8 for A0, the arm that never trained on re-framed images. It keeps proportions (rectangle long side over short side 1.96 to 2.00, ellipse 2.15 to 2.18), while full augmentation shortens them (rectangle 1.79, ellipse 1.87). One transform on, clean macro-F1: scale 94.6, rotation 92.7, noise 90.1, re-frame only 86.1, blur 84.7, against 94.8 with all on. Under damage, all on scored 77.7 and no single transform passed 70.1, so the transforms work together.",
+        "model": "Validation macro-F1 with all real images, clean and damaged: A0 92.6 and 66.3, A1 94.8 and 77.7, B 94.2 and 77.1, A2 95.2 and 80.3, P 94.3 and 75.6. Scarcity at 10% of real images, clean: A0 81.3, A1 91.6, B 91.6, A2 92.0, P 92.6. At 25%: A0 83.5, A1 87.4 with a seed spread of 10.5, B 91.7, A2 91.6, P 93.5. Equal real images per step did not help: B fell 2.0 points and A2 0.5. BatchNorm recalibration on real images did not help: B fell 0.7 and A2 0.8. Training length: 60 epochs with no early stopping gained A0 1.99, A1 0.51 and A2 0.71 points, so the pre-registered rule moves every arm to it. A1 cleared the 0.5 threshold by 0.01. 60 epochs with early stopping lost 1.0 to 3.4 points, confirming that early stopping is fragile. Scoring twice gave identical numbers. Speed-up work: an epoch fell from about 20 seconds to between 2 and 6 seconds with 7 preparation processes. Real 60-epoch trials averaged 3.6 to 5.1 seconds an epoch. Slow epochs line up with the whole machine being busy, not with heat or the GPU power cap: Windows Defender used about 2 cores, and other programs used several more. Search, 191 trainings plus 9 reused results, on validation: the winners score A0 94.2, A1 95.2, B 95.1, A2 95.8, P 95.2 macro-F1 over three seeds. Trials per arm: A0 6, A1 30, B 22, A2 34, P 18. Final retraining, validation macro-F1 over five seeds: A0 94.33, A1 95.27, B 95.12, A2 95.82, P 95.22. Every run trained for the same 60 epochs and 2,940 steps on the same GPU.",
+        "deploy": "Exported the final models for all five arms, shipped A2_0 by the validation selection rule, added the report's iteration 3 section and the dashboard's sealed results. Added an equal-weight All models vote option with no claimed score: on held-apart validation, equal weights scored 95.59 macro-F1, per-class weights 94.80, and the best single arm, A2, 95.77."
+      }
+    }
+  ],
+  "failures_note": "Every significant failure and how it was handled, in the order it happened, starting from dropping the Quick, Draw! diamonds. F17 is the one earlier fix, and iteration 3 follows it. Kept apart from the closed iterations above. Smaller build issues are in plan_issues.md.",
+  "failures": [
+    {
+      "id": "F01",
+      "group": "1. Dropping the diamonds",
+      "iteration": "Iteration 1",
+      "step": "data",
+      "pipeline_stages": [
+        1
+      ],
+      "failure": "Most Quick, Draw! diamonds were not rhombi.",
+      "cause": "They were gems, cones, shields or scribbles, which contradicts the class definition.",
+      "handled": "Excluded all of them by rule before any test read (500 drawings), re-froze the split and retrained every model.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "images",
+          "title": "Review sheets of Quick, Draw! drawings labelled diamond",
+          "keys": [
+            "contact0",
+            "contact1"
+          ],
+          "caption": "Most are gems, cones or shields rather than rhombi. These drawings were removed before the split."
+        }
+      ]
+    },
+    {
+      "id": "F02",
+      "group": "2. Training and the first evaluation",
+      "iteration": "Iteration 1",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "Leave-one-source-out training could not run on all ten classes.",
+      "cause": "Ellipses exist only in the Hand-Drawn source.",
+      "handled": "Runs use nine classes and are scored on Hand-Drawn triangles and rectangles only.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Why the run could not start",
+          "before": [
+            "Hold out the Hand-Drawn source",
+            "No ellipse images left to train on",
+            "The run cannot start"
+          ],
+          "after": [
+            "Drop ellipse from these runs",
+            "Train on nine classes",
+            "Score on Hand-Drawn triangles and rectangles"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F03",
+      "group": "2. Training and the first evaluation",
+      "iteration": "Iteration 1",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "Stage 4 stalled on the GPU.",
+      "cause": "Too many training workers ran at once for 8 GB of memory.",
+      "handled": "Limited training to two parallel runs.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "What changed in training",
+          "before": [
+            "Many training workers at once",
+            "One 8 GB GPU is overloaded",
+            "Stage 4 stalls"
+          ],
+          "after": [
+            "At most two parallel runs",
+            "The GPU keeps up",
+            "All 32 trainings finish"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F04",
+      "group": "2. Training and the first evaluation",
+      "iteration": "Iteration 1",
+      "step": "eval",
+      "pipeline_stages": [
+        5
+      ],
+      "failure": "B vs A1 failed: -0.36 points, CI [-1.17, 0.41], and A0 with no augmentation scored highest.",
+      "cause": "The rotation range and the transform defects found in the next part of this timeline.",
+      "handled": "Kept the verdict unchanged and investigated on validation only, which started iteration 2.",
+      "state": "Verdict stands",
+      "visual": [
+        {
+          "kind": "verdict",
+          "source": "iteration1",
+          "required": 1,
+          "title": "Iteration 1 comparisons, macro-F1 points",
+          "caption": "The dashed line is the required gain. Only B vs A1 was the primary test."
+        }
+      ]
+    },
+    {
+      "id": "F05",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "data",
+      "pipeline_stages": [
+        1
+      ],
+      "failure": "The images reveal which source they came from.",
+      "cause": "A classifier told an image's source 91.7% of the time, against 46.7% for always guessing the largest source, so a model can lean on source style instead of shape.",
+      "handled": "Reported beside the results and checked with runs that hold out a whole source. It cannot be removed from these datasets.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Telling an image's source from its pixels",
+          "unit": "%",
+          "rows": [
+            {
+              "label": "Source classifier",
+              "value": 91.7,
+              "mark": true
+            },
+            {
+              "label": "Always guess the largest source",
+              "value": 46.7
+            }
+          ],
+          "caption": "A gap this large means a model can lean on source style instead of shape."
+        },
+        {
+          "kind": "images",
+          "title": "Training squares, one source per row",
+          "keys": [
+            "inv_square_sources"
+          ],
+          "caption": "Some sources draw squares upright and others at any angle, so orientation and style differ by source."
+        }
+      ]
+    },
+    {
+      "id": "F06",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "Augmentation and generator ranges were set by hand, and only A1 was tuned.",
+      "cause": "Iteration 1 tuned learning rate and dropout on A1 alone and reused the result for every arm.",
+      "handled": "Searched augmentation, generator and hyperparameters per arm on validation: 166 trials.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "A1 validation macro-F1",
+          "unit": "",
+          "domain": [
+            85,
+            100
+          ],
+          "rows": [
+            {
+              "label": "Hand-set ranges, rotation ±180°",
+              "value": 90.64
+            },
+            {
+              "label": "Ranges found by the search",
+              "value": 94.77,
+              "mark": true
+            }
+          ],
+          "caption": "Three seeds each, both with the transform defects fixed."
+        }
+      ]
+    },
+    {
+      "id": "F07",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "prep",
+      "pipeline_stages": [
+        2
+      ],
+      "failure": "Rotation up to ±180° hurt the classes that depend on orientation.",
+      "cause": "In several sources squares and rectangles are nearly always upright, so full rotation removed a clue. A square turned 45° also looks like a diamond.",
+      "handled": "Searched the range on validation. The winner is ±20°, capped at ±10° for square, rectangle and diamond.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "A1 validation macro-F1 by rotation range",
+          "unit": "",
+          "domain": [
+            85,
+            96
+          ],
+          "rows": [
+            {
+              "label": "No rotation",
+              "value": 89.38
+            },
+            {
+              "label": "±15°",
+              "value": 93.62,
+              "mark": true
+            },
+            {
+              "label": "±45°",
+              "value": 89.91
+            },
+            {
+              "label": "±90°",
+              "value": 90.58
+            },
+            {
+              "label": "±180°",
+              "value": 90.64
+            }
+          ],
+          "caption": "Three seeds each. Only ±15° stands clearly apart. The no-rotation runs stopped early (11 to 13 epochs), which lowers that score."
+        },
+        {
+          "kind": "augment",
+          "label": "square",
+          "title": "One real training square through the real transform",
+          "rows": [
+            {
+              "title": "Rotation up to ±180°, the iteration 1 range",
+              "values": {
+                "rotate_deg": 180
+              },
+              "uncapped": true
+            },
+            {
+              "title": "The final setting, capped at ±10° for squares",
+              "values": {}
+            }
+          ],
+          "caption": "Both rows use the fixed transform, so only the rotation range differs. Turned squares start to look like diamonds."
+        },
+        {
+          "kind": "images",
+          "title": "Training squares, one source per row",
+          "keys": [
+            "inv_square_sources"
+          ],
+          "caption": "Some sources draw squares upright and others at any angle, so orientation and style differ by source."
+        }
+      ]
+    },
+    {
+      "id": "F08",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "prep",
+      "pipeline_stages": [
+        2
+      ],
+      "failure": "Augmented shapes came out about 6 px too small.",
+      "cause": "The transform re-framed them to 51 px against 57 px in real images.",
+      "handled": "Corrected the framing margin (augment.frame_margin).",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Shape size in the image",
+          "unit": " px",
+          "rows": [
+            {
+              "label": "Real images",
+              "value": 57
+            },
+            {
+              "label": "Augmented, before the fix",
+              "value": 51,
+              "mark": true
+            }
+          ],
+          "caption": "Measured during the investigation."
+        },
+        {
+          "kind": "augment",
+          "label": "rectangle",
+          "title": "The fixed transform on a real training rectangle",
+          "rows": [
+            {
+              "title": "Current output",
+              "values": {}
+            }
+          ],
+          "caption": "After the fix, shapes keep about the same size as the original."
+        }
+      ]
+    },
+    {
+      "id": "F09",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "prep",
+      "pipeline_stages": [
+        2
+      ],
+      "failure": "1-px strokes broke into pieces after warping.",
+      "cause": "The cut applied after warping was too strict for thin lines.",
+      "handled": "The first fix barely helped (17.2 down to 16.3 pieces). A separate thin-line path brought it to 1.0 piece.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Pieces a 1-px stroke breaks into after warping",
+          "unit": "",
+          "rows": [
+            {
+              "label": "Before any fix",
+              "value": 17.2,
+              "mark": true
+            },
+            {
+              "label": "First fix",
+              "value": 16.3,
+              "mark": true
+            },
+            {
+              "label": "Final fix",
+              "value": 1.0
+            }
+          ],
+          "caption": "Mean number of separate pieces. A clean outline is 1."
+        }
+      ]
+    },
+    {
+      "id": "F10",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "prep",
+      "pipeline_stages": [
+        3
+      ],
+      "failure": "Synthetic strokes were thinner than real ones.",
+      "cause": "The generator drew 2 px against about 3.1 px in real images.",
+      "handled": "Set the generator stroke to 3 px.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Stroke width",
+          "unit": " px",
+          "rows": [
+            {
+              "label": "Generator before the fix",
+              "value": 2,
+              "mark": true
+            },
+            {
+              "label": "Real images",
+              "value": 3.1
+            },
+            {
+              "label": "Generator now",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "kind": "synth",
+          "label": "square",
+          "title": "Real training squares and generated squares",
+          "caption": "Generated with the final tuned settings."
+        }
+      ]
+    },
+    {
+      "id": "F11",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "A1 was still improving when training ended, and early stopping is unstable.",
+      "cause": "The budget is 30 epochs, and at learning rate 0.003 validation scores can swing by 30 points between epochs.",
+      "handled": "Kept the same budget and early stopping for every arm so the comparison stays fair. Not fixed in iteration 2, whose results stay at 30 epochs. Iteration 3 trained every arm for 60 epochs with no early stopping.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "curve",
+          "run": "A2_1",
+          "title": "Validation macro-F1 per epoch, run A2_1",
+          "caption": "One of the final training runs."
+        }
+      ]
+    },
+    {
+      "id": "F12",
+      "group": "3. Finding out why",
+      "iteration": "Iteration 2",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The first polarity experiment gave invalid results.",
+      "cause": "A patch leaked between reused worker processes.",
+      "handled": "Discarded it and reran with one task per worker. Polarity made no difference.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Validation macro-F1, standard and inverted images",
+          "unit": "",
+          "domain": [
+            88,
+            96
+          ],
+          "rows": [
+            {
+              "label": "A0 standard",
+              "value": 91.69
+            },
+            {
+              "label": "A0 inverted",
+              "value": 91.93
+            },
+            {
+              "label": "A1 standard",
+              "value": 93.62
+            },
+            {
+              "label": "A1 inverted",
+              "value": 93.57
+            }
+          ],
+          "caption": "From the valid rerun, three seeds each. The differences are within seed noise."
+        }
+      ]
+    },
+    {
+      "id": "F13",
+      "group": "4. The second evaluation",
+      "iteration": "Iteration 2",
+      "step": "eval",
+      "pipeline_stages": [
+        1,
+        5
+      ],
+      "failure": "The test split had already been read in iteration 1.",
+      "cause": "No untouched test data remained after iteration 1.",
+      "handled": "Pre-registered the reuse and built a fresh 4,500-image holdout. It has no Quick, Draw! images and uses sources seen in training.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Logged reads by the evaluation code",
+          "unit": " reads",
+          "rows": [
+            {
+              "label": "Test split, iteration 1",
+              "value": 13
+            },
+            {
+              "label": "Test split, iteration 2",
+              "value": 32,
+              "mark": true
+            },
+            {
+              "label": "Fresh holdout, iteration 2",
+              "value": 20
+            }
+          ],
+          "caption": "The test split is the same one in both iterations. The fresh holdout was first read in iteration 2."
+        }
+      ]
+    },
+    {
+      "id": "F14",
+      "group": "4. The second evaluation",
+      "iteration": "Iteration 2",
+      "step": "eval",
+      "pipeline_stages": [
+        5
+      ],
+      "failure": "A2 vs A0 failed: +0.06 on test and +0.08 on the fresh holdout, both CIs include 0.",
+      "cause": "With the defects fixed, every arm reaches about the same score on images from sources it trained on.",
+      "handled": "Recorded as a failure. No change was made after the test read. A third iteration would need to target unseen sources.",
+      "state": "Still open",
+      "visual": [
+        {
+          "kind": "verdict",
+          "source": "stage5",
+          "required": 1,
+          "title": "A2 vs A0, macro-F1 points",
+          "caption": "The dashed line is the required gain. Both intervals include 0 and neither reaches it."
+        }
+      ]
+    },
+    {
+      "id": "F15",
+      "group": "5. Closing out",
+      "iteration": "Iteration 2",
+      "step": "deploy",
+      "pipeline_stages": [
+        6
+      ],
+      "failure": "Drawing on the live page failed once the fourth arm was added.",
+      "cause": "The API still accepted at most three arms.",
+      "handled": "Tied the limit to the arm list and added a test.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "What happened to a drawing",
+          "before": [
+            "Draw a shape",
+            "Ask all four arms",
+            "The API allows three",
+            "Error, no answer"
+          ],
+          "after": [
+            "Draw a shape",
+            "Ask all four arms",
+            "The limit follows the arm list",
+            "Four answers"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F16",
+      "group": "5. Closing out",
+      "iteration": "Iteration 2",
+      "step": "deploy",
+      "pipeline_stages": [
+        4,
+        6
+      ],
+      "failure": "A clean clone could not find the tuning result.",
+      "cause": "artifacts/ is not in Git, and Stages 4 and 6 read the winners from there.",
+      "handled": "run_pipeline.py restores the committed copy when it is absent. The rehearsal then reproduced every result.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "A fresh copy of the repository",
+          "before": [
+            "Clone the repository",
+            "artifacts/ is not in Git",
+            "Tuning result missing",
+            "Stage 4 would fail"
+          ],
+          "after": [
+            "Clone the repository",
+            "Committed copy restored",
+            "All seven stages pass",
+            "Same results as the main run"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F17",
+      "group": "Before this timeline",
+      "iteration": "Before iteration 1",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The first CNN could not see a whole shape.",
+      "cause": "Three blocks gave a 22-px receptive field on 64-px images.",
+      "handled": "Moved to four convolution blocks.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "field",
+          "title": "How much of a 64-px image one output can see",
+          "before": 22,
+          "after": 46,
+          "shape": 55,
+          "frame": 64,
+          "caption": "The outline is a typical 55-px shape. The filled square is the receptive field. Three blocks see 22 px and four blocks see 46 px."
+        }
+      ]
+    },
+    {
+      "id": "F18",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "data",
+      "pipeline_stages": [
+        1
+      ],
+      "failure": "A time limit killed the second holdout build.",
+      "cause": "A 500-second limit on the command stopped the builder and left a partial folder with no manifest.",
+      "handled": "Deleted the partial folder and rebuilt with no limit. The build then reproduced the first holdout's manifest before continuing.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Building fresh holdout 2",
+          "before": [
+            "500-second limit",
+            "builder stopped",
+            "partial folder, no manifest"
+          ],
+          "after": [
+            "partial folder deleted",
+            "no time limit",
+            "manifest check passed",
+            "4,500 images sealed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F19",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The first launch of the validation experiments crashed.",
+      "cause": "The worker pool broke with an invalid-handle error. It was first blamed on the training code being edited during start-up, but the same error came back later with no edits, in the way Python starts pool workers on demand on Windows.",
+      "handled": "Relaunched at first. Training later replaced that pool with one that starts every worker at once and turns a stalled batch into an error.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Starting the experiment workers",
+          "before": [
+            "workers starting",
+            "training code edited",
+            "worker pool broke"
+          ],
+          "after": [
+            "no edits during start-up",
+            "workers started",
+            "trials finished normally"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F20",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The 108-trial experiment run hung silently after 6 trials.",
+      "cause": "Not established. The workers waited for work while the parent waited for results, with no error in the log, and nothing was watching for a stall. It used the same on-demand worker pool as F19, but that link is not proven.",
+      "handled": "Found about 2 hours 17 minutes later, on a status request. Stopped that job and relaunched it with the finished trials reused. Long jobs now run with a stall watcher checked every 5 minutes. Training later stopped using that worker pool.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Noticing a stalled run",
+          "before": [
+            "6 trials done at 12:11",
+            "no error and no alert",
+            "found at 14:28"
+          ],
+          "after": [
+            "relaunched at 14:31",
+            "finished trials reused",
+            "checked every 5 minutes"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F21",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "Image preparation made training about five times slower than the GPU allowed.",
+      "cause": "Augmentation and synthetic drawing ran on one CPU core, on the training thread, taking about 80% of every step while the GPU waited.",
+      "handled": "Batches are now built by 7 processes, so an epoch fell from about 20 seconds to between 2 and 6 seconds. Validation scores were identical at different process counts. The slow epochs come from the rest of the machine: the CPU was 99% busy in them, against 90% in fast ones, with no change in temperature.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "bars",
+          "title": "Seconds per epoch for an augmented arm",
+          "unit": " s",
+          "rows": [
+            {
+              "label": "One core",
+              "value": 20.0,
+              "mark": true
+            },
+            {
+              "label": "Seven processes, busy machine",
+              "value": 5.4
+            },
+            {
+              "label": "Seven processes, typical",
+              "value": 3.6
+            },
+            {
+              "label": "Seven processes, fast stretches",
+              "value": 2.2
+            }
+          ],
+          "caption": "Measured on real 60-epoch search trials, 49 steps per epoch. The one-core figure comes from the same arm type on short runs."
+        }
+      ]
+    },
+    {
+      "id": "F22",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The search stopped at 66 of 191 trials with a GPU error.",
+      "cause": "Not established. cuDNN reported an execution failure during a training step. It happened around the time other programs were being closed, and no GPU driver error appears in the system log.",
+      "handled": "Confirmed the GPU still worked, stopped the leftover process and relaunched. The 66 finished trials carried over.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "A GPU error during the search",
+          "before": [
+            "66 trials done",
+            "cuDNN execution failure",
+            "search stopped"
+          ],
+          "after": [
+            "GPU check passed",
+            "relaunched",
+            "finished trials reused"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F23",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The first shared worker pool had five bugs.",
+      "cause": "A crash during training left temporary files behind, a repeat cleanup could hide the real error, a reused file path could give a worker the wrong data, and a failed pool restart left a dead entry.",
+      "handled": "A code audit found and fixed all five before they caused harm. Tests passed and reruns matched exactly.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Auditing the worker pool",
+          "before": [
+            "untested pool code",
+            "code audit",
+            "five bugs found"
+          ],
+          "after": [
+            "all five fixed",
+            "tests passed",
+            "reruns matched"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F24",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "Converting pixels on the GPU would have changed every result.",
+      "cause": "Dividing by 255 on the GPU rounds 126 of the 256 pixel values differently from the CPU. An outside report had recommended exactly that.",
+      "handled": "Measured it before using it, and used a lookup table of the exact CPU values instead.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Moving pixel conversion to the GPU",
+          "before": [
+            "GPU divides by 255",
+            "126 of 256 levels differ",
+            "results would change"
+          ],
+          "after": [
+            "lookup table of CPU values",
+            "values identical",
+            "results unchanged"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F25",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        4
+      ],
+      "failure": "The GPU looked idle in Windows Task Manager during training.",
+      "cause": "Task Manager's default GPU graphs do not include CUDA compute work, so the training GPU read 0% while it was busy.",
+      "handled": "Confirmed with nvidia-smi and the run records that training was on the RTX 3080. Its use swings between 0% and 96% as it waits for the next batch.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Checking which GPU trains the models",
+          "before": [
+            "Task Manager shows 0%",
+            "looks like the wrong GPU"
+          ],
+          "after": [
+            "nvidia-smi shows the training process",
+            "dedicated memory matches",
+            "right GPU confirmed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F26",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "deploy",
+      "pipeline_stages": [
+        6
+      ],
+      "failure": "Stage 6 could pass with a failed report check.",
+      "cause": "A failed number-traceability or attribution check still left the stage marked as passed, and its cache missed some inputs.",
+      "handled": "A failed check now fails the stage, and the cache tracks the whole config, the preprocessing code and the generator status.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Stage 6 checks",
+          "before": [
+            "check fails",
+            "stage still passes"
+          ],
+          "after": [
+            "check fails",
+            "stage fails",
+            "cache sees all inputs"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F27",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "deploy",
+      "pipeline_stages": [
+        6
+      ],
+      "failure": "Report macro names broke for arm A2 and collided for hold-out runs.",
+      "cause": "LaTeX macro names cannot contain digits, and runs such as A0_loso_0 got the same name as A0_0.",
+      "handled": "Digits are spelled out and hold-out runs get their own names. Existing macro names did not change.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Report macro names",
+          "before": [
+            "A2 keeps a digit",
+            "hold-out names collide"
+          ],
+          "after": [
+            "digits spelled out",
+            "names stay distinct"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F28",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "deploy",
+      "pipeline_stages": [
+        6
+      ],
+      "failure": "Report Section K would have shown iteration 3 numbers.",
+      "cause": "Two iteration 2 tables were read from the live Stage 5 folder, which iteration 3 overwrote.",
+      "handled": "Both now read the frozen iteration 2 copies, and the iteration 2 record stays as it was.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Keeping iteration 2 frozen in the report",
+          "before": [
+            "tables read from the live folder",
+            "iteration 3 numbers appear in Section K"
+          ],
+          "after": [
+            "tables read from the frozen copies",
+            "Section K unchanged"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F29",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "deploy",
+      "pipeline_stages": [
+        6
+      ],
+      "failure": "The dashboard listed arm P twice.",
+      "cause": "A correction script added P a second time when it was re-applied.",
+      "handled": "Removed the duplicate, and checked every page in a browser.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "A duplicated arm on the dashboard",
+          "before": [
+            "script re-applied",
+            "P listed twice"
+          ],
+          "after": [
+            "duplicate removed",
+            "five arms, once each"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F30",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "model",
+      "pipeline_stages": [
+        6
+      ],
+      "failure": "The first vote comparison scored an empty class as zero.",
+      "cause": "Near-duplicate groups are large, so a random half of validation could hold no image of a class, which cost 10 macro-F1 points and gave the per-class weights a zero.",
+      "handled": "Halves are now balanced by class, absent classes are left out of the score, and a class missing from the learning half gets equal weights. A test covers it.",
+      "state": "Overcome",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Checking the vote on validation",
+          "before": [
+            "random half loses a class",
+            "a class scores zero"
+          ],
+          "after": [
+            "halves balanced by class",
+            "absent classes left out",
+            "fair comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F31",
+      "group": "6. Iteration 3",
+      "iteration": "Iteration 3",
+      "step": "deploy",
+      "pipeline_stages": [
+        6
+      ],
+      "failure": "The page for failure F14 showed iteration 3 numbers.",
+      "cause": "Its chart read the live results, which changed when iteration 3 finished. A screen review found it.",
+      "handled": "Earlier failures now read the frozen record of their own iteration, so F14 shows +0.06 and +0.08. F11 shows a note, because no per-epoch log was kept for that run. The live previews on F07, F08 and F10 still use the current settings.",
+      "state": "Partly",
+      "visual": [
+        {
+          "kind": "flow",
+          "title": "Which results an old failure reads",
+          "before": [
+            "Failure F14",
+            "Live iteration 3 results",
+            "+9.20 shown"
+          ],
+          "after": [
+            "Failure F14",
+            "Frozen iteration 2 record",
+            "+0.06 shown"
+          ]
+        }
+      ]
+    }
+  ],
+  "changes_note": "Every change to data, training or evaluation, filed under its CRISP-DM step.",
+  "changes": [
+    {
+      "step": "data",
+      "what": "Quick, Draw! diamonds",
+      "before": "Included in the diamond class",
+      "after": "All excluded by rule (500 drawings), split re-frozen at 12,405 / 2,819 / 2,776",
+      "why": "Most were gems, cones or shields, not rhombi."
+    },
+    {
+      "step": "data",
+      "what": "Fresh holdout",
+      "before": "None",
+      "after": "4,500 images that informed no choice, sealed like the test split",
+      "why": "The test split had already been read in iteration 1."
+    },
+    {
+      "step": "prep",
+      "what": "Rotation range",
+      "before": "±180° for every class",
+      "after": "±20°, capped at ±10° for square, rectangle and diamond",
+      "why": "Full rotation removed an orientation clue."
+    },
+    {
+      "step": "prep",
+      "what": "Other augmentation settings",
+      "before": "Set by hand",
+      "after": "Searched on validation: scale 0.904 to 1.076, shear 1.4°, translation 0, noise probability 0.385, blur probability 0.373",
+      "why": "Every range had been a guess."
+    },
+    {
+      "step": "prep",
+      "what": "Shape framing after augmentation",
+      "before": "About 51 px against 57 px real",
+      "after": "Framing margin set by augment.frame_margin",
+      "why": "Augmented shapes came out too small."
+    },
+    {
+      "step": "prep",
+      "what": "1-px stroke handling",
+      "before": "17.2 pieces per stroke",
+      "after": "Separate thin-line path, 1.0 piece",
+      "why": "Warping broke thin strokes apart."
+    },
+    {
+      "step": "prep",
+      "what": "Synthetic stroke width",
+      "before": "2 px",
+      "after": "3 px, against about 3.1 px real",
+      "why": "The generator did not match real strokes."
+    },
+    {
+      "step": "prep",
+      "what": "Synthetic generator ranges",
+      "before": "Set by hand",
+      "after": "Searched on validation for B and for A2 separately",
+      "why": "Every range had been a guess."
+    },
+    {
+      "step": "model",
+      "what": "CNN depth",
+      "before": "Three blocks, 22-px receptive field",
+      "after": "Four blocks, 46-px receptive field",
+      "why": "The network could not see a whole shape."
+    },
+    {
+      "step": "model",
+      "what": "Training arms",
+      "before": "A0, A1, B",
+      "after": "A0, A1, B, A2. A2 batches hold 105 clean, 100 augmented and 51 synthetic images",
+      "why": "A1 and B saw no clean images during training."
+    },
+    {
+      "step": "model",
+      "what": "Synthetic share of a batch",
+      "before": "B 30%",
+      "after": "B 71 of 256 images (configured 27.8%), A2 51 of 256 (configured 19.8%)",
+      "why": "Chosen by the validation search."
+    },
+    {
+      "step": "model",
+      "what": "Hyperparameter tuning",
+      "before": "Learning rate and dropout tuned on A1, shared by every arm",
+      "after": "Tuned per arm: learning rate 0.003 for all, dropout 0.2, except A0 at 0.4",
+      "why": "A single arm's settings could favour that arm."
+    },
+    {
+      "step": "model",
+      "what": "Training seeds",
+      "before": "Three per arm",
+      "after": "Five per arm, plus three hold-out-source runs per arm",
+      "why": "To measure seed variation better."
+    },
+    {
+      "step": "model",
+      "what": "Parallel GPU runs",
+      "before": "More workers than the GPU could hold",
+      "after": "At most two (train.parallel_runs: 2)",
+      "why": "Stage 4 stalled on 8 GB of GPU memory."
+    },
+    {
+      "step": "eval",
+      "what": "Primary comparison",
+      "before": "B vs A1",
+      "after": "A2 vs A0, pre-registered before tuning",
+      "why": "Iteration 2 asks whether the full mix beats real images alone."
+    },
+    {
+      "step": "eval",
+      "what": "Evaluation data",
+      "before": "Test split",
+      "after": "Reused test split plus the fresh holdout",
+      "why": "To add evidence the first read could not have touched."
+    },
+    {
+      "step": "eval",
+      "what": "Robustness check",
+      "before": "None",
+      "after": "Fixed perturbed copies of validation, scored by all 20 models",
+      "why": "Clean accuracy does not show which model survives damage. Descriptive only; changes no verdict."
+    },
+    {
+      "step": "deploy",
+      "what": "Shipped model",
+      "before": "A0_0",
+      "after": "A2_2, chosen by validation macro-F1",
+      "why": "The selection rule picked the best validation run."
+    },
+    {
+      "step": "deploy",
+      "what": "Live models in the studio",
+      "before": "A0 from the bundle, A1 and B separately",
+      "after": "All four arms exported to studio/out/arms",
+      "why": "To compare every arm on the same drawing."
+    },
+    {
+      "step": "eval",
+      "what": "Bootstrap",
+      "before": "Images resampled independently",
+      "after": "phash_group clusters resampled, source-clustered check beside the primary",
+      "why": "Near-duplicate images are not independent."
+    },
+    {
+      "step": "eval",
+      "what": "Harm rule",
+      "before": "One test per class, no correction",
+      "after": "Bonferroni-corrected interval, bootstrap standard error of the paired drop",
+      "why": "Ten classes tested at once raise false alarms."
+    },
+    {
+      "step": "eval",
+      "what": "Secondary tests",
+      "before": "Holm on McNemar accuracy p-values",
+      "after": "Holm on bootstrap macro-F1 p-values, with exact McNemar reported",
+      "why": "One metric across the primary and secondaries."
+    },
+    {
+      "step": "eval",
+      "what": "Primary comparison",
+      "before": "A2 vs A0 on clean images",
+      "after": "A2 vs A0 averaged over 23 damage levels on never-read fresh holdout 2",
+      "why": "Clean accuracy had stopped separating the arms."
+    },
+    {
+      "step": "data",
+      "what": "Second fresh holdout",
+      "before": "None",
+      "after": "4,500 never-read images, sealed",
+      "why": "The test split and the first holdout had both been read."
+    },
+    {
+      "step": "model",
+      "what": "Training arms",
+      "before": "A0, A1, B, A2",
+      "after": "Arm P added: pretrained on synthetic images, then fine-tuned on real images. Reported descriptively",
+      "why": "To test whether pretraining recovers a synthetic-to-real gap."
+    },
+    {
+      "step": "model",
+      "what": "Choosing the search winner",
+      "before": "Scored on the single validation split",
+      "after": "Top 5 settings per arm re-scored by grouped 3-fold CV over train and validation at 15 epochs, winner by clean CV macro-F1, confirmed on three seeds",
+      "why": "One validation split can favour a setting by chance."
+    },
+    {
+      "step": "model",
+      "what": "Training options",
+      "before": "One fixed real-image share and training length",
+      "after": "Equal-real, real-fraction and training-length options, used in validation experiments. A longer budget is adopted only under the pre-registered rule",
+      "why": "To measure scarcity, equal real images and training length."
+    },
+    {
+      "step": "eval",
+      "what": "Robustness check location",
+      "before": "A separate script on validation only",
+      "after": "Moved into Stage 5, with perturbed copies built once and hashed",
+      "why": "So sealed perturbed sets are created and read in only one place."
+    },
+    {
+      "step": "model",
+      "what": "Training budget",
+      "before": "30 epochs with early stopping",
+      "after": "60 epochs with no early stopping, for every arm",
+      "why": "The pre-registered rule: each tested arm gained at least 0.5 validation points (A0 1.99, A1 0.51, A2 0.71)."
+    },
+    {
+      "step": "model",
+      "what": "Batch preparation",
+      "before": "One random generator per epoch, batches built on the training thread, two runs at once",
+      "after": "One generator per step, batches built by 7 processes, one run at a time",
+      "why": "Image preparation was about 80% of a step. The batches are the same at any process count, but differ from the stream the validation experiments used."
+    },
+    {
+      "step": "model",
+      "what": "Optimization stage",
+      "before": "About 5 to 7.5 minutes per 60-epoch trial, image preparation on one core",
+      "after": "About 3.7 minutes after the first parallel version, and 163 and 176 seconds on two reruns with the latest code",
+      "why": "A named stage inside Modeling. Optimizations are registered once measured. Both reruns matched the earlier trials on every logged number."
+    },
+    {
+      "step": "model",
+      "what": "Repeated search runs",
+      "before": "9 of the 200 search runs repeated a finished trial with identical settings",
+      "after": "Those 9 reuse the finished result, so 191 runs train",
+      "why": "Identical settings give the same result, so training them again adds nothing. No trial limit changes."
+    },
+    {
+      "step": "deploy",
+      "what": "Dashboard wording",
+      "before": "Arm codes, a bare FAIL and a process title on the home page",
+      "after": "Plain statement of the finding, names for the arms, the ten shapes, a picture of each verdict",
+      "why": "A new reader could not tell what the project does or what it found. The wording is generated from the stored results."
+    },
+    {
+      "step": "data",
+      "what": "Hashing and near-duplicate grouping",
+      "before": "One file status call per file, and a slower bit count",
+      "after": "Directory scans, threaded reads and a NumPy bit count, with the same hashes and groups",
+      "why": "Every run pays for hashing. These do not change any result."
+    },
+    {
+      "step": "prep",
+      "what": "Augmentation and generator speed",
+      "before": "Ink positions and thin-line checks recomputed for every image",
+      "after": "Cached per stored image, with faster morphology and array steps",
+      "why": "The same stored images are augmented many times. Tests and reruns confirm identical output."
+    },
+    {
+      "step": "eval",
+      "what": "Bootstrap calculation",
+      "before": "One matrix product per damage level",
+      "after": "One combined product per block, with the same random draws",
+      "why": "Removes repeated work without changing any number."
+    },
+    {
+      "step": "model",
+      "what": "Long-job recovery",
+      "before": "No written rule for a job that crashed",
+      "after": "Check the log and GPU, record it, relaunch one copy, and stop after repeated failures",
+      "why": "A crash at 66 of 191 trials showed the gap."
+    },
+    {
+      "step": "model",
+      "what": "Search winners",
+      "before": "Iteration 2 settings",
+      "after": "Winners of the iteration 3 search, frozen in configs/pipeline.yaml and docs/crisp_dm/iteration_3/search/winners.json",
+      "why": "Chosen on grouped cross-validation over train and validation, confirmed on three seeds."
+    },
+    {
+      "step": "model",
+      "what": "Optimization stage, measured",
+      "before": "About 3.7 minutes per 60-epoch trial, and about 9 hours for the search",
+      "after": "Median trial 92 to 184 seconds by phase, and 175 trainings in about 3 hours 50 minutes",
+      "why": "Every optimization that left results unchanged. Two reruns matched the earlier trials on every logged number. Other programs were closed part way through, so the gain is partly from a quieter machine."
+    },
+    {
+      "step": "deploy",
+      "what": "All models vote",
+      "before": "One answer per model",
+      "after": "An equal-weight average of every model's class probabilities on the Draw and predict page, with no claimed score",
+      "why": "On held-apart validation, equal weights scored 95.59 and per-class weights 94.80, so equal weights stay. Validation was reused, so these are optimistic."
+    },
+    {
+      "step": "deploy",
+      "what": "Iteration 3 report section and dashboard results",
+      "before": "The report and dashboard stopped at iteration 2 and four arms",
+      "after": "Report Section L leads with the sealed result, and the dashboard shows arm P and the sealed robustness results",
+      "why": "The verdict has to be readable where people look for it, drawn from the recorded tables."
+    },
+    {
+      "step": "eval",
+      "what": "Clean-clone rehearsal",
+      "before": "Results had only been produced in the working folder",
+      "after": "A fresh clone passed all seven stages and reproduced the verdict, every robustness figure, all 40 validation scores and every results table, apart from run IDs and folder paths",
+      "why": "It shows the result depends on the committed code and recipe, not on leftovers in one folder."
+    },
+    {
+      "step": "deploy",
+      "what": "Main finding shows every model",
+      "before": "The chart plotted Full mix against Real only and nothing else",
+      "after": "Full mix, Synthetic pretraining, Real + synthetic and Real + augmented on one axis, each against Real only, with Full mix marked as the tested one",
+      "why": "A reader could not see how the other models compared. Synthetic pretraining has no line because it was descriptive and no interval was calculated."
+    },
+    {
+      "step": "deploy",
+      "what": "CRISP-DM cycle slider",
+      "before": "One static wheel of the latest state, missing iteration 3's trip back",
+      "after": "A slider walks iterations 1 to 3. Each stop shows that iteration's frozen result, its route back and what each step found",
+      "why": "The wheel hid how the project moved from one question to the next."
+    },
+    {
+      "step": "deploy",
+      "what": "Per-class chart readability",
+      "before": "Dots with close scores hid each other, and a fifth score column ran off the chart",
+      "after": "Close dots spread into lanes on the same linear axis, and the chart widens to fit every column. The validation chart by seed uses the same layout, with its axis zoomed to the scores. The winning score in each row sits on a pill in that model's colour",
+      "why": "A log scale would stretch only one end of the axis and distort distances, while lanes keep the axis honest."
+    },
+    {
+      "step": "deploy",
+      "what": "Animate button on Augmentation and Synthetic generator",
+      "before": "Sliders only moved by hand",
+      "after": "Animate walks every enabled slider in small random steps with the same random draw, until stopped. On Augmentation, directed lines run from the original image to every augmented copy, with more space between rows",
+      "why": "It shows how the images respond to the settings."
+    },
+    {
+      "step": "deploy",
+      "what": "Interval chart and table readability",
+      "before": "Only the small dot and line had a tooltip, each row's numbers floated above its dot, and the earlier-sets table had no tooltips",
+      "after": "Rows are shaded with a guide from label to dot and a value column, the whole row shows a tooltip, and every cell of the earlier-sets table explains itself. The dot charts on the experiments page got the same shading and guides",
+      "why": "Rows were hard to follow across the chart, and labels and values gave no feedback on hover."
+    },
+    {
+      "step": "model",
+      "what": "Architecture and training diagrams",
+      "before": "The network was a table, and how each model was trained was only in the config",
+      "after": "An interactive diagram of every operation in the shared network with worked pooling examples, a clickable view of the batch-preparation pool and training loop, and what each model saw per batch, read from the config and run list. Each slab in a block stands for one operation, and the selected one is highlighted",
+      "why": "A reader could not see that the models share one network and differ in their training images."
+    },
+    {
+      "step": "deploy",
+      "what": "Vote panel with coloured lines",
+      "before": "All six answers sat in a grid with nothing tying them to the vote",
+      "after": "The models surround the vote, a line from each takes the colour of its predicted label, and each label has its own colour. Each model name has its own colour and a tooltip saying what it trained on, and what the model saw now sits under the drawing",
+      "why": "It shows at a glance which models agree and what the vote chose."
+    },
+    {
+      "step": "deploy",
+      "what": "Failure timeline graph",
+      "before": "The timeline was a set of tables and four totals",
+      "after": "A graph puts all 30 failures in order, one lane per CRISP-DM step and one band per iteration, with a mark for how each ended. A slider walks the points and shows each as Situation, Task, Action and Result",
+      "why": "It shows where failures clustered and how the project moved between steps."
+    },
+    {
+      "step": "deploy",
+      "what": "Dashboard updates reach the browser",
+      "before": "A browser could keep showing an old copy of a page after an update",
+      "after": "The server tells the browser to check for a newer copy on every load, and the Stage 2 and 3 headers now name arm P. The launcher opens the dashboard at its localhost address once the server answers. Pages now use the full width of the window",
+      "why": "An update to the CRISP-DM wheel did not appear until the cached page was replaced."
+    },
+    {
+      "step": "deploy",
+      "what": "Section explaining the models and data",
+      "before": "The five model names and the kinds of training image were never defined in one place",
+      "after": "The home page shows a real, an augmented and a computer-generated example of a shape, and a card per model with what it tests and the make-up of its batches",
+      "why": "A new reader could not tell what the models were or what their training data meant."
+    },
+    {
+      "step": "model",
+      "what": "One config file per model",
+      "before": "Each model's full setup had to be pieced together from the shared config and its overrides",
+      "after": "configs/models holds one generated file per model with its network, training settings, batch mix, augmentation and generator ranges, and a test keeps them in step with the shared config",
+      "why": "A reader can see one model's whole setup in one place."
+    },
+    {
+      "step": "deploy",
+      "what": "Screen review fixes",
+      "before": "A review of every screen found misleading headlines, faint model names, very long pages and colliding labels",
+      "after": "The headline says the gain is on damaged images and gives the clean result, the Business page separates the iterations, the home page is about half as long, findings fold after their first sentence, model names and batch text pass contrast, chart labels no longer collide, and phone touch targets are larger",
+      "why": "Readers should be able to trust and read the results on every screen."
+    },
+    {
+      "step": "deploy",
+      "what": "One explanation block per pipeline stage",
+      "before": "Each stage page showed its tools and tables in its own way, and most never stated the stage's point",
+      "after": "Every stage opens with the same block: its job, what goes in, what it does, what comes out, the key finding and the checks that show it worked, read from stored results, with links to the previous and next stage. Key results moved higher on Data freeze, Training and Evaluation, and Synthetic generator shows a real drawing beside a generated one",
+      "why": "Each stage should explain itself clearly to a reader new to the project."
+    },
+    {
+      "step": "deploy",
+      "what": "Final audit on 2026-11-10",
+      "before": "The work had not been checked as a whole since the last screen review, and the README still listed the All models vote option as future work",
+      "after": "All 535 tests and both guards pass, all seven stages are passed and cached, the test access log is unchanged at 157 reads, and the shipped model is the A2 export byte for byte. The README now says the vote option exists. Stage 7 gates G1 and G2 hold; G3 (a license for the team's code and weights) and G4 (the user's written approval to publish) are still open",
+      "why": "The solution should be confirmed complete before any public deployment."
+    },
+    {
+      "step": "deploy",
+      "what": "Files that should never have been tracked purged from history",
+      "before": "Two local working notes, the to-do list and nine planning notes under ignore/, and the CPU-run backup folder's .gitkeep were tracked although the ignore rules or project rules exclude them, and so was the local triage file plan_issues.md. One note quoted the attribution text the commit guard bans. Seven early research and setup notes (docs/setup.md, docs/goal.md, reports/ and research_notes/) and 18 unused images and source files (15 sample images, two unused banner and icon images, and a Paint project file) were also tracked, and a few lines referred to local working notes",
+      "after": "On 2026-11-10 they were removed from every commit on every branch and tag and kept on disk untracked, with .gitignore rules for plan_issues.md and the backup folder. The removed notes and images are kept locally under ignore/purged_files/, and the lines that referred to local working notes were reworded in every commit. The four commits that touched only these files were dropped. All remaining commits pass the commit guard's message, identity and content checks",
+      "why": "Nothing outside the ignore and project rules should be published if the branches are pushed."
+    }
+  ],
+  "audit_note": "Two outside code reviews after iteration 2 closed, each point checked against the code.",
+  "audit": [
+    {
+      "step": "data",
+      "claim": "Per-class test counts are never checked against noise_bands.csv.",
+      "verdict": "Stands",
+      "action": "Stage 5 now stops if the test labels do not match the counts the thresholds were built for.",
+      "state": "Fixed in iteration 3"
+    },
+    {
+      "step": "prep",
+      "claim": "B and A2 inherit augmentation settings searched on A1.",
+      "verdict": "Stands",
+      "action": "Disclosed here. Only the generator and mix were searched for B and A2.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "prep",
+      "claim": "Scaling is defined twice, in training and in evaluation.",
+      "verdict": "Stands",
+      "action": "Training now imports the one shared constant.",
+      "state": "Fixed in iteration 3"
+    },
+    {
+      "step": "model",
+      "claim": "Arms see different numbers of real images per step.",
+      "verdict": "Stands",
+      "action": "Measured in iteration 3 on validation. Giving B and A2 the same real images per step lowered clean macro-F1 by 2.0 and 0.5 points, so the arms keep their tuned batches. The unequal counts stay disclosed.",
+      "state": "Closed by experiment"
+    },
+    {
+      "step": "model",
+      "claim": "BatchNorm statistics include synthetic images in B and A2.",
+      "verdict": "Stands",
+      "action": "Measured in iteration 3 on validation. Recalibrating BatchNorm on real images lowered clean macro-F1 by 0.7 for B and 0.8 for A2, so it is not used.",
+      "state": "Closed by experiment"
+    },
+    {
+      "step": "model",
+      "claim": "One learning rate and dropout were shared by every arm.",
+      "verdict": "Does not stand",
+      "action": "Each arm was tuned separately. They happen to share a learning rate, and A0's dropout differs.",
+      "state": "No action"
+    },
+    {
+      "step": "model",
+      "claim": "Early stopping can end runs before the schedule finishes.",
+      "verdict": "Partly",
+      "action": "17 of 20 main runs used all 30 epochs. A0 seed 1 ran 10, A1 seed 4 ran 13, B seed 3 ran 29.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "Deterministic mode is overstated.",
+      "verdict": "Partly",
+      "action": "It is best-effort: non-deterministic operations only warn. In practice the clean-clone rehearsal reproduced all 32 validation scores exactly on this GPU.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "Batches are drawn with replacement, so an epoch does not cover every image.",
+      "verdict": "Stands",
+      "action": "Disclosed here. An epoch is a fixed 49 steps, by design.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "Synthetic shares are rounded differently from the real batch.",
+      "verdict": "Stands",
+      "action": "27.8% and 19.8% are the configured values. Real batches hold 71 and 51 of 256 (27.7% and 19.9%), and the run logs average 27.73% and 19.92%.",
+      "state": "Fixed in this record"
+    },
+    {
+      "step": "model",
+      "claim": "Validation is reused for tuning, epoch selection and the power check.",
+      "verdict": "Stands",
+      "action": "Validation scores are optimistic. The verdicts use the test split and the fresh holdout only.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "A1 and B train on no clean images.",
+      "verdict": "Stands",
+      "action": "Deliberate. A2 is the arm that adds them.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "Baselines train on 600 real images per class.",
+      "verdict": "Stands",
+      "action": "Every class has at least 680 training images. Baselines are reference points only.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "model",
+      "claim": "model.py still names three blocks as its default.",
+      "verdict": "Stands",
+      "action": "The default and its docstring now say four blocks.",
+      "state": "Fixed in iteration 3"
+    },
+    {
+      "step": "eval",
+      "claim": "extra_reads is a constant, so that check cannot fail.",
+      "verdict": "Stands",
+      "action": "It now counts sealed reads logged by any module other than the evaluator.",
+      "state": "Fixed in iteration 3"
+    },
+    {
+      "step": "eval",
+      "claim": "The stored error images have no hash check.",
+      "verdict": "Stands",
+      "action": "The file carries a model and manifest stamp, and a stale file is ignored.",
+      "state": "Fixed in iteration 3"
+    },
+    {
+      "step": "eval",
+      "claim": "The gallery refresh forces an extra test read.",
+      "verdict": "Partly",
+      "action": "It happens only if the error file is missing, and it is counted.",
+      "state": "No action"
+    },
+    {
+      "step": "eval",
+      "claim": "Prediction cache keys miss preprocessing code.",
+      "verdict": "Stands",
+      "action": "The key now includes the preprocessing code.",
+      "state": "Fixed in iteration 3"
+    },
+    {
+      "step": "eval",
+      "claim": "The bootstrap treats images as independent.",
+      "verdict": "Stands",
+      "action": "Comparisons now resample phash_group clusters, with a source-clustered check beside the primary.",
+      "state": "Fixed in iteration 3"
+    },
+    {
+      "step": "eval",
+      "claim": "The interval covers test sampling, not seed variation.",
+      "verdict": "Stands",
+      "action": "Seed differences are reported separately. The preregistration says nothing changes after a test read. Left for the next iteration's preregistration.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "eval",
+      "claim": "Nothing checks that ensembles have equal size.",
+      "verdict": "Does not stand",
+      "action": "The seed sets must match or the comparison raises an error.",
+      "state": "No action"
+    },
+    {
+      "step": "eval",
+      "claim": "The per-class harm rule has no multiple-testing correction.",
+      "verdict": "Stands",
+      "action": "The rule now uses a Bonferroni-corrected interval and the paired drop's bootstrap standard error.",
+      "state": "Fixed in iteration 3"
+    },
+    {
+      "step": "eval",
+      "claim": "Rule 1 needs the interval above 0, not above the minimum gain.",
+      "verdict": "Stands",
+      "action": "This is the pre-registered rule, so it is intended. Iteration 2 fails either way.",
+      "state": "No action"
+    },
+    {
+      "step": "eval",
+      "claim": "McNemar is not exact for small counts, and differs from the primary metric.",
+      "verdict": "Stands",
+      "action": "McNemar is exact under 25 discordant pairs. Holm now uses bootstrap p-values on the same metric as the primary.",
+      "state": "Fixed in iteration 3"
+    },
+    {
+      "step": "eval",
+      "claim": "The power check is optimistic.",
+      "verdict": "Stands",
+      "action": "Treat it as a rough lower bound on the interval width.",
+      "state": "Disclosed"
+    },
+    {
+      "step": "eval",
+      "claim": "One random generator is shared across analyses.",
+      "verdict": "Stands",
+      "action": "Each analysis has its own named generator.",
+      "state": "Fixed in iteration 3"
+    },
+    {
+      "step": "eval",
+      "claim": "A2 has no pairwise test against A1 or B.",
+      "verdict": "Partly",
+      "action": "A2 vs A1 is now in the secondary comparisons.",
+      "state": "Fixed in iteration 3"
+    }
+  ]
+}

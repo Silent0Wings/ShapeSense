@@ -1,0 +1,87 @@
+{
+  "stage": "stage1",
+  "owner": "",
+  "run_id": "2026-11-10T04:11:41-05:00/250afe",
+  "inputs": {
+    "catalog": "sha256:a2f0a4b2e85f22975881b5ec194207cff03243bc382c86647163adf12e06307b",
+    "metadata": "sha256:6b11f6a34e5efde60a1c251faeeb0bfd5aa758a3f5cf7725881ad3c9814c55ea",
+    "unified_images": "sha256:bac1465dde7ba35cbd9f3e3b3482a07ffaeeba0133c53affcec6166e54078bec",
+    "gemstone_ids": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "code": "sha256:b28aaceebd5bdb1eb5829dd6834d5b36bc7b87032ee6e9c71867cb74ef1dfdab",
+    "common": "sha256:001df580f4b9ac0ac6d3536b950fe5e8db08167a0fa6b57c76662ce35c46e457",
+    "config.split": "sha256:697ce13a59089c0a5fec906bc14da8432c64e2b41ebc5a6fdc8b9df829be0858",
+    "config.filter_gemstones": "sha256:fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa",
+    "config.exclude_source_labels": "sha256:764a94ae0493665c99c46ba136d2a0be207b61cd2ecc282065e358345cfb3ed1",
+    "config.paths": "sha256:b9c797de5bf48d0476d82ba688ba2323eeada5182705ceed1e69612c7351f5bd",
+    "config.taxonomy": "sha256:38aed29524418d859a6d657fee98cd1ecfc2de905df8a49da58d843dbaeaa5ed",
+    "config.evaluation": "sha256:54433797410b9f3b52efa6b5789aebcb845eaed659ba90a4763e2f787cd0ebbc",
+    "config.success_criterion": "sha256:a5a5516d80dc32844193ffa2024c15894c8b50694b5143af00e24467ebf046e6"
+  },
+  "outputs": [
+    "artifacts/stage1/gemstone_contact_sheet_0.png",
+    "artifacts/stage1/gemstone_contact_sheet_1.png",
+    "artifacts/stage1/gemstone_contact_sheet_2.png",
+    "artifacts/stage1/gemstone_contact_sheet_3.png",
+    "artifacts/stage1/gemstone_contact_sheet_4.png",
+    "artifacts/stage1/exclusions.tex",
+    "artifacts/stage1/split_stats.csv",
+    "artifacts/stage1/noise_bands.csv",
+    "artifacts/stage1/fd_check.json",
+    "artifacts/stage1/source_classifier.json",
+    "artifacts/stage1/NOTICE_shortcut.md",
+    "configs/splits/train.csv",
+    "configs/splits/val.csv",
+    "configs/splits/test.csv",
+    "artifacts/stage1/report_counts.tex",
+    "artifacts/stage1/stage6_note.md"
+  ],
+  "metrics": {
+    "train": 12405,
+    "val": 2819,
+    "test": 2776,
+    "total": 18000,
+    "gemstones_removed": 0,
+    "gemstone_filter": "superseded_by_rule",
+    "excluded_by_rule": {
+      "quickdraw/diamond": 500
+    },
+    "near_dup_groups": 15268,
+    "largest_group": 216,
+    "mixed_label_groups": 23,
+    "shortcut_detected": true,
+    "source_test_share": {
+      "github_handdrawn": 0.16246397694524495,
+      "kaggle_reevald": 0.27017291066282423,
+      "mendeley_elkorchi": 0.404178674351585,
+      "quickdraw": 0.16318443804034583
+    },
+    "seed": 42
+  },
+  "checks": {
+    "no_id_in_two_splits": true,
+    "no_md5_in_two_splits": true,
+    "no_phash_group_spans": true,
+    "fd_all_hold": true
+  },
+  "status": "passed",
+  "finished_at": "2026-11-10T04:14:17-05:00",
+  "output_hashes": {
+    "artifacts/stage1/gemstone_contact_sheet_0.png": "sha256:fdd93dfd019ac01981562a5a5672494e83a8e7c29db7b89e3fa394de2765fbe6",
+    "artifacts/stage1/gemstone_contact_sheet_1.png": "sha256:d6bbbc69259c9638c6cc6148d0f82e1ad1163724346f19d15ea2d45dcdd5ed6c",
+    "artifacts/stage1/gemstone_contact_sheet_2.png": "sha256:69336def0bac9b6bbc9431b73a8d5d8d2134b587cb0d695fd88b9f7b1c72b5ee",
+    "artifacts/stage1/gemstone_contact_sheet_3.png": "sha256:e3894e029b99bfb7e4ad9cf25fa8ede74e8454ebca2469da301b178a90af0cde",
+    "artifacts/stage1/gemstone_contact_sheet_4.png": "sha256:4b1e31304eeff8f566d8b2779530ed952ea267416ce2cdf69c9588bca8ff8eef",
+    "artifacts/stage1/exclusions.tex": "sha256:86f2abbb682ac3e1aff84cb693ceac778fe81b3c88db7f3bbd879afa9731982d",
+    "artifacts/stage1/split_stats.csv": "sha256:c69ad267965f9495c66d6b18b0ec23535244b52d3d3b910a733fea2d67267b84",
+    "artifacts/stage1/noise_bands.csv": "sha256:e4f86bf9b0728532ce97a906034b241e0986a1e19c38a8de31677bc35352dcab",
+    "artifacts/stage1/fd_check.json": "sha256:d13baccf6d4f412ea27fc19ba407b1b4d8147d696486458860cf6af6911f648f",
+    "artifacts/stage1/source_classifier.json": "sha256:09f90dd2447dba59e3c6e44956a0ecd8ca6e88303d8235f51906533dc4f32555",
+    "artifacts/stage1/NOTICE_shortcut.md": "sha256:11343b43c4a393c1cd0af4183bd5d254a84fcbcf77cffff24026fd6282fed4c0",
+    "configs/splits/train.csv": "sha256:66565a3ddd492f95fb992d80b8b8ebee3622015ed18ba28f8a5cd57e629f2fba",
+    "configs/splits/val.csv": "sha256:890a4838d1811e0c17d0ca97940a5c547da6a52e975c1734609ea7fa46c5cb3c",
+    "configs/splits/test.csv": "sha256:2432b87a1e7ad12539b6919e7f23e95a15990018d1c2090858777e69845ed2a5",
+    "artifacts/stage1/report_counts.tex": "sha256:7964417cf80c3e9371f5d945d1bee93a250fc55f7c0c52f314b1f2635d933b29",
+    "artifacts/stage1/stage6_note.md": "sha256:aec42e6ee4c1b80a4efdc03ad2b570908a21bdafe1d4b791694a57676679830f"
+  },
+  "started_at": "2026-11-10T04:14:06-05:00"
+}

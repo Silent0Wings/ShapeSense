@@ -1,0 +1,6 @@
+comparison,role,delta_macro_f1_points,ci,mcnemar_b,mcnemar_c,p_raw,p_holm,per_seed_mean_std,same_sign
+A2 vs A0,primary,+0.5,"[-0.2, 1.2]",35,49,0.156,--,1.2 ± 0.3,yes
+A1 vs A0,secondary (Holm),+0.6,"[-0.2, 1.4]",43,57,0.194,0.464,1.2 ± 0.3,yes
+B vs A0,secondary (Holm),+0.3,"[-0.6, 1.0]",53,56,0.848,1.000,1.0 ± 0.3,yes
+A2 vs A1,secondary (Holm),-0.1,"[-0.7, 0.4]",22,22,0.880,1.000,-0.0 ± 0.3,no
+A2 vs B,secondary (Holm),+0.2,"[-0.3, 0.8]",20,31,0.161,1.000,0.2 ± 0.4,no

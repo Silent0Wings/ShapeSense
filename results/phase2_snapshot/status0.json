@@ -1,0 +1,42 @@
+{
+  "stage": "stage0",
+  "owner": "",
+  "run_id": "2026-11-10T04:11:41-05:00/250afe",
+  "inputs": {
+    "code": "sha256:dc138b2a61947e90ed6881ad1adea767f4943dcfdd84c364873de0121c669258",
+    "common": "sha256:001df580f4b9ac0ac6d3536b950fe5e8db08167a0fa6b57c76662ce35c46e457",
+    "build_code": "sha256:b28aaceebd5bdb1eb5829dd6834d5b36bc7b87032ee6e9c71867cb74ef1dfdab",
+    "requirements": "sha256:6d6648c6785ce10bfa7500499d44c7ef3bf6d7923f3cb60594e5f393e5c76850",
+    "python_version_pin": "sha256:7b55f8e67b5623c4bef3fa691288da9437d79d3aba156de48d481db32ac7d16d",
+    "catalog": "sha256:a2f0a4b2e85f22975881b5ec194207cff03243bc382c86647163adf12e06307b",
+    "raw_data": "files=196353;bytes=321113037"
+  },
+  "outputs": [
+    "artifacts/stage0/migration_check.json",
+    "artifacts/stage0/data_archive_sha256.txt"
+  ],
+  "metrics": {
+    "python": "3.12.13",
+    "python_pin": "3.12",
+    "platform": "win32",
+    "data_archive_sha256": "sha256:cdc208107479830025ef612781a11046c0729e6e802178bcca59812c65bf17fd",
+    "migration_differences": {},
+    "guards": {
+      "import_linter": true,
+      "contract_tests": true
+    }
+  },
+  "checks": {
+    "migration_equivalent": true,
+    "python_matches_pin": true,
+    "requirements_pinned": true,
+    "guards_passed": true
+  },
+  "status": "passed",
+  "finished_at": "2026-11-10T04:14:02-05:00",
+  "output_hashes": {
+    "artifacts/stage0/migration_check.json": "sha256:0e206d0639d3de39ba1a03b464bbdfe15753a9325af65866b0610f535652aea1",
+    "artifacts/stage0/data_archive_sha256.txt": "sha256:fe860affdcad2107e4e023bd63798550514d838ea3487d731aff1d661f49833d"
+  },
+  "started_at": "2026-11-10T04:11:50-05:00"
+}

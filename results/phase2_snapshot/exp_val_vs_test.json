@@ -1,0 +1,68 @@
+{
+ "class": {
+  "rows": {
+   "circle": {
+    "val_share": 0.13267115998581058,
+    "test_share": 0.13508645533141211
+   },
+   "ellipse": {
+    "val_share": 0.05321035828307911,
+    "test_share": 0.05367435158501441
+   },
+   "triangle": {
+    "val_share": 0.20468251152891095,
+    "test_share": 0.20605187319884727
+   },
+   "square": {
+    "val_share": 0.13338063142958495,
+    "test_share": 0.13508645533141211
+   },
+   "rectangle": {
+    "val_share": 0.10642071656615822,
+    "test_share": 0.10842939481268012
+   },
+   "pentagon": {
+    "val_share": 0.05782192266761263,
+    "test_share": 0.05655619596541787
+   },
+   "hexagon": {
+    "val_share": 0.08052500886839305,
+    "test_share": 0.0814121037463977
+   },
+   "octagon": {
+    "val_share": 0.08017027314650585,
+    "test_share": 0.0814121037463977
+   },
+   "star": {
+    "val_share": 0.09790705924086555,
+    "test_share": 0.0882564841498559
+   },
+   "diamond": {
+    "val_share": 0.05321035828307911,
+    "test_share": 0.05403458213256484
+   }
+  },
+  "total_variation": 0.010916301793204422
+ },
+ "source": {
+  "rows": {
+   "kaggle_reevald": {
+    "val_share": 0.2674707343029443,
+    "test_share": 0.27017291066282423
+   },
+   "mendeley_elkorchi": {
+    "val_share": 0.4136218517204682,
+    "test_share": 0.404178674351585
+   },
+   "quickdraw": {
+    "val_share": 0.15998581057112451,
+    "test_share": 0.16318443804034583
+   },
+   "github_handdrawn": {
+    "val_share": 0.15892160340546294,
+    "test_share": 0.16246397694524495
+   }
+  },
+  "total_variation": 0.009443177368883227
+ }
+}

@@ -1,0 +1,78 @@
+{
+  "stage": "stage6",
+  "owner": "",
+  "run_id": "2026-11-10T22:18:28-05:00/faa3c9",
+  "inputs": {
+    "code": "sha256:6d91162f586938a2180db82b2f1729a0603f5f5f5a553c876457db582100f834",
+    "common": "sha256:001df580f4b9ac0ac6d3536b950fe5e8db08167a0fa6b57c76662ce35c46e457",
+    "report_tex": "sha256:f727e305c34d0551a5e9f7bdabbd2ca4c93a3145bdf804f5a9317fab81e0e976",
+    "phase1_tex": "sha256:29cf2cfe67727f46e068a6d830b485eb6560c09b9249855d9137af3b9f1a48b8",
+    "stage1": "sha256:0a401744b759c63626a635b44055fa3fe5f0734e20c14169d9f5d6c58930c430",
+    "stage3": "sha256:666ebd50d1780a662a03f87acad7a7be337e2331708687eddd0711d690a682b5",
+    "stage3_status": "sha256:75fff173e958c573be00c3b088608bfdc22b6b92c425180eddb87c4f75a49c16",
+    "standardize": "sha256:3f4e8c9a254b3b62b0869fd364121055f578a6f3e3fb4a346d5b07f79310717e",
+    "stage4_runs": "sha256:b9f6bbedcaf9c74f3b192f98a927f2fc1a42d2ee77ca77ed2860bb8d7481cf08",
+    "winners": "sha256:ec9a9e3355b93287778efb305b3294df9936f9ef2526eb847e724834235a78d8",
+    "stage5": "sha256:b7a86b0045afb64b772313723e662ad066dac3d8727a2c9504831d1d0bb4e34c",
+    "export_code": "sha256:70d5d2c4344249c684509f13925f204ef30c1c3a2aa6d2b47396fdf374a45760",
+    "config": "sha256:29505477a1f63f55e26f3b03397ec80d859317953d5506f57f07e800182f5952",
+    "iteration_log": "sha256:76f7c5b04e086de9c42c0bd687596eb2e5eab853f76e40b5f4b72a73f6f827bf"
+  },
+  "outputs": [
+    "phase2_report.pdf",
+    "export/model.onnx",
+    "export/standardize.py",
+    "export/labels.json",
+    "export/model_card.json",
+    "artifacts/stage6/generated/param_ranges.tex",
+    "artifacts/stage6/generated/pipeline_facts.tex",
+    "artifacts/stage6/smoke_hexagon.png",
+    "artifacts/stage6/generated/iteration3_facts.tex",
+    "artifacts/stage6/generated/iteration3_log.tex",
+    "artifacts/stage6/generated/iteration3_failures.tex",
+    "artifacts/stage6/generated/iteration3_changes.tex"
+  ],
+  "metrics": {
+    "selection": {
+      "run_name": "A2_0",
+      "arm": "A2",
+      "seed": 0,
+      "val_macro_f1": 95.98830107394024
+    },
+    "traceability_findings": 0,
+    "traceability_failing": 0,
+    "traceability_kinds": [],
+    "missing_inputs": [],
+    "placeholders": [],
+    "verdict": "pass",
+    "test_reads": 92,
+    "smoke_prediction": "hexagon",
+    "smoke_expected": "hexagon",
+    "smoke_prediction_matches": true,
+    "build_exe": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.EXE"
+  },
+  "checks": {
+    "report_built": true,
+    "traceable": true,
+    "no_placeholders": true,
+    "export_smoke_test": true,
+    "attribution_present": true
+  },
+  "status": "passed",
+  "finished_at": "2026-11-10T22:18:46-05:00",
+  "output_hashes": {
+    "phase2_report.pdf": "sha256:cc7eec039ca8bdec71dc3a5072062d4c0bd94f8f1a8fd028fba959a5a796e657",
+    "export/model.onnx": "sha256:ae60e0426fc8a22d39cd541db4a107e26df07e1b6dd16a64c9aa10e8f8e68941",
+    "export/standardize.py": "sha256:3f4e8c9a254b3b62b0869fd364121055f578a6f3e3fb4a346d5b07f79310717e",
+    "export/labels.json": "sha256:789311735039228a6e331adc2219bd60299b93ad40427b0c08c240c58f7995cf",
+    "export/model_card.json": "sha256:7224161b1ee657758ba2985fc49fd052a1735eaa9a73fc71e1ac2d67df5db359",
+    "artifacts/stage6/generated/param_ranges.tex": "sha256:733b11ee4138dae9a0e20eaddee7be5347b2002e2b61ce150fb08322df9120fc",
+    "artifacts/stage6/generated/pipeline_facts.tex": "sha256:8aef38279e7f1467bef32f9d87dcc0756b424d7e657c2da232611768d5ad7f36",
+    "artifacts/stage6/smoke_hexagon.png": "sha256:b4ab6fad4d4a75e1fa032f652dd3e90ae87f4b4b4648c7596d775cbdee2308e2",
+    "artifacts/stage6/generated/iteration3_facts.tex": "sha256:52dea4f8cc80c3202986196cc7378e9178dda3b21146c208d2399c47eca79617",
+    "artifacts/stage6/generated/iteration3_log.tex": "sha256:78602a6d051f806645aef1fd3a5d348f959ae4412eba85cbaf62751d38569480",
+    "artifacts/stage6/generated/iteration3_failures.tex": "sha256:33cdc12cf6e088df3c426574243deacc034afc34cdcc8c469327e43cb513852c",
+    "artifacts/stage6/generated/iteration3_changes.tex": "sha256:a6e08b6397e6e1e3986141986783285f4785d9b766ae2c7354c1bd0ee1dd5d63"
+  },
+  "started_at": "2026-11-10T22:18:39-05:00"
+}
