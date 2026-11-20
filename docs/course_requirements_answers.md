@@ -16,7 +16,7 @@ unless a row says otherwise.
 | Verification and dataset awareness (20%) | Met (Claude and Gemini runs complete) | `results/verification/README.md`, `prompts/6_verification/dataset_awareness/` |
 | Two-LLM comparison (15%) | Met | `results/llm_comparison/`, `prompts/*/cross_critique/` |
 | Pipeline vs. direct LLM prediction (15%) | Met | `results/direct_llm_prediction/summary.json` |
-| Repository and Colab (10%) | Met once the repo is public | README has the Colab link, `slides.pdf` is built, the notebook has a section per step. The repo is still **private**, and the notebook has not been run in Colab |
+| Repository and Colab (10%) | Partly met: Colab link and notebook run pending | README has the Colab link, `slides.pdf` is built, the notebook has a section per step. The repo is still **private**, and the notebook has not been run in Colab |
 | Presentation (10%) | Met | `slides.pdf`: 8 slides in the course layout, with the repo and Colab links (`slides/build_slides.py`) |
 
 ## 1. Stage by stage: what we asked, what the LLM said, how we checked it, what we changed
