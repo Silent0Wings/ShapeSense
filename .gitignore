@@ -62,4 +62,5 @@ results/llm_comparison/README.md
 
 # Course deliverables: results tables must be public (overrides the global *.csv ignore)
 !results/**/*.csv
+
 scripts/*.zip
