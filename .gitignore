@@ -64,3 +64,4 @@ results/llm_comparison/README.md
 !results/**/*.csv
 
 scripts/*.zip
+*.zip
