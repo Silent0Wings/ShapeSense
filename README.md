@@ -63,8 +63,6 @@ fresh copy of the repository to a running pipeline.
 
 - Windows 10/11 (macOS/Linux also work; commands below are PowerShell).
 - Python **3.12** (see `.python-version`), on `PATH`.
-- A LaTeX distribution for the report: MiKTeX (preferred; installs missing
-  packages on demand) or TeX Live. `build.ps1` finds either.
 - About 2 GB of disk for the raw data and artifacts, plus about 6 GB for a
   CUDA PyTorch install.
 - A CUDA GPU with about 8 GB of memory. The committed `configs/pipeline.yaml`
@@ -125,7 +123,6 @@ pre-commit install
 | `python -m studio.tools.export_arms` | export all four arms for the studio, after Stage 4 |
 | `.\scripts\run_studio.bat` or `python -m studio` | the interactive studio on port 8765, every iteration |
 | `python -m pytest tests -q` | the full test suite (no data needed) |
-| `.\build.ps1 -File phase2_report.tex` | compile the Phase 2 report by hand |
 
 How the runner works:
 
@@ -195,8 +192,6 @@ ignore/             tracker (todo.md) and implementation plans (plan/)
 - **`python` opens the Microsoft Store** or is not found: install Python 3.12
   from python.org with "Add python.exe to PATH" ticked, or disable the
   `python.exe` App execution alias in Windows settings.
-- **`pdflatex` not found** or missing packages: install MiKTeX and let it
-  install packages on the fly; `build.ps1` prefers MiKTeX over TeX Live.
 - **Pre-commit hooks do not run**: they need `git` and Python on `PATH` in the
   same shell that runs `git commit`.
 - **`--dashboard` cannot import `dashboard`**: start it through the runner (it
