@@ -9,7 +9,8 @@ run(config):
   2. builds export/ (ONNX + standardize.py + labels.json + model_card.json);
   3. writes the generated LaTeX snippets (param_ranges.tex, pipeline_facts.tex);
   4. smoke-tests the bundle in a subprocess on a procedurally drawn hexagon;
-  5. compiles phase2_report.tex through build.ps1 -File phase2_report.tex (R8);
+  5. compiles phase2_report.tex through build.ps1 -File phase2_report.tex (R8),
+     or with pdflatex directly when no PowerShell is found (Linux, Colab);
   6. runs the number-traceability check and the attribution grep.
 It does not write status.json; the runner does that through common.status.
 """
@@ -42,6 +43,10 @@ REPORT_TEX = "phase2_report.tex"
 REPORT_PDF = "phase2_report.pdf"
 BUILD_SCRIPT = "build.ps1"
 POWERSHELL_CANDIDATES = ("powershell", "pwsh")   # Windows PowerShell first, then pwsh
+PDFLATEX = "pdflatex"                    # used directly when no PowerShell is found (Linux, Colab)
+PDFLATEX_PASSES = 2                      # as build.ps1: references and contents resolve on pass 2
+AUX_EXTENSIONS = (".aux", ".out", ".toc", ".lof", ".lot", ".fls", ".fdb_latexmk", ".synctex.gz",
+                  ".bbl", ".blg", ".log")   # removed after a successful build, as build.ps1 does
 EXPORT_DIR = "export"
 EXPORT_README = "README.md"
 EXPORT_REQUIRED = ("model.onnx", "labels.json", "standardize.py", "predict.py")
@@ -182,8 +187,7 @@ def build_report(repo_root: Path = REPO_ROOT) -> dict[str, Any]:
     exe = powershell_exe()
     pdf = repo_root / REPORT_PDF
     if exe is None:
-        return {"ok": False, "exe": None, "returncode": None, "pdf": _rel(pdf),
-                "output": "neither powershell nor pwsh found on PATH"}
+        return build_report_pdflatex(repo_root)
     cmd = [exe, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", BUILD_SCRIPT,
            "-File", REPORT_TEX]
     # errors="replace": PowerShell pipes in the OEM code page, Python decodes in the ANSI
@@ -193,6 +197,29 @@ def build_report(repo_root: Path = REPO_ROOT) -> dict[str, Any]:
     return {"ok": proc.returncode == 0 and pdf.is_file(), "exe": exe,
             "returncode": proc.returncode, "pdf": _rel(pdf),
             "output": _tail(proc.stdout + proc.stderr)}
+
+
+def build_report_pdflatex(repo_root: Path = REPO_ROOT) -> dict[str, Any]:
+    """The same build as build.ps1, without PowerShell: pdflatex twice, then remove the aux files."""
+    exe = shutil.which(PDFLATEX)
+    pdf = repo_root / REPORT_PDF
+    if exe is None:
+        return {"ok": False, "exe": None, "returncode": None, "pdf": _rel(pdf),
+                "output": "neither powershell, pwsh nor pdflatex found on PATH"}
+    cmd = [exe, "-interaction=nonstopmode", "-halt-on-error",
+           f"-output-directory={repo_root}", REPORT_TEX]
+    output = ""
+    for _ in range(PDFLATEX_PASSES):
+        proc = subprocess.run(cmd, cwd=repo_root, capture_output=True, text=True,
+                              errors="replace", timeout=BUILD_TIMEOUT_S)
+        output += proc.stdout + proc.stderr
+        if proc.returncode != 0:
+            return {"ok": False, "exe": exe, "returncode": proc.returncode, "pdf": _rel(pdf),
+                    "output": _tail(output)}
+    for ext in AUX_EXTENSIONS:
+        (repo_root / Path(REPORT_TEX).with_suffix(ext)).unlink(missing_ok=True)
+    return {"ok": pdf.is_file(), "exe": exe, "returncode": 0, "pdf": _rel(pdf),
+            "output": _tail(output)}
 
 
 def attribution_present(*paths: Path, names: tuple[str, ...] = SOURCE_NAMES) -> bool:
