@@ -20,24 +20,6 @@ Blind direct visual classification run completed on **2026-11-19** using `gemini
 - [Batch 09 (T161-T180)](09_batch-09.md)
 - [Batch 10 (T181-T200)](10_batch-10.md)
 
----
-
-## Studio / QA shape grids labeling (5 figures, 180 tiles)
-
-- **Saved prompt & response exchange:** [`01_image-grids-labeling.md`](01_image-grids-labeling.md)
-- **Detailed comparison against reference strips (`2.png`, `4.png`, `6.png`, `8.png`, `10.png`):** [`../../../results/image_labels/gemini_4_neon_grids_vs_reference.md`](../../../results/image_labels/gemini_4_neon_grids_vs_reference.md)
-- **CNN performance on these grids:** `100%` *(user-reported in the prompt; not printed on the reference strips `2.png`, `4.png`, `6.png`, `8.png`, `10.png`)*
-
-### Summary across all 5 figures
-| Unlabeled image | Reference image | Layout | Tiles | Direct label match | Cross-ref match | Total match |
-|---|---|---|---|---|---|---|
-| `images/3.png` | `images/4.png` | 5 rows x 6 cols | 30 | 30 / 30 (100%) | - | 30 / 30 (100%) |
-| `images/1.png` | `images/2.png` | 1 row x 10 cols | 10 | 10 / 10 (100%) | - | 10 / 10 (100%) |
-| `images/5.png` | `images/6.png` | 3 rows x 10 cols | 30 | 30 / 30 (100%) | - | 30 / 30 (100%) |
-| `images/7.png` | `images/8.png` | 2 rows x 5 cols (`Real`, `Synthetic`) | 10 | 5 / 5 (`Synthetic`) | 5 / 5 (`Real` via `2.png`) | 10 / 10 (100%) |
-| `images/9.png` | `images/10.png` | 10 rows x 10 cols | 100 | 100 / 100 (100%) | - | 100 / 100 (100%) |
-| **Total** | | | **180** | **175 / 175 (100%)** | **5 / 5 (100%)** | **180 / 180 (100%)** |
-
 ### Per-image labels
 1. **`results/image_labels/images/3.png`** (5 rows x 6 columns = 30 tiles, by row):
    - Row 1 (cols 1-6): `circle` (6 of 6; bumpy/wavy hand-drawn outline ~1.15-1.2x wide, distinct from Row 2's flat ellipse)
