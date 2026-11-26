@@ -5,7 +5,7 @@
 - Date: 2026-10-19 or earlier
 - Worksheet entries: S01
 - Source: **evidence file**, rebuilt from the saved work, not from a chat export. The prompt is the user's own todo entry, verbatim, which was handed to the LLM as the task; the exact chat message was not saved. The Response quotes the LLM's saved output files verbatim.
--  [S01](../claude_opus/01_four-public-sources.md), [S01](01_four-public-sources.md)
+- Peers: [S01](../claude_opus/08_evidence_new-candidate-datasets-research.md)
 
 ## Prompt (the user's todo entry, verbatim)
 

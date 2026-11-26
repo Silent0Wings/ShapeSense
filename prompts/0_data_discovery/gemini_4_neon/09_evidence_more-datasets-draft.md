@@ -5,7 +5,7 @@
 - Date: 2026-10-19 or earlier
 - Worksheet entries: S01, S03, S04, S05
 - Source: **evidence file**, rebuilt from the saved work, not from a chat export. The prompt is the user's own todo entry, verbatim, which was handed to the LLM as the task; the exact chat message was not saved. The Response quotes the LLM's saved output files verbatim.
--  [S01](../claude_opus/01_four-public-sources.md), [S01](01_four-public-sources.md), [S03](../claude_opus/03_reject-mendeley-d35tjjgjnx.md), [S03](03_reject-mendeley-d35tjjgjnx.md), [S04](../claude_opus/04_reject-mendeley-ypfcrfxjgk.md), [S04](04_reject-mendeley-ypfcrfxjgk.md), [S05](../claude_opus/05_reject-kaggle-swastikarajkower.md), [S05](05_reject-kaggle-swastikarajkower.md)
+- Peers: [S01](../claude_opus/08_evidence_new-candidate-datasets-research.md), [S03-S05](../cross_critique/01_evidence_opus-fact-checks-gemini-dataset-claims.md)
 
 ## Prompt (the user's todo entry, verbatim)
 

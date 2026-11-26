@@ -6,7 +6,7 @@
 - Owner: 40256377
 - Worksheet entries: S01
 - Source: **evidence file**, rebuilt from the saved work, not from a chat export. **The prompt is inferred** from the artifact and was not saved. The Response quotes the LLM's saved output files verbatim.
--  [S01](01_four-public-sources.md), [S01](../gemini_4_neon/01_four-public-sources.md)
+- Peers: [S01](../gemini_4_neon/08_evidence_dataset-details-draft.md), [S01](../gemini_4_neon/09_evidence_more-datasets-draft.md)
 
 ## Prompt (inferred, not saved)
 

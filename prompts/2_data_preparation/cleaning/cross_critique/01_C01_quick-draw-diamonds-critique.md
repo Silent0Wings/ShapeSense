@@ -3,7 +3,7 @@
 - Category: Two-LLM comparison
 - Date: 2026-11-20
 
-Cross-critique of [Gemini 4 Neon's rule-based exclusion proposal (`C01`)](../gemini_4_neon/01_C01_quick-draw-diamonds.md) and [Claude Opus 5.5's diamond review (`F01`)](../claude_opus/03_f01-quickdraw-diamond-review-and-drop.md).
+Cross-critique of [Gemini 4 Neon's rule-based exclusion proposal (`C01`)](../gemini_4_neon/01_C01_quick-draw-diamonds.md) and [Claude Opus 5.5's diamond review (`F01`)](../claude_opus/03_f01-quickdraw-diamond-review.md).
 
 ## Prompt
 

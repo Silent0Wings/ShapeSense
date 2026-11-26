@@ -6,7 +6,6 @@
 - Owner: 40256377
 - Worksheet entries: S07
 - Source: **evidence file**, rebuilt from the saved work, not from a chat export. The prompt is the user's own todo entry, verbatim, which was handed to the LLM as the task; the exact chat message was not saved. The Response quotes the LLM's saved output files verbatim.
--  [S07](07_define-shape-classes.md), [S07](../gemini_4_neon/07_define-shape-classes.md)
 
 ## Prompt (the user's todo entry, verbatim)
 

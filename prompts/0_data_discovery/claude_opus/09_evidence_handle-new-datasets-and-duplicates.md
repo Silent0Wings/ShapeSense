@@ -6,7 +6,7 @@
 - Owner: 40256377
 - Worksheet entries: S02, S06
 - Source: **evidence file**, rebuilt from the saved work, not from a chat export. The prompt is the user's own todo entry, verbatim, which was handed to the LLM as the task; the exact chat message was not saved. The Response quotes the LLM's saved output files verbatim.
--  [S02](02_exclude-kaggle-dinesh.md), [S02](../gemini_4_neon/02_exclude-kaggle-dinesh.md), [S06](06_remove-duplicate-folders.md), [S06](../gemini_4_neon/06_remove-duplicate-folders.md)
+- Peers: [S02](../cross_critique/01_evidence_opus-fact-checks-gemini-dataset-claims.md)
 
 ## Prompt (the user's todo entry, verbatim)
 

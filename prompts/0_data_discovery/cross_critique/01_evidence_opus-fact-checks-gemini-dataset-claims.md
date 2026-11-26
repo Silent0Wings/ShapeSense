@@ -7,7 +7,7 @@
 - Owner: 40256377
 - Worksheet entries: S02, S03, S04, S05
 - Source: **evidence file**, rebuilt from the saved work, not from a chat export. **The prompt is inferred** from the artifact and was not saved. The Response quotes the LLM's saved output files verbatim.
--  [S02](../claude_opus/02_exclude-kaggle-dinesh.md), [S02](../gemini_4_neon/02_exclude-kaggle-dinesh.md), [S03](../claude_opus/03_reject-mendeley-d35tjjgjnx.md), [S03](../gemini_4_neon/03_reject-mendeley-d35tjjgjnx.md), [S04](../claude_opus/04_reject-mendeley-ypfcrfxjgk.md), [S04](../gemini_4_neon/04_reject-mendeley-ypfcrfxjgk.md), [S05](../claude_opus/05_reject-kaggle-swastikarajkower.md), [S05](../gemini_4_neon/05_reject-kaggle-swastikarajkower.md)
+- Peers: [S02](../claude_opus/09_evidence_handle-new-datasets-and-duplicates.md), [S03-S05](../gemini_4_neon/09_evidence_more-datasets-draft.md)
 
 ## Prompt (inferred, not saved)
 
