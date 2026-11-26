@@ -1,0 +1,65 @@
+{
+  "run": "2026-11-26_113808",
+  "prompt_file": "prompts/5_direct_llm_prediction/cli_prompt.txt",
+  "prompt_sha256": "e76111f4941cad25f697b837e6a215024df0e422e8584d91c85f930696f2891c",
+  "batches": [
+    "batch_01",
+    "batch_02",
+    "batch_03",
+    "batch_04",
+    "batch_05",
+    "batch_06",
+    "batch_07",
+    "batch_08",
+    "batch_09",
+    "batch_10"
+  ],
+  "n_images": 200,
+  "trained_cnn": {
+    "n": 200,
+    "answered": 200,
+    "correct": 195,
+    "accuracy": 97.5,
+    "macro_f1": 97.5
+  },
+  "models": {
+    "claude_opus": {
+      "model_id": "claude-opus-5-5",
+      "cli_version": "2.1.311 (Claude Code)",
+      "n": 200,
+      "answered": 200,
+      "correct": 186,
+      "accuracy": 93.0,
+      "macro_f1": 92.97,
+      "recorded_2026_11_19": {
+        "n": 200,
+        "answered": 200,
+        "correct": 185,
+        "accuracy": 92.5,
+        "macro_f1": 92.55
+      },
+      "batch_issues": {},
+      "retried_batches": [],
+      "log": "prompts/5_direct_llm_prediction/claude_opus/13_cli-run-2026-11-26.md"
+    },
+    "gemini_4_neon": {
+      "model_id": "gemini-4-neon-medium",
+      "cli_version": "1.5.18",
+      "n": 200,
+      "answered": 200,
+      "correct": 185,
+      "accuracy": 92.5,
+      "macro_f1": 92.48,
+      "recorded_2026_11_19": {
+        "n": 200,
+        "answered": 200,
+        "correct": 188,
+        "accuracy": 94.0,
+        "macro_f1": 93.97
+      },
+      "batch_issues": {},
+      "retried_batches": [],
+      "log": "prompts/5_direct_llm_prediction/gemini_4_neon/11_cli-run-2026-11-26.md"
+    }
+  }
+}

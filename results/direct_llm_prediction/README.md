@@ -32,6 +32,30 @@ Blind head-to-head comparison between the final frozen pipeline CNN (`A2_0` expo
 | `github_handdrawn` | 39 | 94.87% (37/39) | 92.31% (36/39) | 94.87% (37/39) |
 | `quickdraw` | 27 | 88.89% (24/27) | 77.78% (21/27) | 77.78% (21/27) |
 
+## Rerun through the CLIs (2026-11-26)
+
+`scripts\llm_classify.bat` repeats the benchmark with one command. For each model and batch, a new empty folder gets
+`fewshot_examples.png`, the batch image and an unlabelled `predictions.csv`; the model fills in the CSV itself through
+its CLI (Claude Code with file tools only; Antigravity `agy` sandboxed, file edits only), from the same prompt,
+[`cli_prompt.txt`](../../prompts/5_direct_llm_prediction/cli_prompt.txt). True labels never enter the folder. Run
+`2026-11-26_113808`: every batch answered on the first attempt, 200/200 valid labels per model, no refused tool calls.
+
+| Model | Correct / 200 | Macro F1 (CLI rerun) | Macro F1 (recorded 2026-11-19) |
+|---|---:|---:|---:|
+| Trained CNN (`A2_0`, same saved predictions) | 195 | **97.50** | 97.50 |
+| Claude Opus 5.5 (`claude-opus-5-5`, medium) | 186 | 92.97 | 92.55 |
+| Gemini 4 Neon (`gemini-4-neon-medium`) | 185 | 92.48 | 93.97 |
+
+The ranking holds: the trained CNN leads both LLMs by 4.5 to 5 macro F1 points. Between the two LLMs the order
+flipped (one image apart), so the gap between them is within run-to-run noise and should not be reported as a
+difference. Files: [`cli_runs/2026-11-26_113808/`](cli_runs/2026-11-26_113808/) (predictions per model and
+`summary.json`), with per-batch replies and filled CSVs in
+[`claude_opus/13_cli-run-2026-11-26.md`](../../prompts/5_direct_llm_prediction/claude_opus/13_cli-run-2026-11-26.md)
+and [`gemini_4_neon/11_cli-run-2026-11-26.md`](../../prompts/5_direct_llm_prediction/gemini_4_neon/11_cli-run-2026-11-26.md).
+The first full attempt was discarded before scoring: Gemini tried a terminal command on 2 batches, headless `agy`
+refused it and Gemini left the CSV empty. The prompt now says to use the file-editing tool and run no terminal
+commands, and both models were rerun with it.
+
 ## Provenance & Artifacts
 
 - **Test sample:** [sample_ids.csv](sample_ids.csv) (200 test IDs verified 200/200 by pixel MD5 against `configs/splits/test.csv`).

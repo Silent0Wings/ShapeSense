@@ -1,0 +1,18 @@
+This folder holds three files:
+
+- fewshot_examples.png: 50 labelled training examples, 5 per class. Each row is one class; its name is on the left.
+- {batch}.png: 20 test images (64x64 grayscale 2D shapes), each labelled with a blind ID from {first} to {last}. The images are shuffled and their file names hidden.
+- predictions.csv: one row per test image, with columns blind_id,predicted_label. The predicted_label column is empty.
+
+Classify every test image in {batch}.png against the labelled examples in fewshot_examples.png. Notice the conventions in the labelled examples: square includes rotated right-angle squares (about 45 degrees), while diamond needs non-90-degree (acute or obtuse) rhombus corners; circle vs ellipse depends on the aspect ratio; count the corners carefully for pentagon, hexagon and octagon.
+
+Fill in predicted_label for every row of predictions.csv with exactly one of these labels:
+circle, ellipse, triangle, square, rectangle, pentagon, hexagon, octagon, star, diamond
+
+Rules:
+- Keep the header and the blind_id column exactly as they are: one row per test image, no other columns, no comments.
+- Give a label for every row, even when unsure.
+- Write the labels into predictions.csv with your file-editing tool. Do not run terminal commands or scripts.
+- Do not create, rename or change any other file. Do not search the web.
+
+When predictions.csv is filled in, reply with one line: done.

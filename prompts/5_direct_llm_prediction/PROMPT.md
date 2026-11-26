@@ -3,7 +3,23 @@
 Goal (PDF section 3): give each LLM the data with the target, let it predict the test images directly, and
 compare with the trained model **on the same images and the same metric (macro F1)**.
 
-## Protocol
+## Rerun it with one command
+
+```
+scripts\llm_classify.bat
+```
+
+For each model and each of the 10 batches, a new empty folder outside the repository gets `fewshot_examples.png`,
+the batch image and an unlabelled `predictions.csv` (`blind_id,predicted_label`). Claude Opus 5.5 (`claude` CLI, file
+tools only) and Gemini 4 Neon medium (`agy` CLI, sandboxed) get the same prompt, [`cli_prompt.txt`](cli_prompt.txt),
+and fill in the CSV themselves. The true labels never enter the folder. The script checks each filled CSV (every blind
+ID once, one of the 10 labels), maps the blind IDs back with `blind_id_map.csv` and scores macro F1, with the trained
+CNN scored on the same images. Outputs: `results/direct_llm_prediction/cli_runs/<run>/` (one predictions CSV per
+model and `summary.json`) and a log per model in `claude_opus/` and `gemini_4_neon/`. Options: `--models`,
+`--batches 1,2`, `--dry-run`. Details: [`scripts/llm_classify.py`](../../scripts/llm_classify.py). The images are the
+rebuilt sheets in `results/direct_llm_prediction/sheets/`.
+
+## Protocol (2026-11-19 run)
 
 1. Run this only after the final model is frozen, so no test result can change a modeling choice.
 2. Take a fixed sample of the test split: 20 images per class, 200 in total, drawn with seed 0. Save the list of
