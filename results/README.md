@@ -36,6 +36,22 @@ Caveats: this test split had already been read in earlier iterations (F13), so i
 read. The Feature selection row was decided on validation before this test read. The first feature-selection
 attempt hit a GPU resize bug (F32) and was rerun.
 
+Colab rerun (2026-11-24, Tesla T4, PyTorch 2.14.1+cu130 from PyPI; printed in
+[`jupyter runs clean.pdf`](../jupyter%20runs%20clean.pdf)). Same code, seeds and test split. The numbers above come
+from the original machine (RTX 3080 laptop GPU, CUDA 13.0 build), so the T4 scores differ slightly. GPU
+convolution kernels are not bit-identical across cards and builds, and five seeds do not average that out. Every
+step improves on the baseline in the same order on both machines:
+
+| Data preparation step | Local (RTX 3080) | Colab (T4) | Colab delta vs baseline |
+|---|---|---|---|
+| Baseline | 89.13 ± 0.43 | 89.26 ± 0.52 | 0.00 |
+| Cleaning | 89.63 ± 0.74 | 89.44 ± 0.81 | +0.18 |
+| Transformation, standardization (A0) | 94.64 ± 0.18 | 94.43 ± 0.27 | +5.17 |
+| Transformation, augmentation + synthetic (A2) | 95.83 ± 0.31 | 95.76 ± 0.19 | +6.50 |
+| Feature selection (48 px) | 96.31 ± 0.13 | 96.18 ± 0.11 | +6.92 |
+
+The recorded results, slides and reports quote the local run.
+
 On the 200 images of the direct-LLM benchmark, the baseline model (seed 0) scores 90.6 and the final model (A2, seed 0)
 scores 97.5.
 
