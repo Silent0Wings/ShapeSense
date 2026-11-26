@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>ShapeSense slides</title>
+  <style>
+    @page {
+      size: 1280px 720px;
+      margin: 0;
+    }
+
+    :root {
+      --ink: #1d2433;
+      --muted: #5b6475;
+      --accent: #2457c5;
+      --good: #1f7a4d;
+      --bad: #b3261e;
+      --line: #d9dee8;
+      --soft: #f3f5f9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    section {
+      width: 1280px;
+      height: 720px;
+      padding: 56px 72px 48px;
+      position: relative;
+      page-break-after: always;
+      overflow: hidden;
+    }
+
+    section:last-child {
+      page-break-after: auto;
+    }
+
+    h1 {
+      font-size: 44px;
+      margin: 0 0 8px;
+      letter-spacing: -0.5px;
+    }
+
+    h2 {
+      font-size: 34px;
+      margin: 0 0 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .kicker {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
+    }
+
+    .claim {
+      color: var(--muted);
+      font-size: 20px;
+      margin: 0 0 26px;
+      max-width: 1080px;
+    }
+
+    .foot {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      bottom: 22px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--line);
+      padding-top: 8px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 18px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    td.num,
+    th.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pos {
+      color: var(--good);
+      font-weight: 600;
+    }
+
+    .neg {
+      color: var(--bad);
+      font-weight: 600;
+    }
+
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+    }
+
+    .card {
+      background: var(--soft);
+      border-radius: 10px;
+      padding: 18px 22px;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 19px;
+    }
+
+    .card p,
+    .card li {
+      font-size: 16px;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    li {
+      margin-bottom: 6px;
+      padding-left: 16px;
+      position: relative;
+    }
+
+    li::before {
+      content: "";
+      position: absolute;
+      left: 2px;
+      top: 0.6em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .big {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 28px;
+      margin-bottom: 22px;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .bar {
+      height: 26px;
+      background: var(--accent);
+      border-radius: 4px;
+    }
+
+    .barrow {
+      display: grid;
+      grid-template-columns: 260px 1fr 80px;
+      align-items: center;
+      gap: 14px;
+      margin: 10px 0;
+      font-size: 17px;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: #e3eafc;
+      color: var(--accent);
+      font-weight: 600;
+      margin-right: 6px;
+    }
+
+    a {
+      color: var(--accent);
+    }
+  </style>
+</head>
+
+<body>
+
+  <section>
+    <div class="kicker">COMP 333 final project · Team 14</div>
+    <h1>ShapeSense: an LLM-assisted pipeline that recognizes 2D shapes</h1>
+    <p class="claim">Task: classify a 64x64 drawing into one of 10 shapes (circle, ellipse, triangle, square, rectangle,
+      pentagon, hexagon, octagon, star, diamond). Metric: macro F1 on a sealed test split of 2,776 images.</p>
+    <div class="cols">
+      <div class="card">
+        <h3>Dataset: 18,000 images from 4 public sources</h3>
+        <ul>
+          <li>Quick, Draw! doodles (CC BY 4.0)</li>
+          <li>Kaggle reevald printed shapes (CC0)</li>
+          <li>Mendeley El Korchi rendered shapes (CC BY 4.0)</li>
+          <li>GitHub frobertpixto hand-drawn shapes (CC BY 4.0)</li>
+        </ul>
+        <p style="margin-top:8px">No source covers all 10 classes; together they do. Split 12,405 / 2,819 / 2,776,
+          grouped by near-duplicates.</p>
+      </div>
+      <div class="card">
+        <h3>Team and links</h3>
+        <p>Yahya Belgharbi, Fiacre Byiringiro, Damiano Confuorti, Jananaa Mahathevan, Yash Dilipkumar Nathani, Ray
+          Ntukanyagwe</p>
+        <p style="margin-top:12px"><b>Repository:</b> <a
+            href="https://github.com/Silent0Wings/ShapeSense">github.com/Silent0Wings/ShapeSense</a></p>
+        <p><b>Colab:</b> <a
+            href="https://colab.research.google.com/github/Silent0Wings/ShapeSense/blob/main/notebooks/shapesense_pipeline.ipynb">colab.research.google.com/github/Silent0Wings/ShapeSense/…/shapesense_pipeline.ipynb</a>
+        </p>
+        <p><b>Live demo:</b> <a href="https://shapesense-ten.vercel.app">shapesense-ten.vercel.app</a></p>
+      </div>
+    </div>
+    <div class="foot"><span>1 · Topic, task and dataset</span><span>Sources: docs/source.md, configs/splits/</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">The two LLMs</div>
+    <h2>Claude Opus 5.5 and Gemini 4 Neon, and what they already knew</h2>
+    <p class="claim">Each model was asked, with no web search and no files, to describe our four sources and complete
+      real rows. Answers were scored against the counts verified on disk.</p>
+    <table>
+      <tr>
+        <th>Source</th>
+        <th>Claude Opus 5.5</th>
+        <th>Gemini 4 Neon</th>
+      </tr>
+      <tr>
+        <td>Quick, Draw!</td>
+        <td>Knew it: 345 categories, formats, CC BY 4.0, row field order</td>
+        <td>{{G_QD}}</td>
+      </tr>
+      <tr>
+        <td>Kaggle reevald</td>
+        <td>Partly: all 8 class names; said it did not know count, size, license</td>
+        <td>{{G_RE}}</td>
+      </tr>
+      <tr>
+        <td>Mendeley El Korchi</td>
+        <td>Knew it: 9 classes, 90,000 PNG, 200x200, even the file-name pattern</td>
+        <td>{{G_EK}}</td>
+      </tr>
+      <tr>
+        <td>GitHub frobertpixto</td>
+        <td>Partly: layout, 4 classes, 70x70; count and license wrong but flagged as guesses</td>
+        <td>{{G_FR}}</td>
+      </tr>
+    </table>
+    <p class="claim" style="margin-top:18px">{{AWARENESS_TAKEAWAY}}</p>
+    <div class="foot"><span>2 · The two LLMs and the dataset-awareness
+        check</span><span>prompts/6_verification/dataset_awareness/, results/verification/README.md</span></div>
+  </section>
+
+  <section>
+    <div class="kicker">Stage by stage</div>
+    <h2>Where the LLMs helped, and where we corrected them</h2>
+    <p class="claim">Every prompt and response is in prompts/&lt;stage&gt;/. 101 logged decisions: the LLM proposed 52,
+      assisted on 27 more, and the team caught 8 problems itself.</p>
+    <div class="cols">
+      <div class="card">
+        <h3>LLM helped</h3>
+        <ul>
+          <li><span class="tag">Data</span>Four sources that together cover all 10 classes; four candidates rejected for
+            license or coverage</li>
+          <li><span class="tag">Cleaning</span>Found that most Quick, Draw! "diamonds" are gems, not rhombi (recall
+            59%); excluded by rule before any test read</li>
+          <li><span class="tag">Transformation</span>Rotation of ±180° hurt square, rectangle and diamond; searched
+            range ±20°, capped at ±10° for those three</li>
+          <li><span class="tag">Testing</span>Gemini's audit found test counts never checked against the noise bands;
+            Stage 5 now refuses to run if they differ</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Team corrected the LLM</h3>
+        <ul>
+          <li><span class="tag">Modeling</span>The first CNN saw only 22 px of a 64 px shape; moved from 3 to 4 conv
+            blocks</li>
+          <li><span class="tag">Speed</span>An outside report said to convert pixels on the GPU; we measured first: 126
+            of 256 values round differently, so we used a lookup table</li>
+          <li><span class="tag">Testing</span>Two pre-registered hypotheses failed (A2 vs A0 +0.5, CI [-0.2, 1.2]);
+            reported as failed, not reframed</li>
+          <li><span class="tag">Records</span>Every LLM claim that the records could not back is marked "not
+            established"</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot"><span>3 · Pipeline stages: LLM help and human
+        judgment</span><span>docs/crisp_dm/iteration_log.json (31 failures, 57 changes)</span></div>
+  </section>
+
+  <section>
+    <div class="kicker">Baseline and improvement</div>
+    <h2>Each data preparation step, retrained and scored on the same test images</h2>
+    <p class="claim">Same CNN, same settings, 60 epochs, 5 seeds per row; only the data preparation changes. Baseline =
+      raw collected images, only resized to 64x64.</p>
+    <table>
+      <tr>
+        <th>Data preparation step</th>
+        <th class="num">Baseline</th>
+        <th class="num">New score</th>
+        <th class="num">Delta (new − baseline)</th>
+      </tr>
+      {{IMPROVEMENT_ROWS}}
+    </table>
+    <p class="claim" style="margin-top:16px">{{IMPROVEMENT_TAKEAWAY}}</p>
+    <div class="foot"><span>4 · The improvement table (test macro F1, mean ± std over 5
+        seeds)</span><span>results/improvement_table.csv, scripts/improvement_table.py</span></div>
+  </section>
+
+  <section>
+    <div class="kicker">Two-LLM comparison</div>
+    <h2>Working with both models fixed 11 problems one model alone missed</h2>
+    <p class="claim">Claude built most of the pipeline. Gemini 4 Neon, with web search on, audited it claim by claim;
+      the team gave each claim a verdict.</p>
+    <div class="stats">
+      <div class="stat">
+        <div class="big">27</div>
+        <div class="label">audit claims by Gemini</div>
+      </div>
+      <div class="stat">
+        <div class="big">21</div>
+        <div class="label">judged to stand (4 partly, 2 not)</div>
+      </div>
+      <div class="stat">
+        <div class="big">11</div>
+        <div class="label">fixed in iteration 3</div>
+      </div>
+      <div class="stat">
+        <div class="big">25</div>
+        <div class="label">prompts answered by both, side by side</div>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="card">
+        <h3>Where they agreed and differed</h3>
+        <ul>
+          <li>Quick, Draw! diamonds: Gemini proposed the exclusion rule; Claude inspected the drawings and measured the
+            damage (59% recall)</li>
+          <li>Tuning: Gemini proposed the per-arm search of augmentation, generator and hyperparameters (166 trials);
+            both mediated between the team's views</li>
+          <li>On direct prediction the two agreed on 96% of 200 images and made the same two kinds of error</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Did both help?</h3>
+        <ul>
+          <li>Yes for correctness and robustness: the audit's fixes are in the final pipeline</li>
+          <li>Not for clean test F1: the fixes changed checks and reporting, not the model's score</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot"><span>5 · Comparison of the two LLMs</span><span>results/llm_comparison/gemini_audit.md,
+        prompts/*/cross_critique/</span></div>
+  </section>
+
+  <section>
+    <div class="kicker">Pipeline vs. direct LLM prediction</div>
+    <h2>The trained CNN beats both LLMs on the same 200 test images</h2>
+    <p class="claim">200 test images (20 per class), shown blind to each LLM with 50 labeled training examples. Same
+      images, same metric.</p>
+    {{DIRECT_BARS}}
+    <div class="cols" style="margin-top:18px">
+      <div class="card">
+        <h3>Why the gap</h3>
+        <p>Both LLMs make the same errors: circle called ellipse (4 each) and hexagon called octagon (4 each). These
+          turn on axis ratio and corner count at 64 px, boundaries the CNN learned from 12,405 labeled images.</p>
+      </div>
+      <div class="card">
+        <h3>Where the LLMs still win</h3>
+        <p>Rarely. The CNN also leads on Quick, Draw! sketches (24 of 27 against 21 of 27). The LLMs were right where
+          the CNN was wrong on only two noisy hand-drawn shapes: an ellipse the CNN called a triangle, and a rectangle
+          it called a diamond (Claude only).</p>
+      </div>
+    </div>
+    <div class="foot"><span>6 · Trained pipeline vs. direct LLM
+        prediction</span><span>results/direct_llm_prediction/summary.json</span></div>
+  </section>
+
+  <section>
+    <div class="kicker">Verification</div>
+    <h2>How we checked the final results</h2>
+    <p class="claim">No LLM output was trusted until a check in code or on data confirmed it.</p>
+    <div class="cols">
+      <div class="card">
+        <h3>Before any test read</h3>
+        <ul>
+          <li>Hypotheses pre-registered in writing</li>
+          <li>Test split and two fresh holdouts sealed; every read logged</li>
+          <li>Import-linter and contract tests stop stages reading data they should not see</li>
+          <li>Near-duplicates grouped so they never straddle train and test</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>On the results</h3>
+        <ul>
+          <li>5 seeds per arm; bootstrap CIs, McNemar tests, Holm correction</li>
+          <li>Classical baselines (HOG + SVM 84.3) and a source-shortcut check</li>
+          <li>Manual QA sheets; 27-claim external audit by the second LLM</li>
+          <li>Browser models checked against Python, logits within 1e-4</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot"><span>7 · The verification process</span><span>results/verification/README.md</span></div>
+  </section>
+
+  <section>
+    <div class="kicker">Lessons learned</div>
+    <h2>What working with two LLMs taught us</h2>
+    <div class="cols" style="margin-top:20px">
+      <div class="card">
+        <h3>Measure before trusting</h3>
+        <p>Plausible advice was wrong when unmeasured: GPU pixel conversion would have changed every result, and full
+          rotation hurt three classes. Each claim became a test or an experiment.</p>
+      </div>
+      <div class="card">
+        <h3>Two models share blind spots</h3>
+        <p>Claude and Gemini agreed on 96% of direct predictions and made the same mistakes. A second LLM is a reviewer,
+          not an independent check; the data has to be.</p>
+      </div>
+      <div class="card">
+        <h3>Critique beats generation</h3>
+        <p>The most useful Gemini output was its audit of Claude's pipeline: 11 fixes. Asking one model to attack the
+          other's work found more than asking either to build.</p>
+      </div>
+    </div>
+    <div class="foot"><span>8 · Lessons learned about working with LLMs</span><span>Repository:
+        github.com/Silent0Wings/ShapeSense</span></div>
+  </section>
+
+</body>
+
+</html>
