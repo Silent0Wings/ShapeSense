@@ -1,5 +1,21 @@
 # Dataset-awareness check
 
+## Rerun it with one command
+
+```
+scripts\llm_check.bat
+```
+
+This sends [`cli_prompt.txt`](cli_prompt.txt), the eight prompts below written out in full, word for word to Claude
+Opus 5.5 (`claude` CLI, all tools off) and Gemini 4 Neon medium (`agy` CLI, sandboxed), each from a new empty folder
+with no project files. Each reply is saved unedited, with the command, CLI version and prompt hash, as a new
+`NN_cli-run-<date>.md` in `claude_opus/` and `gemini_4_neon/`. Both CLIs must be installed and signed in. Options:
+`--models claude` or `--models gemini` for one model, `--dry-run` to print the commands. Details:
+[`scripts/llm_check.py`](../../../scripts/llm_check.py). A new run is scored by hand as below; the recorded runs stay
+the reported result unless the team decides otherwise.
+
+## Original protocol (2026-11-20)
+
 Run each prompt in a **new chat, with web search and file upload off**, once with Claude Opus and once with
 Gemini 4 Neon. Paste each full reply into `claude_opus/` or `gemini_4_neon/` as `NN_<source>.md`, unedited.
 Write down the exact model name and version shown in the app.

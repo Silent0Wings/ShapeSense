@@ -23,6 +23,11 @@ Every item below already exists in the Phase 2 record. Files are in [`../phase2_
 
 Prompts: [`prompts/6_verification/dataset_awareness/`](../../prompts/6_verification/dataset_awareness/).
 
+Rerun: `scripts\llm_check.bat` sends the same prompt file to both models through their CLIs (Claude with all tools
+off, Gemini sandboxed), each from an empty folder with no project files, and saves both replies unedited. A test run
+on 2026-11-26 (`claude_opus/04_cli-run-2026-11-26.md`, `gemini_4_neon/03_cli-run-2026-11-26.md`, not yet scored)
+gave the same picture as the table below.
+
 - **Claude Opus 5.5:** one fresh agent session, no tools, all eight prompts in one session. Full replies and scoring: [`claude_opus/01_four-sources.md`](../../prompts/6_verification/dataset_awareness/claude_opus/01_four-sources.md).
 - **Gemini 4 Neon** (medium effort): Antigravity CLI (`agy`) in an empty sandbox folder outside the repository, no project files, told that using any tool would void the test. Full replies and scoring: [`gemini_4_neon/02_sandboxed-replication.md`](../../prompts/6_verification/dataset_awareness/gemini_4_neon/02_sandboxed-replication.md).
 - Not counted: Gemini's first run, made by hand in Antigravity with access to the project files (`00_`; `01_` is the same reply, reformatted). It reported more (reevald's 224 x 224 size, frobertpixto's 4 classes and 70 x 70 size), which may have come from the workspace.

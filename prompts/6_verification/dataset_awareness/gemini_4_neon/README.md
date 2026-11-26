@@ -13,3 +13,6 @@ Not counted, kept as a record:
   70x70 size) may have come from the workspace.
 - [01_four-sources.md](01_four-sources.md): the same reply as `00_`, reformatted. It was filed as an official app-chat
   run by mistake; corrected 2026-11-26.
+
+Reruns with `scripts\llm_check.bat` (same prompt file for both models, saved unedited, not yet scored):
+- [03_cli-run-2026-11-26.md](03_cli-run-2026-11-26.md)

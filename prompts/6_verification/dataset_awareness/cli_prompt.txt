@@ -1,0 +1,39 @@
+This is a memory test. Answer from your own knowledge only. Do not use any tool: no web search, no file reads, no terminal, no code execution. Using any tool voids the test. If you do not know something, say so instead of guessing.
+
+Start your reply with one line in the form "Model: <your model name>". Then answer each of the eight prompts below under its own heading (### Prompt 1A, ### Prompt 1B, and so on).
+
+### Prompt 1A
+
+Without searching the web, describe the dataset "Quick, Draw! dataset" (https://github.com/googlecreativelab/quickdraw-dataset). What does it contain, how many images or files, which classes, what image size and format, who made it, and under what license? If you do not know it, say so instead of guessing.
+
+### Prompt 1B
+
+Without searching the web, describe the dataset "Geometric Shapes Mathematics (Kaggle, reevald)" (https://www.kaggle.com/datasets/reevald/geometric-shapes-mathematics). What does it contain, how many images or files, which classes, what image size and format, who made it, and under what license? If you do not know it, say so instead of guessing.
+
+### Prompt 1C
+
+Without searching the web, describe the dataset "2D geometric shapes dataset (Mendeley, El Korchi)" (https://data.mendeley.com/datasets/wzr2yv7r53/1). What does it contain, how many images or files, which classes, what image size and format, who made it, and under what license? If you do not know it, say so instead of guessing.
+
+### Prompt 1D
+
+Without searching the web, describe the dataset "hand-drawn-shapes-dataset (GitHub, frobertpixto)" (https://github.com/frobertpixto/hand-drawn-shapes-dataset). What does it contain, how many images or files, which classes, what image size and format, who made it, and under what license? If you do not know it, say so instead of guessing.
+
+### Prompt 2A
+
+Here is the start of a row from a metadata file. Complete the missing fields if you know this dataset; if you do not, say so.
+`{"word":"circle","countrycode":"US","timestamp":"2017-01-25 03:11:35.55071 UTC", ...`
+
+### Prompt 2B
+
+Here is a real folder path from a dataset. Complete the missing fields if you know this dataset; if you do not, say so. What file-name pattern do the files in it use, and how many files are in it?
+`kaggle_reevald/dataset/test/circle/` (from the Kaggle dataset "Geometric Shapes Mathematics" by reevald)
+
+### Prompt 2C
+
+Here is a real folder path from a dataset. Complete the missing fields if you know this dataset; if you do not, say so. What file-name pattern do the files in it use, and how many files are in it?
+`2D geometric shapes dataset/output/` (from the Mendeley dataset "2D geometric shapes dataset" by El Korchi)
+
+### Prompt 2D
+
+Here is a real folder path from a dataset. Complete the missing fields if you know this dataset; if you do not, say so. What file-name pattern do the files in it use, and how many files are in it?
+`hand-drawn-shapes-dataset/data/user.aly/images/` (from the GitHub dataset by frobertpixto)
