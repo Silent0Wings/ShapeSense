@@ -3,5 +3,5 @@
   "G_RE": "Partly: recalled the 8 class names only faintly; count, size, license unknown",
   "G_EK": "Knew it: 9 classes, 90,000 PNG, 200x200, CC BY 4.0, file-name pattern",
   "G_FR": "Did not know it: per-user folders only; classes, size and license unknown",
-  "AWARENESS_TAKEAWAY": "Both models knew the two best-documented sources well and invented nothing with confidence. Gemini was also re-run sandboxed, with no access to our files; it knew less there, so that clean run is the one reported."
+  "AWARENESS_TAKEAWAY": "Both models knew the two best-documented sources well and invented nothing with confidence. Gemini's first run could see our files, so the sandboxed run with no access is the one reported; it knew less there."
 }

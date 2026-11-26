@@ -29,7 +29,7 @@ The exchange being judged: the same eight dataset-awareness prompts, run through
 ### What it got wrong or missed
 - A guessed creator first name, even though marked uncertain.
 - Not Gemini's error, but affects the record: the bracketed hints in prompts 2B to 2D differ from `PROMPT.md`.
-- Also not Gemini's error: the record's decision says this run counts for reevald and frobertpixto, while `results/verification/README.md` and the Gemini folder README treat `01_four-sources.md` as the official run. The two records disagree (tracker item H04).
+- Also not Gemini's error: the record's decision says this run counts for reevald and frobertpixto, while `results/verification/README.md` and the Gemini folder README treat `01_four-sources.md` as the official run. The two records disagree (tracker item H04). Resolved 2026-11-26: this sandboxed run is the official Gemini run, and `01_four-sources.md` was found to be a reformatted copy of the workspace run.
 
 ### What I would have answered for this project
 The same answers with no guessed name: "El Korchi; first name not known." For the record, I would rerun prompts 2B to 2D with the bare folder paths from `PROMPT.md`, so all runs answer the same questions.

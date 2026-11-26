@@ -1,3 +1,8 @@
+> **Note added 2026-11-26.** The file graded here, `gemini_4_neon/01_four-sources.md`, is not a separate clean run. It is
+> Gemini's first run, made in Antigravity with access to the project files (`00_out-of-protocol-workspace-run.md`),
+> reformatted. It is not counted. The official Gemini run is `02_sandboxed-replication.md`, graded in
+> [03_grading-gemini-sandboxed-replication.md](03_grading-gemini-sandboxed-replication.md). This grade is kept as written.
+
 # 6_verification/dataset_awareness - Grading Gemini's dataset-awareness answers
 - LLM: Claude Opus 5.5 (`claude-opus-5-5`)
 - Category: Two-LLM comparison. Claude Opus 5.5 judges Gemini 4 Neon's answer in [../gemini_4_neon/01_four-sources.md](../gemini_4_neon/01_four-sources.md)

@@ -1,4 +1,4 @@
-> **Not counted.** Made in Antigravity with workspace access: the log shows file creation and reads of `docs/source.md` and the READMEs. Kept as a record only. The official run is 01_four-sources.md.
+> **Not counted.** Made in Antigravity with workspace access: the log shows file creation and reads of `docs/source.md` and the READMEs. Kept as a record only. The official run is [02_sandboxed-replication.md](02_sandboxed-replication.md), the only Gemini run made without access to the project files. `01_four-sources.md` is this same reply, reformatted.
 
 # 6_verification/dataset_awareness - Four sources, describe and complete
 - LLM: Gemini 4 Neon (run in Antigravity on Gemini 4 in a fresh conversation prior to any file or web reads)

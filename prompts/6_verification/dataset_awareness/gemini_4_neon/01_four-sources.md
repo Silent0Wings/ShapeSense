@@ -1,8 +1,15 @@
+> **Not counted, and not a separate run (corrected 2026-11-26).** Gemini was run twice for this check: once by hand in
+> Antigravity with access to the project files ([00_out-of-protocol-workspace-run.md](00_out-of-protocol-workspace-run.md))
+> and once in the Antigravity CLI in an empty sandbox ([02_sandboxed-replication.md](02_sandboxed-replication.md)). This
+> file holds the reply of the first run, reformatted with new headings and a new verdict table. Its earlier header said
+> it came from eight new app chats with no workspace access; the user confirmed on 2026-11-26 that no such run was
+> made. The official Gemini run is [02_sandboxed-replication.md](02_sandboxed-replication.md). Kept as a record only.
+
 # 6_verification/dataset_awareness - Four sources, describe and complete
 - LLM: Gemini 4 Neon (configured as Gemini 4, medium effort)
 - Category: Pipeline vs. direct LLM prediction (verification)
 - Date: 2026-11-20
-- Run: one new chat per prompt (eight chats), web search off, file upload off, no workspace access. Stated by the user on 2026-11-20.
+- Run: the Antigravity run with workspace access (same reply as `00_out-of-protocol-workspace-run.md`), reformatted. Not a separate run.
 
 The reply below is unedited. Its own model and date lines are as the model wrote them.
 
@@ -130,7 +137,7 @@ No confident invention was found. The one checkable factual error is frobertpixt
 
 ## Our decision
 
-Filed as the official Gemini run for the requirement, because the user confirmed it was made in new chats with web search and file access off. The earlier Antigravity reply is kept as `00_out-of-protocol-workspace-run.md`, and the sandboxed CLI run as `02_sandboxed-replication.md`. Neither counts toward the requirement.
+Not counted (see the note at the top). This was first filed as the official Gemini run on the belief that it came from new chats with web search and file access off. It is the Antigravity reply of `00_out-of-protocol-workspace-run.md`, reformatted. The official Gemini run is `02_sandboxed-replication.md`.
 
 ## Measured effect
 

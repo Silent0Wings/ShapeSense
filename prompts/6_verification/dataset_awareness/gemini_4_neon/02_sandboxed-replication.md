@@ -6,7 +6,11 @@
 A second, independent run of the same eight prompts, word for word as in the Claude run
 ([../claude_opus/01_four-sources.md](../claude_opus/01_four-sources.md)). The session had no project files: it started
 in an empty folder, in the sandbox, and was told that using any tool would void the test. The first run
-([01_four-sources.md](01_four-sources.md)) was made in Antigravity inside the workspace. The reply below is unedited.
+([00_out-of-protocol-workspace-run.md](00_out-of-protocol-workspace-run.md), reformatted in `01_four-sources.md`) was
+made by hand in Antigravity inside the workspace, with access to the project files. The reply below is unedited.
+
+**This is the official Gemini run for the requirement** (decided 2026-11-26): it is the only Gemini run made without
+access to the project files.
 
 ## Prompt
 
@@ -143,8 +147,8 @@ It named El Korchi's first name as "possibly Abdeljalil". That name is not in th
 
 ## Our decision
 
-No dataset change, as the course allows. For the verification table, this clean run counts as Gemini's result for
-reevald and frobertpixto.
+No dataset change, as the course allows. This clean run is Gemini's result for all four sources in the verification
+table. The first run had access to the project files, so it does not count.
 
 ## Measured effect
 
