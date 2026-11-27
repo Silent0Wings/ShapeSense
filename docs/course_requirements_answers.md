@@ -18,7 +18,7 @@ unless a row says otherwise.
 | Two-LLM comparison (15%) | Met | `results/llm_comparison/`, `prompts/*/cross_critique/` |
 | Pipeline vs. direct LLM prediction (15%) | Met | `results/direct_llm_prediction/summary.json` |
 | Repository and Colab (10%) | Mostly met: sharing pending | The repo is **public**. The notebook ran top to bottom in Colab on a T4 GPU on 2026-11-24 with every stage passing, and `notebooks/shapesense_pipeline.ipynb` is that run, saved with its outputs (print: `jupyter runs clean.pdf`). Still to do: share view access with the instructor and TAs |
-| Presentation (10%) | Met | `slides.pdf`: 8 slides in the course layout, with the repo and Colab links (`slides/build_slides.py`) |
+| Presentation (10%) | Met | `slides.pdf`: 8 slides in the course layout, with the repo and Colab links, built from the deployed site's `deck.html` (`ShapeSense_Deployed/build/deck_pdf.mjs`) |
 
 ## 1. Stage by stage: what we asked, what the LLM said, how we checked it, what we changed
 
@@ -30,12 +30,12 @@ exports.
 | 0. Data discovery | Four public sources covering all ten classes. Reject four other candidates | Licenses and counts checked on disk (`docs/source.md`). MD5 of every file before deleting duplicates | Excluded Kaggle dinesh (license "Unknown", no new class). Removed 4 duplicate folders |
 | 1. Data integration | Label map, MD5 identity, global pHash near-duplicate groups, group-aware split, sealed holdouts | Functional-dependency checks (`results/phase2_snapshot/fd_check.json`), fail-closed leakage guards (`guards.json`) | Found that images reveal their source (F05): a source classifier and per-source scores were added (`source_classifier.json`, `per_source.csv`) |
 | 2a. Cleaning | Drop, relabel or keep the Quick, Draw! diamonds | Review sheets. Quick, Draw! diamond recall on validation was 59% | Excluded all 500 by a written rule before any test read. Split re-frozen at 12,405 / 2,819 / 2,776 (F01, C01) |
-| 2b. Transformation | Class-safe augmentation. Synthetic shape generator | Rotation ablation (`docs/crisp_dm/iteration_2/search/phase_ablation.json`). Framing and stroke checks | Rotation ±180° hurt square, rectangle and diamond, so it was searched: ±20°, capped at ±10° for those three (F07). Framing fixed (F08), thin-line path (F09), synthetic stroke width matched to real (F10) |
+| 2b. Transformation | Class-safe augmentation. Synthetic shape generator | Rotation ablation (`docs/crisp_dm/iteration_2/search/phase_ablation.json`). Framing and stroke checks | Rotation ±180° hurt square, rectangle and diamond, so it was searched per arm: A1 ±20°, capped at ±10° for those three; B, A2 and P ±15° (F07, iteration 3). Framing fixed (F08), thin-line path (F09), synthetic stroke width matched to real (F10) |
 | 2c. Feature selection | Input representation: crop, resolution, hand-made features | HOG + SVM and pixels + logistic regression baselines (`baselines.json`). Reframing check (`exp_preprocess.json`). Resolution search on validation | Chose a 48 px input on validation, which scored +0.48 over 64 px on test. Caught a GPU resize bug first (F32). See §2 |
-| 3. Modeling | CNN arms A0, A1, B, A2, P. Per-arm search of augmentation, generator and hyperparameters | 166-trial validation search. 5 seeds per arm | Moved to four conv blocks, because three gave a 22-px receptive field (F17). Training made about 5x faster with identical scores (F21) |
-| 4. Testing | Pre-registered comparisons, bootstrap CIs, McNemar with Holm correction | `comparisons.csv`, `power.json`, `noise_bands.csv` | Reported failed hypotheses as failed: A2 vs A0 +0.5, CI [-0.2, 1.2] (F04, F14). Robustness test on damaged images: A2 vs A0 +9.20, CI [8.89, 9.53] (`robust_sealed.json`) |
+| 3. Modeling | CNN arms A0, A1, B, A2, P. Per-arm search of augmentation, generator and hyperparameters | 110-trial validation search in iteration 3 (76 in iteration 2). 5 seeds per arm | Moved to four conv blocks, because three gave a 22-px receptive field (F17). Epochs went from about 20 s to 2-6 s, with scores identical across worker counts (F21) |
+| 4. Testing | Pre-registered comparisons, bootstrap CIs, McNemar with Holm correction | `comparisons.csv`, `power.json`, `noise_bands.csv` | Reported failed hypotheses as failed: iteration 1 B vs A1 -0.36, CI [-1.17, 0.41] (F04); iteration 2 A2 vs A0 +0.06, CI [-0.69, 0.83] (F14). Robustness test on damaged images: A2 vs A0 +9.20, CI [8.89, 9.53] (`robust_sealed.json`) |
 
-The full log is 31 failures and 57 changes, each with its cause and how it was handled
+The full log is 32 failures and 59 changes, each with its cause and how it was handled
 (`docs/crisp_dm/iteration_log.json`), mirrored with decisions in the attribution worksheet. Of the 101 worksheet
 entries, the LLM proposed 52 and assisted, mediated, reviewed, inspected, implemented or critiqued 27 more. In 13 no
 LLM was involved, and the team caught 8 problems itself.
@@ -65,9 +65,8 @@ test images (`results/improvement_table.csv`, built by `scripts/improvement_tabl
 
 ## 3. Compare two LLMs (Claude Opus 5.5 and Gemini 4 Neon)
 
-- **Per stage:** 25 entries have a Claude and a Gemini answer to the same prompt, word for word, each file linking to
-  the other model's answer (`prompts/*/claude_opus/` and `prompts/*/gemini_4_neon/`, category "Two-LLM comparison"),
-  plus 32 cross-critique files. 
+- **Per stage:** 24 Gemini files link to a Claude answer to the same prompt (`prompts/*/claude_opus/` and
+  `prompts/*/gemini_4_neon/`), plus 39 cross-critique files.
 - **One critiques the other:** Gemini 4 Neon audited the Claude-built pipeline with web search on: 27 claims
   (`results/llm_comparison/gemini_audit.md`). The team judged 21 to stand, 4 to stand partly and 2 not to stand. As a
   result, 11 were fixed in iteration 3, 9 disclosed and 2 closed by experiment. Example: A01, per-class test counts were never
@@ -127,7 +126,7 @@ The full table is in `results/verification/README.md`.
 | `data/` | Met | `data/README.md` links the sources (`data_set/` is not in Git) |
 | `notebooks/` copy of the Colab | Met | `notebooks/shapesense_pipeline.ipynb` has one section per stage, prints the metric after each data preparation step, and scores the baseline, final model and LLMs on the same test images. It is the 2026-11-24 Colab run (T4 GPU), saved with all its outputs |
 | `results/` improvement table and comparisons | Met | `results/improvement_table.csv` and `results/llm_comparison/` complete (§2, §3) |
-| `slides.pdf` | Met | 8 slides in the course layout. Rebuild with `python slides/build_slides.py` |
+| `slides.pdf` | Met | 8 slides in the course layout, printed from the deployed site's course deck. Rebuild with `node build/deck_pdf.mjs` in `ShapeSense_Deployed` (see its README, "Course pages") |
 | Colab shared with instructor and TAs, runs top to bottom | Runs: met. Sharing: pending | Ran top to bottom without errors on 2026-11-24 (T4 GPU). The GitHub-backed Colab link opens for anyone now that the repo is public. View access to the run copy still has to be shared with the instructor and the TAs. On the T4 the scores differ slightly from the recorded local run (RTX 3080): baseline 89.26 vs 89.13, final 96.18 vs 96.31, with every step still improving in the same order. Side-by-side table in `results/README.md` §1 |
 
 ## 7. Slide layout (about 8 slides, 10 minutes)

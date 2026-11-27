@@ -55,7 +55,7 @@ Primary test: A2 vs A0. **Fail on both sets:** +0.06 points, CI [-0.69, 0.83] on
 | Business Understanding | Asked whether this augmentation design suits these classes at all |
 | Data Understanding | Orientation carries class information in some sources. Images also reveal their source (91.7% against 46.7% for always guessing the largest source) |
 | Data Preparation | Rotation cut from ±180° to ±20°, capped at ±10° for square, rectangle and diamond. Fixed shape framing, broken thin strokes and synthetic stroke width. Ranges searched on validation |
-| Modeling | Added A2. Tuned every arm on validation (166 trials). Five seeds per arm |
+| Modeling | Added A2. Tuned every arm on validation (110 search trials in iteration 3, 76 in iteration 2). Five seeds per arm |
 | Evaluation | Every arm reached about the same test score: A0 95.3, A1 95.2, B 95.3, A2 95.4. On unseen Hand-Drawn triangles and rectangles, accuracy was A0 66.6, A1 74.5, B 72.6, A2 73.8 |
 | Deployment | Exported A2_2, chosen by validation macro-F1. The studio serves all four arms |
 

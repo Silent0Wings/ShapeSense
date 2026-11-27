@@ -85,8 +85,10 @@ Source: [`phase2_snapshot/fresh_metrics.csv`](phase2_snapshot/fresh_metrics.csv)
 
 | Comparison | Delta macro F1 | 95% CI |
 |---|---|---|
-| A2 vs A0 (primary, iteration 2) | +0.5 | [-0.2, 1.2] |
-| A1 vs A0 (secondary) | +0.6 | [-0.2, 1.4] |
+| B vs A1 (primary, iteration 1, failed) | -0.36 | [-1.17, 0.41] |
+| A2 vs A0 (primary, iteration 2, failed) | +0.06 | [-0.69, 0.83] |
+| A2 vs A0 on the reused test split (iteration 3 models) | +0.5 | [-0.2, 1.2] |
+| A1 vs A0 on the reused test split (iteration 3 models) | +0.6 | [-0.2, 1.4] |
 | A2 vs A0 on damaged images (iteration 3, sealed holdout) | +9.20 | [8.89, 9.53] |
 
 Sources: [`phase2_snapshot/comparisons.csv`](phase2_snapshot/comparisons.csv),

@@ -15,7 +15,7 @@ Every item below already exists in the Phase 2 record. Files are in [`../phase2_
 | Source classifier and shortcut check | The model learning the source instead of the shape | `source_classifier.json`, `shortcut_notice.md`, `per_source.csv` |
 | Functional-dependency checks on the metadata (source to license, original label to class) | Inconsistent labels or licenses after integration | `fd_check.json` |
 | Manual QA review sheets | Wrong labels and broken synthetic renders | `qa_review2.md`, `qa_review3.md` |
-| Failure log (31 entries) and change log (57 entries) | Silent fixes with no record | `iteration_log.json` |
+| Failure log (32 entries) and change log (59 entries) | Silent fixes with no record | `iteration_log.json` |
 | External audit by a second LLM (27 claims, each given a verdict by the team) | Trusting one LLM | [`../llm_comparison/gemini_audit.md`](../llm_comparison/gemini_audit.md) |
 | Browser models checked against Python (logits within 1e-4) | The published demo differing from the trained models | ShapeSense_Deployed `build/check.py` |
 

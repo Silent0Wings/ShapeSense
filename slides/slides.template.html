@@ -316,7 +316,7 @@
             blocks</li>
           <li><span class="tag">Speed</span>An outside report said to convert pixels on the GPU; we measured first: 126
             of 256 values round differently, so we used a lookup table</li>
-          <li><span class="tag">Testing</span>Two pre-registered hypotheses failed (A2 vs A0 +0.5, CI [-0.2, 1.2]);
+          <li><span class="tag">Testing</span>Two pre-registered hypotheses failed (B vs A1 -0.36, CI [-1.17, 0.41]; A2 vs A0 +0.06, CI [-0.69, 0.83]);
             reported as failed, not reframed</li>
           <li><span class="tag">Records</span>Every LLM claim that the records could not back is marked "not
             established"</li>
@@ -324,7 +324,7 @@
       </div>
     </div>
     <div class="foot"><span>3 · Pipeline stages: LLM help and human
-        judgment</span><span>docs/crisp_dm/iteration_log.json (31 failures, 57 changes)</span></div>
+        judgment</span><span>docs/crisp_dm/iteration_log.json (32 failures, 59 changes)</span></div>
   </section>
 
   <section>
@@ -375,7 +375,7 @@
         <ul>
           <li>Quick, Draw! diamonds: Gemini proposed the exclusion rule; Claude inspected the drawings and measured the
             damage (59% recall)</li>
-          <li>Tuning: Gemini proposed the per-arm search of augmentation, generator and hyperparameters (166 trials);
+          <li>Tuning: Gemini proposed the per-arm search of augmentation, generator and hyperparameters (110 trials);
             both mediated between the team's views</li>
           <li>On direct prediction the two agreed on 96% of 200 images and made the same two kinds of error</li>
         </ul>

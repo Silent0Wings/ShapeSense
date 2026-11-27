@@ -33,7 +33,7 @@ Stage folders: `0_data_discovery` (optional), `1_data_integration`,
 `2_data_preparation/{cleaning,transformation,feature_selection}`, `3_modeling`,
 `4_testing`, `5_direct_llm_prediction`, `6_verification/dataset_awareness`.
 
-[failure_search_prompts.md](failure_search_prompts.md) restates each of the 31 failures on the Failure
+[failure_search_prompts.md](failure_search_prompts.md) restates 31 of the 32 failures (F01 to F31; F32 came later) on the Failure
 timeline as a research question for an LLM to search, for example: when does real + synthetic training lose
 to real data alone, and why?
 
